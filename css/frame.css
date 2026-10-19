@@ -1,0 +1,31 @@
+/* frame.css: the phone. Full screen on a phone, a centred phone-sized frame on a laptop. */
+
+.phone {
+  position: relative;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--color-paper);
+  /* Lets everything inside size itself with cqw / cqh (1cqh = 1% of the phone's height). */
+  container-type: size;
+}
+
+@media (min-width: 600px) and (min-height: 500px) {
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--color-backdrop);
+  }
+
+  .phone {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: var(--frame-width);
+    height: var(--frame-height);
+    border-radius: var(--frame-radius);
+    box-shadow: 0 0 0 1px var(--color-line);
+    /* --frame-scale is set by js/frame.js so the frame always fits the window. */
+    transform: translate(-50%, -50%) scale(var(--frame-scale, 1));
+  }
+}

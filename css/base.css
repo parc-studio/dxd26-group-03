@@ -1,0 +1,84 @@
+/* base.css: sensible defaults for every element. You rarely need to edit this. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--color-ink);
+  background: var(--color-paper);
+  overflow-wrap: anywhere;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+}
+
+/* Without this, a class that sets `display` would make a hidden element visible again. */
+[hidden] {
+  display: none !important;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* Headings receive focus from the script when a screen opens, so screen
+   readers announce it. They are not controls, so they show no ring. */
+[tabindex='-1']:focus {
+  outline: none;
+}
+
+/* Safety net for people who ask their device for less motion: any animation
+   or transition you forget to give a reduced version is cut to nothing. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Starter</title>
+
+    <!--
+      Every path in this project is relative: "css/app.css", never "/css/app.css".
+      A path that starts with "/" breaks as soon as the folder is uploaded.
+    -->
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/frame.css" />
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <!-- Everything the visitor sees goes inside .phone -->
+    <div class="phone">
+      <!-- SCREEN: product -->
+      <section class="screen" data-screen="product" aria-labelledby="product-title">
+        <header class="screen-header">
+          <p class="screen-label">Demo: replace everything</p>
+          <button class="button" type="button" data-action="go-to" data-to="basket">
+            Basket (<span data-show="basket-total">0</span>)
+          </button>
+        </header>
+
+        <div class="screen-body">
+          <img
+            class="product-image"
+            src="assets/placeholder.svg"
+            alt="Grey placeholder where a product photo goes"
+            width="600"
+            height="600"
+          />
+          <h1 id="product-title" tabindex="-1">Plain mug</h1>
+          <p class="price">CHF 12</p>
+          <p class="note">
+            One product, one button, one basket that everyone shares. Reload the page:
+            the basket is still there.
+          </p>
+        </div>
+
+        <footer class="screen-footer">
+          <p class="notice" role="status" data-show="notice"></p>
+          <button class="button button-primary" type="button" data-action="add-to-basket">
+            Add to the shared basket
+          </button>
+        </footer>
+      </section>
+      <!-- /SCREEN: product -->
+
+      <!-- SCREEN: basket -->
+      <section class="screen" data-screen="basket" aria-labelledby="basket-title" hidden>
+        <header class="screen-header">
+          <button class="button" type="button" data-action="go-to" data-to="product">Back</button>
+          <p class="screen-label">Demo: replace everything</p>
+        </header>
+
+        <div class="screen-body">
+          <h1 id="basket-title" tabindex="-1">Shared basket</h1>
+          <p class="note">
+            Pretend every visitor fills this one basket. Nothing leaves this browser:
+            the other shoppers are simulated in <code>js/others.js</code>.
+          </p>
+          <dl>
+            <div class="summary-row">
+              <dt>Added by you</dt>
+              <dd data-show="basket-yours">0</dd>
+            </div>
+            <div class="summary-row">
+              <dt>Added by others</dt>
+              <dd data-show="basket-others">0</dd>
+            </div>
+            <div class="summary-row">
+              <dt>In the basket</dt>
+              <dd data-show="basket-summary">0</dd>
+            </div>
+          </dl>
+        </div>
+
+        <footer class="screen-footer">
+          <button class="button button-primary" type="button" data-action="empty-basket">
+            Empty the basket for everyone
+          </button>
+        </footer>
+      </section>
+      <!-- /SCREEN: basket -->
+    </div>
+
+    <!-- The order matters: each file uses the ones above it. app.js is always last. -->
+    <script src="js/frame.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/shared.js"></script>
+    <script src="js/others.js"></script>
+    <script src="js/render.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

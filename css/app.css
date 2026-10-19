@@ -1,0 +1,121 @@
+/* app.css: the styles of your prototype. The demo's styles are here: replace them with yours. */
+
+/* -- screen: one full view of the app; only one is visible at a time -- */
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.screen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: calc(var(--safe-top) + var(--space-2)) var(--gutter-right) var(--space-2) var(--gutter-left);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.screen-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-3) var(--gutter-right) var(--space-4) var(--gutter-left);
+}
+
+.screen-body > * + * {
+  margin-top: var(--space-3);
+}
+
+.screen-footer {
+  padding: var(--space-2) var(--gutter-right) calc(var(--safe-bottom) + var(--space-3)) var(--gutter-left);
+  border-top: 1px solid var(--color-line);
+}
+
+.screen-label {
+  font-size: var(--text-small);
+  color: var(--color-ink-soft);
+}
+
+.screen h1 {
+  font-size: var(--text-title);
+}
+
+@keyframes screen-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+/* The animation only exists for people who have not asked for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .screen:not([hidden]) {
+    animation: screen-enter var(--motion-quick) ease-out;
+  }
+}
+
+/* -- button -- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap-target);
+  min-height: var(--tap-target);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-ink);
+  border-radius: var(--radius-small);
+  background: var(--color-paper);
+  font-weight: 600;
+}
+
+.button:active {
+  background: var(--color-surface);
+}
+
+.button-primary {
+  width: 100%;
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.button-primary:active {
+  background: var(--color-ink-soft);
+}
+
+/* -- product (demo) -- */
+.product-image {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius-large);
+  background: var(--color-surface);
+}
+
+.price {
+  font-size: var(--text-large);
+}
+
+.note {
+  color: var(--color-ink-soft);
+}
+
+.notice {
+  min-height: 1.5em;
+  margin-bottom: var(--space-2);
+  font-size: var(--text-small);
+  color: var(--color-ink-soft);
+}
+
+/* -- summary (demo) -- */
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.summary-row dd {
+  font-weight: 600;
+}
