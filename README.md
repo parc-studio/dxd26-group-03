@@ -6,8 +6,9 @@ Nothing to install, nothing to build: you open one file and it works. The demo i
 
 > **The one rule that breaks most uploads: every path is relative.**
 > Write `css/app.css` or `./assets/photo.jpg`, never `/css/app.css` or `/assets/photo.jpg`.
-> Your project is served from an address like `/dxd26/group-07/app/`, and a path starting with `/`
-> looks for the file at the very top of the website, where it does not exist.
+> Once uploaded, your project lives in a folder of a larger website (its address ends in
+> `/group-07/app/`), and a path starting with `/` looks for the file at the very top of the website,
+> where it does not exist.
 
 ## Start in 60 seconds
 
@@ -36,6 +37,7 @@ js/
   others.js         demo only: pretends other shoppers exist
   render.js         updates the page from the state. You work here
   app.js            connects taps to actions. You work here
+figma/              for a prototype made in Figma instead of code (see "Working in Figma")
 AGENTS.md           the rules for an AI coding assistant (CLAUDE.md points to it)
 ```
 
@@ -125,18 +127,31 @@ Everything visible goes inside `<div class="phone">`. Three things to know:
 
 The frame is a preview, not a phone. Fingers, the on-screen keyboard, the camera and sound only
 show their problems on the real thing. The simplest way to get your project onto your phone is to
-upload it (next sections) and open your group address. Uploads are quick and every version is
-kept, so upload early and often.
+upload it (next sections) and scan the QR code on your group page. Uploads are quick and every
+version is kept, so upload early and often.
 
 Between uploads, your browser's device mode gets you closer: right-click the page, choose
 *Inspect*, then click the phone/tablet icon and pick a phone size.
+
+## Working in Figma
+
+If your prototype is a Figma prototype rather than code, upload the `figma` folder on its own:
+
+1. In Figma, open your prototype (the play button), click *Share*, set *Anyone with the link can
+   view*, then *Copy link*. Without that setting, visitors see a Figma sign-in page.
+2. Open `figma/index.html` in your editor and paste the link between the quotes of `FIGMA_LINK`.
+3. Upload the `figma` folder from your group page, like a code project. Changes you make in Figma
+   show up by themselves: there is no need to upload again.
+
+Static frames work too: put your exported images (png, jpg, webp, svg) or a pdf in a folder with
+an `index.html` that shows them.
 
 ## Rules that keep your project uploadable
 
 1. **`index.html` at the root of the folder.** Not inside a sub-folder, not renamed.
 2. **Static files only:** HTML, CSS, JS, images, fonts, audio, video, JSON. (*Static* means the
    files are sent as they are; nothing runs on the server.)
-3. **50 MB maximum per upload.** Compress images and video before adding them.
+3. **50 MB maximum per upload, 25 MB per file.** Compress images and video before adding them.
 4. **Relative paths only.** `assets/photo.jpg`, never `/assets/photo.jpg`.
 5. **No server code and no backend.** No Node, PHP, Python or database. Shared state is simulated (see above).
 
@@ -146,10 +161,10 @@ you really need it.
 
 ## Upload
 
-1. Sign in on **workshop.parc.studio** with your group code.
+1. Open your group page on **workshop.parc.studio** (sign in with the link emailed to you, or your group code).
 2. Drag your project folder onto the upload area.
 3. Add a one-line note saying what changed.
-4. Open your group address on your phone.
+4. Scan the QR code next to your prototype to open it on your phone.
 
 Every upload is kept as a version, and an older one can be restored. You cannot break anything by uploading.
 
@@ -161,7 +176,7 @@ Every upload is kept as a version, and an older one can be restored. You cannot 
 - **A font or background image is missing.** Inside a CSS file, a path starts from the CSS file's
   own folder: from `css/app.css`, an image is at `url(../assets/photo.jpg)`.
 - **"Page not found" after upload.** `index.html` is not at the root: you probably uploaded a folder that contains your folder.
-- **The upload is refused.** The folder is over 50 MB. Video is almost always the reason: shorten it or export it smaller.
+- **The upload is refused.** The folder is over 50 MB, or one file is over 25 MB. Video is almost always the reason: shorten it or export it smaller.
 - **Nothing happens when I tap.** Open the console (right-click, *Inspect*, *Console*) and read the red
   message: it names the file and line. Usual causes: a `data-action` that has no action with the same
   name in `js/app.js`, or a new JS file without its `<script>` tag.

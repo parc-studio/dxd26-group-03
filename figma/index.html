@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Our prototype</title>
+    <style>
+      html,
+      body,
+      iframe {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        border: 0;
+      }
+
+      p {
+        margin: 0;
+        padding: 24px;
+        font: 16px/1.4 system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      // 1. In Figma, open your prototype (the play button), click Share, set "Anyone with the
+      //    link can view", then Copy link.
+      // 2. Paste the link between the quotes below, save, and upload this folder.
+      const FIGMA_LINK = ''
+
+      if (FIGMA_LINK === '') {
+        document.body.innerHTML =
+          '<p>Paste your Figma prototype link in index.html, between the quotes of FIGMA_LINK.</p>'
+      } else {
+        const prototype = new URL(FIGMA_LINK)
+        prototype.searchParams.set('hide-ui', '1')
+        prototype.searchParams.set('scaling', 'scale-down')
+        prototype.searchParams.set('content-scaling', 'fixed')
+        const frame = document.createElement('iframe')
+        frame.title = document.title
+        frame.allowFullscreen = true
+        frame.src = `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(prototype)}`
+        document.body.append(frame)
+      }
+    </script>
+  </body>
+</html>

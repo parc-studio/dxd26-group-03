@@ -2,7 +2,7 @@
 
 You are working in a design student's workshop prototype: a phone-format "digital retail
 experiment" built in one week and uploaded as a folder of static files, served beneath a
-sub-path such as `/dxd26/group-07/app/`. The student may not read code. `README.md` holds the
+sub-path such as `/k/<key>/group-07/app/`. The student may not read code. `README.md` holds the
 folder map and explains the state loop; read it before your first change.
 
 ## Hard rules
@@ -19,7 +19,7 @@ one broken, say so and offer the closest thing that stays inside the rules.
    backend, no database, no API keys. Shared or multi-user behaviour is simulated in the browser.
 5. **Opens by double-click.** `index.html` stays at the folder root and must work on `file://`.
    That rules out `fetch()` of local files: put data in a JS file as a value on `App`.
-6. **Under 50 MB in total.** Before adding media, check the folder size; compress or shorten instead of exceeding it.
+6. **Under 50 MB in total, 25 MB per file.** Before adding media, check the sizes; compress or shorten instead of exceeding them.
 7. **Phone format, inside the frame.** All UI lives inside `<div class="phone">` and holds from 320
    to 430 CSS px wide with no horizontal scroll. No desktop layout, no design breakpoints. Inside the
    phone, size with `%`, `cqw`, `cqh`; never `vw`, `vh`, `dvh` (they measure the window, not the frame).
@@ -78,4 +78,6 @@ There is no test runner.
 5. Search the folder for `href="/`, `src="/` and `url(/`: there must be no match.
 6. Reload: kept state is still there.
 
-If you cannot open a browser, say so and tell the student exactly what to check.
+If your browser refuses `file://`, serve the folder's parent instead (`python3 -m http.server` run there,
+then open `http://localhost:8000/<folder>/`): it also tests the paths beneath a sub-path, as uploaded.
+If you cannot open a browser at all, say so and tell the student exactly what to check.
