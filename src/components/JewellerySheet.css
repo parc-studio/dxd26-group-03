@@ -107,25 +107,25 @@
 
 .jewellery-sheet__hero {
   position: relative;
+  flex-shrink: 0;
   width: 100%;
-  aspect-ratio: 1.15 / 1;
-  max-height: 14rem;
-  margin: 0.25rem 0 1rem;
-  border-radius: 0.85rem;
+  margin: 0;
+  aspect-ratio: 4 / 3;
+  max-height: min(42vw, 16rem);
+  border-radius: 0;
   background:
-    radial-gradient(ellipse at 50% 40%, rgba(232, 213, 168, 0.12), transparent 60%),
-    rgba(18, 16, 13, 0.85);
+    radial-gradient(ellipse at 50% 40%, rgba(232, 213, 168, 0.1), transparent 58%),
+    #141210;
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px rgba(243, 235, 224, 0.06);
 }
 
 .jewellery-sheet__hero-img {
   position: absolute;
-  inset: 8%;
+  inset: 0;
   background-position: center;
   background-repeat: no-repeat;
+  /* Fit whole product; hero block itself is full card width */
   background-size: contain;
-  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.35));
 }
 
 .jewellery-sheet__hero-inset {
@@ -299,7 +299,7 @@
   }
 
   .jewellery-sheet__hero {
-    max-height: 16rem;
+    max-height: 18rem;
   }
 
   .jewellery-sheet__title {

@@ -112,12 +112,14 @@ export function CraftSpace() {
       <div className="craft-space__atmosphere" aria-hidden="true" />
       <div className="craft-space__grain" aria-hidden="true" />
 
-      <header className="craft-space__brand">
+      <header className={`craft-space__brand${sheet ? ' is-sheet-open' : ''}`}>
         <p className="craft-space__eyebrow">Craft space</p>
         <h1 className="craft-space__title">Celestial</h1>
-        <p className="craft-space__hint">
-          Drag materials to craft. Tap a finished piece for details.
-        </p>
+        {!sheet ? (
+          <p className="craft-space__hint">
+            Drag materials to craft. Tap a finished piece for details.
+          </p>
+        ) : null}
       </header>
 
       {elements.map((el) => (

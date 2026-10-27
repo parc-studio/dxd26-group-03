@@ -179,6 +179,23 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
           </button>
         </div>
 
+        <div className="jewellery-sheet__hero" aria-hidden="true">
+          <div
+            className="jewellery-sheet__hero-img"
+            style={{ backgroundImage: `url(${detail.image})` }}
+          />
+          {detail.inset ? (
+            <span
+              className="jewellery-sheet__hero-inset"
+              style={{
+                backgroundImage: `url(${detail.inset})`,
+                backgroundPosition: detail.insetImagePosition ?? 'center',
+                backgroundSize: detail.insetImageSize ?? 'cover',
+              }}
+            />
+          ) : null}
+        </div>
+
         <div
           className="jewellery-sheet__scroll"
           ref={scrollRef}
@@ -187,23 +204,6 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
           onPointerUp={onBodyPointerUp}
           onPointerCancel={onBodyPointerUp}
         >
-          <div className="jewellery-sheet__hero" aria-hidden="true">
-            <div
-              className="jewellery-sheet__hero-img"
-              style={{ backgroundImage: `url(${detail.image})` }}
-            />
-            {detail.inset ? (
-              <span
-                className="jewellery-sheet__hero-inset"
-                style={{
-                  backgroundImage: `url(${detail.inset})`,
-                  backgroundPosition: detail.insetImagePosition ?? 'center',
-                  backgroundSize: detail.insetImageSize ?? 'cover',
-                }}
-              />
-            ) : null}
-          </div>
-
           <h2 id="jewellery-sheet-title" className="jewellery-sheet__title">
             {detail.label}
           </h2>
