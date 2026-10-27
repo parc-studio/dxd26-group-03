@@ -1,0 +1,146 @@
+{
+  "elements": [
+    {
+      "id": "pearl",
+      "label": "Pearl",
+      "category": "beads",
+      "shape": "circle",
+      "kind": "material"
+    },
+    {
+      "id": "glass",
+      "label": "Glass",
+      "category": "beads",
+      "shape": "circle",
+      "kind": "material"
+    },
+    {
+      "id": "seed",
+      "label": "Seed",
+      "category": "beads",
+      "shape": "circle",
+      "kind": "material"
+    },
+    {
+      "id": "diamond",
+      "label": "Diamond",
+      "category": "stones",
+      "shape": "diamond",
+      "kind": "material"
+    },
+    {
+      "id": "amethyst",
+      "label": "Amethyst",
+      "category": "stones",
+      "shape": "diamond",
+      "kind": "material"
+    },
+    {
+      "id": "quartz",
+      "label": "Quartz",
+      "category": "stones",
+      "shape": "oval",
+      "kind": "material"
+    },
+    {
+      "id": "gold_plate",
+      "label": "Gold plate",
+      "category": "gold",
+      "shape": "rect",
+      "kind": "material"
+    },
+    {
+      "id": "gold_wire",
+      "label": "Gold wire",
+      "category": "gold",
+      "shape": "oval",
+      "kind": "material"
+    },
+    {
+      "id": "silver",
+      "label": "Silver",
+      "category": "silver",
+      "shape": "rect",
+      "kind": "material"
+    },
+    {
+      "id": "steel",
+      "label": "Steel",
+      "category": "silver",
+      "shape": "circle",
+      "kind": "material"
+    },
+    {
+      "id": "fine_chain",
+      "label": "Fine chain",
+      "category": "chains",
+      "shape": "link",
+      "kind": "material"
+    },
+    {
+      "id": "link_chain",
+      "label": "Link chain",
+      "category": "chains",
+      "shape": "link",
+      "kind": "material"
+    },
+    {
+      "id": "gold_bead",
+      "label": "Gold bead",
+      "category": "beads",
+      "shape": "circle",
+      "kind": "mid"
+    },
+    {
+      "id": "set_stone",
+      "label": "Set stone",
+      "category": "stones",
+      "shape": "diamond",
+      "kind": "mid"
+    },
+    {
+      "id": "wired_pearl",
+      "label": "Wired pearl",
+      "category": "beads",
+      "shape": "oval",
+      "kind": "mid"
+    },
+    {
+      "id": "celestial_pendant",
+      "label": "Pendant",
+      "category": "jewellery",
+      "shape": "oval",
+      "kind": "jewellery"
+    },
+    {
+      "id": "star_earring",
+      "label": "Earring",
+      "category": "jewellery",
+      "shape": "diamond",
+      "kind": "jewellery"
+    }
+  ],
+  "recipes": [
+    { "a": "pearl", "b": "gold_wire", "result": "gold_bead" },
+    { "a": "gold_bead", "b": "fine_chain", "result": "celestial_pendant" },
+    { "a": "diamond", "b": "silver", "result": "set_stone" },
+    { "a": "set_stone", "b": "fine_chain", "result": "star_earring" },
+    { "a": "pearl", "b": "silver", "result": "wired_pearl" },
+    { "a": "amethyst", "b": "gold_wire", "result": "set_stone" },
+    { "a": "glass", "b": "gold_plate", "result": "gold_bead" }
+  ],
+  "starters": [
+    { "catalogId": "pearl", "x": 18, "y": 30 },
+    { "catalogId": "glass", "x": 34, "y": 38 },
+    { "catalogId": "seed", "x": 16, "y": 44 },
+    { "catalogId": "diamond", "x": 70, "y": 30 },
+    { "catalogId": "amethyst", "x": 84, "y": 38 },
+    { "catalogId": "quartz", "x": 66, "y": 46 },
+    { "catalogId": "gold_plate", "x": 20, "y": 58 },
+    { "catalogId": "gold_wire", "x": 36, "y": 66 },
+    { "catalogId": "silver", "x": 68, "y": 58 },
+    { "catalogId": "steel", "x": 84, "y": 66 },
+    { "catalogId": "fine_chain", "x": 38, "y": 80 },
+    { "catalogId": "link_chain", "x": 60, "y": 86 }
+  ]
+}
