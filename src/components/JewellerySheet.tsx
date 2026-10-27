@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { JewelleryDetail } from '../data/catalog'
-import { ChainBorderButton } from './ChainBorderButton'
 import './JewellerySheet.css'
 
 interface JewellerySheetProps {
@@ -248,14 +247,15 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
                 </button>
               </div>
 
-              <ChainBorderButton
+              <button
+                type="button"
                 className="jewellery-sheet__cart"
                 onClick={() => {
                   /* prototype placeholder */
                 }}
               >
                 Add to cart
-              </ChainBorderButton>
+              </button>
             </div>
           </div>
         </div>

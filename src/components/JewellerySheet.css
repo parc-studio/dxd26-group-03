@@ -254,6 +254,35 @@
   color: var(--color-ink);
 }
 
+.jewellery-sheet__cart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 9.5rem;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0.65rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-normal);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.jewellery-sheet__cart:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.jewellery-sheet__cart:active {
+  opacity: 0.88;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .jewellery-sheet__panel,
   .jewellery-sheet__backdrop {
