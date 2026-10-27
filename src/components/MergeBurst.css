@@ -11,28 +11,32 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 7.5rem;
-  height: 7.5rem;
-  margin: -3.75rem 0 0 -3.75rem;
+  /* Base size — scaled further by --merge-flash-scale from mergeTiming */
+  width: calc(9.25rem * var(--merge-flash-scale, 1));
+  height: calc(9.25rem * var(--merge-flash-scale, 1));
+  margin-left: calc(-4.625rem * var(--merge-flash-scale, 1));
+  margin-top: calc(-4.625rem * var(--merge-flash-scale, 1));
   border-radius: 50%;
   background: radial-gradient(
     circle,
     #fff 0%,
-    color-mix(in srgb, var(--color-cream) 95%, white) 18%,
-    color-mix(in srgb, var(--color-cream) 55%, transparent) 42%,
-    color-mix(in srgb, var(--color-brand-soft) 22%, transparent) 62%,
-    transparent 78%
+    color-mix(in srgb, var(--color-cream) 95%, white) 16%,
+    color-mix(in srgb, var(--color-cream) 58%, transparent) 40%,
+    color-mix(in srgb, var(--color-brand-soft) 24%, transparent) 58%,
+    transparent 76%
   );
-  animation: merge-flash-jewellery var(--merge-flash-ms, 1100ms) ease-out both;
+  animation: merge-flash-jewellery var(--merge-flash-ms, 1260ms)
+    cubic-bezier(0.22, 0.55, 0.28, 1) both;
 }
 
 .merge-burst__core {
   position: absolute;
   left: 0;
   top: 0;
-  width: 2.4rem;
-  height: 2.4rem;
-  margin: -1.2rem 0 0 -1.2rem;
+  width: calc(2.85rem * var(--merge-flash-scale, 1));
+  height: calc(2.85rem * var(--merge-flash-scale, 1));
+  margin-left: calc(-1.425rem * var(--merge-flash-scale, 1));
+  margin-top: calc(-1.425rem * var(--merge-flash-scale, 1));
   border-radius: 50%;
   background: radial-gradient(
     circle,
@@ -40,7 +44,8 @@
     color-mix(in srgb, var(--color-cream) 90%, white) 45%,
     transparent 75%
   );
-  animation: merge-core-punch var(--merge-punch-ms, 300ms) ease-out both;
+  animation: merge-core-punch var(--merge-punch-ms, 300ms)
+    cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 
 .merge-burst__spark {
@@ -54,7 +59,8 @@
   background: linear-gradient(135deg, var(--color-cream), var(--color-brand-warm));
   box-shadow: 0 0 6px color-mix(in srgb, var(--color-brand-soft) 55%, transparent);
   transform: rotate(var(--a)) translateY(0) scale(0.4);
-  animation: merge-spark var(--merge-flash-ms, 1100ms) ease-out both;
+  animation: merge-spark var(--merge-flash-ms, 1260ms)
+    cubic-bezier(0.22, 0.55, 0.28, 1) both;
 }
 
 .merge-burst__spark:nth-child(odd) {
@@ -63,23 +69,30 @@
   background: linear-gradient(135deg, var(--color-cream-soft), var(--color-brand));
 }
 
-/* ~0.3s punch peak, then ease across the remaining reveal window */
+/*
+ * Punch peaks early, then a long soft opacity fall-off across the reveal window
+ * so the bloom eases out instead of cutting.
+ */
 @keyframes merge-flash-jewellery {
   0% {
     opacity: 0;
-    transform: scale(0.25);
+    transform: scale(0.22);
   }
-  12% {
+  10% {
     opacity: 1;
-    transform: scale(1.05);
+    transform: scale(1.08);
   }
-  28% {
-    opacity: 1;
-    transform: scale(1.2);
+  22% {
+    opacity: 0.96;
+    transform: scale(1.28);
+  }
+  55% {
+    opacity: 0.45;
+    transform: scale(1.72);
   }
   100% {
     opacity: 0;
-    transform: scale(1.75);
+    transform: scale(2.15);
   }
 }
 
@@ -88,13 +101,13 @@
     opacity: 0;
     transform: scale(0.2);
   }
-  40% {
+  35% {
     opacity: 1;
-    transform: scale(1.35);
+    transform: scale(1.4);
   }
   100% {
-    opacity: 0.35;
-    transform: scale(1.8);
+    opacity: 0;
+    transform: scale(2);
   }
 }
 
@@ -103,12 +116,12 @@
     opacity: 0;
     transform: rotate(var(--a)) translateY(0) scale(0.3);
   }
-  18% {
+  14% {
     opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: rotate(var(--a)) translateY(calc(var(--d) * -1.35)) scale(0.12);
+    transform: rotate(var(--a)) translateY(calc(var(--d) * -1.45)) scale(0.1);
   }
 }
 

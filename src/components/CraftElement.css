@@ -240,20 +240,57 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
-/* Lasting soft halo — finished-product signifier */
+/*
+ * Finished-product shine — tweak these on .craft-el--jewellery-piece:
+ *   --jewellery-glow-size, --jewellery-glow-cream, --jewellery-glow-soft
+ * Under-glow sits behind the photo; shape keeps a light rim on top.
+ */
+.craft-el--jewellery-piece {
+  --jewellery-glow-size: 4.6rem;
+  --jewellery-glow-cream: color-mix(in srgb, var(--color-cream) 78%, white);
+  --jewellery-glow-soft: color-mix(in srgb, var(--color-brand-soft) 42%, transparent);
+}
+
+.craft-el--jewellery-piece::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  /* Bias slightly below the piece so the bloom reads as light from underneath */
+  top: calc(50% + 0.35rem);
+  width: var(--jewellery-glow-size);
+  height: calc(var(--jewellery-glow-size) * 0.72);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    var(--jewellery-glow-cream) 0%,
+    color-mix(in srgb, var(--color-cream) 55%, transparent) 42%,
+    var(--jewellery-glow-soft) 68%,
+    transparent 82%
+  );
+  filter: blur(1px);
+  opacity: 0.92;
+}
+
 .craft-el--jewellery-piece .craft-el__shape {
-  filter: drop-shadow(0 8px 16px rgba(71, 43, 43, 0.18));
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 10px 18px rgba(71, 43, 43, 0.16));
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--color-cream) 55%, transparent),
-    0 0 18px color-mix(in srgb, var(--color-cream) 70%, transparent),
-    0 0 36px color-mix(in srgb, var(--color-brand-soft) 28%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--color-cream) 45%, transparent),
+    0 0 14px color-mix(in srgb, var(--color-cream) 40%, transparent);
 }
 
 .craft-el--jewellery-piece.craft-el--ring .craft-el__shape {
-  filter:
-    drop-shadow(0 8px 16px rgba(71, 43, 43, 0.18))
-    drop-shadow(0 0 14px color-mix(in srgb, var(--color-cream) 65%, transparent));
+  filter: drop-shadow(0 10px 18px rgba(71, 43, 43, 0.16));
   box-shadow: none;
+}
+
+.craft-el--jewellery-piece .craft-el__label {
+  position: relative;
+  z-index: 2;
 }
 
 @keyframes craft-float {

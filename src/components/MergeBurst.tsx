@@ -1,4 +1,5 @@
 import {
+  MERGE_FLASH_SCALE,
   MERGE_PUNCH_MS,
   MERGE_REVEAL_MS,
 } from '../lib/mergeTiming'
@@ -26,6 +27,7 @@ export function MergeBurst({ x, y, kind = 'jewellery' }: MergeBurstProps) {
         ['--merge-punch-ms' as string]: `${MERGE_PUNCH_MS}ms`,
         ['--merge-reveal-ms' as string]: `${MERGE_REVEAL_MS}ms`,
         ['--merge-flash-ms' as string]: `${totalMs}ms`,
+        ['--merge-flash-scale' as string]: String(MERGE_FLASH_SCALE),
       }}
       aria-hidden="true"
     >
