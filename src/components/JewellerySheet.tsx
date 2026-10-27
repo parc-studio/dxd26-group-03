@@ -19,6 +19,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
   const heroHeightRef = useRef(0)
+  const scrollMaxRef = useRef(0)
   const scrollRafRef = useRef(0)
   const dragRef = useRef<{
     pointerId: number
@@ -51,11 +52,12 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
       heroHeightRef.current = hero.offsetHeight
     }
     const natural = heroHeightRef.current || hero.offsetHeight
-    // Freeze max scroll from unscaled layout so progress stays stable while shrinking
     const liveMax = Math.max(0, sc.scrollHeight - sc.clientHeight)
-    const baselineMax = Math.max(liveMax, natural * 0.55)
-    const t =
-      baselineMax > 0 ? Math.min(1, Math.max(0, sc.scrollTop / baselineMax)) : 0
+    if (!scrollMaxRef.current && liveMax > 8) {
+      scrollMaxRef.current = liveMax
+    }
+    const max = scrollMaxRef.current || liveMax
+    const t = max > 0 ? Math.min(1, Math.max(0, sc.scrollTop / max)) : 0
     const scale = 1 - t * (1 - HERO_SCALE_MIN)
     hero.style.transform = `scale(${scale})`
     hero.style.marginBottom = `${(scale - 1) * natural}px`
@@ -72,6 +74,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   useEffect(() => {
     const id = window.setTimeout(() => {
       heroHeightRef.current = 0
+      scrollMaxRef.current = 0
       applyHeroScale()
     }, 50)
     return () => window.clearTimeout(id)

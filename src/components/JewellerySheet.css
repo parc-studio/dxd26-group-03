@@ -122,7 +122,7 @@
 
 /* Invisible travel below actions so scroll can ease image 1 → 0.6 */
 .jewellery-sheet__scroll-travel {
-  height: 12rem;
+  height: 22rem;
   pointer-events: none;
 }
 
