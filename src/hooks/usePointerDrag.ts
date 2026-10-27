@@ -1,4 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  clampToPlayfield,
+  defaultPlayfield,
+  type PlayfieldBounds,
+} from '../lib/craftPhysics'
 
 interface Position {
   x: number
@@ -20,6 +25,8 @@ interface UsePointerDragOptions {
   onTap?: () => boolean | void
   /** Element that defines the drag bounds (the craft space). */
   boundsRef: React.RefObject<HTMLElement | null>
+  /** Live playfield (below logo/hint). Falls back to defaults. */
+  getPlayfield?: () => PlayfieldBounds
 }
 
 const TAP_MOVE_PX = 10
@@ -50,6 +57,7 @@ export function usePointerDrag({
   onDragStart,
   onTap,
   boundsRef,
+  getPlayfield,
 }: UsePointerDragOptions) {
   const [dragging, setDragging] = useState(false)
   const offsetRef = useRef({ x: 0, y: 0 })
@@ -60,6 +68,7 @@ export function usePointerDrag({
   const onDropRef = useRef(onDrop)
   const onDragStartRef = useRef(onDragStart)
   const onTapRef = useRef(onTap)
+  const getPlayfieldRef = useRef(getPlayfield)
   const originClientRef = useRef({ x: 0, y: 0 })
   const movedPxRef = useRef(0)
 
@@ -85,6 +94,10 @@ export function usePointerDrag({
   }, [onTap])
 
   useEffect(() => {
+    getPlayfieldRef.current = getPlayfield
+  }, [getPlayfield])
+
+  useEffect(() => {
     return () => {
       if (pointerIdRef.current !== null) {
         setDraggingClass(false)
@@ -101,10 +114,13 @@ export function usePointerDrag({
       const rect = bounds.getBoundingClientRect()
       const pointerX = ((clientX - rect.left) / rect.width) * 100
       const pointerY = ((clientY - rect.top) / rect.height) * 100
+      const playfield = getPlayfieldRef.current?.() ?? defaultPlayfield()
 
-      const nextX = Math.min(92, Math.max(8, pointerX - offsetRef.current.x))
-      const nextY = Math.min(90, Math.max(12, pointerY - offsetRef.current.y))
-      const next = { x: nextX, y: nextY }
+      const next = clampToPlayfield(
+        pointerX - offsetRef.current.x,
+        pointerY - offsetRef.current.y,
+        playfield,
+      )
       lastPosRef.current = next
       onMoveRef.current(next)
     },

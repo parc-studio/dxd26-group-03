@@ -1,7 +1,7 @@
 import type { CraftInstance } from '../types'
 
-/** Approx hit radius in % of craft space (comfortable for fingers). */
-const HIT_RADIUS = 9
+/** Approx hit radius in % of craft space (comfortable for fingers / merge). */
+const HIT_RADIUS = 11
 
 /**
  * Find the nearest other instance under the drop point.

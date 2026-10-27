@@ -17,10 +17,10 @@ export const MERGE_JEWELLERY_MS =
 export const MERGE_PARENT_SPLIT_PX = 100
 
 /** Initial outward speed (px / second) at the explode start. */
-export const MERGE_EXPLODE_SPEED_PX = 920
+export const MERGE_EXPLODE_SPEED_PX = 700
 
 /** Velocity retention per second (friction). Lower = stops sooner. */
-export const MERGE_EXPLODE_DAMPING = 5.4
+export const MERGE_EXPLODE_DAMPING = 6
 
 /** Stop integrating when speed falls below this (px / second). */
 export const MERGE_EXPLODE_STOP_SPEED_PX = 18

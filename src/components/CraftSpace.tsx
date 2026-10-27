@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import {
   createStarterInstances,
   findRecipeResult,
@@ -7,6 +7,14 @@ import {
   spawnInstance,
   type JewelleryDetail,
 } from '../data/catalog'
+import {
+  clampToPlayfield,
+  defaultPlayfield,
+  measurePlayfield,
+  resolveDragPush,
+  separateAll,
+  type PlayfieldBounds,
+} from '../lib/craftPhysics'
 import { findDropTarget } from '../lib/hitTest'
 import { opposingExplodeDirs, runParentExplode } from '../lib/mergeExplode'
 import { playMergeSound } from '../lib/mergeSound'
@@ -27,6 +35,8 @@ import './CraftSpace.css'
 
 export function CraftSpace() {
   const spaceRef = useRef<HTMLDivElement>(null)
+  const brandRef = useRef<HTMLElement>(null)
+  const playfieldRef = useRef<PlayfieldBounds>(defaultPlayfield())
   const elementsRef = useRef<CraftInstance[]>([])
   const busyRef = useRef(false)
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({})
@@ -45,15 +55,67 @@ export function CraftSpace() {
   const [parentMergePhase, setParentMergePhase] = useState<
     Record<string, ParentMergePhase>
   >({})
-  /** Result id while hidden under the flash punch. */
   const [underFlashId, setUnderFlashId] = useState<string | null>(null)
-  /** Result id while easing into view after the punch. */
   const [revealAnimId, setRevealAnimId] = useState<string | null>(null)
 
   const commitElements = useCallback((next: CraftInstance[]) => {
     elementsRef.current = next
     setElements(next)
   }, [])
+
+  const refreshPlayfield = useCallback(() => {
+    const space = spaceRef.current
+    if (!space) return playfieldRef.current
+    const next = measurePlayfield(space, brandRef.current)
+    playfieldRef.current = next
+    return next
+  }, [])
+
+  const getPlayfield = useCallback(() => {
+    return playfieldRef.current
+  }, [])
+
+  const spaceSize = useCallback(() => {
+    const rect = spaceRef.current?.getBoundingClientRect()
+    return {
+      w: rect?.width ?? 390,
+      h: rect?.height ?? 700,
+    }
+  }, [])
+
+  // Measure playfield under the logo/hint and de-overlap starters.
+  useLayoutEffect(() => {
+    const bounds = refreshPlayfield()
+    const { w, h } = spaceSize()
+    const seated = separateAll(
+      elementsRef.current.map((el) => {
+        const c = clampToPlayfield(el.x, el.y, bounds)
+        return { ...el, x: c.x, y: c.y }
+      }),
+      bounds,
+      w,
+      h,
+    )
+    commitElements(seated)
+
+    const onResize = () => {
+      const nextBounds = refreshPlayfield()
+      const size = spaceSize()
+      commitElements(
+        separateAll(
+          elementsRef.current.map((el) => {
+            const c = clampToPlayfield(el.x, el.y, nextBounds)
+            return { ...el, x: c.x, y: c.y }
+          }),
+          nextBounds,
+          size.w,
+          size.h,
+        ),
+      )
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [commitElements, refreshPlayfield, spaceSize])
 
   const applyExplodePositions = useCallback(
     (positions: Record<string, { x: number; y: number }>) => {
@@ -76,10 +138,10 @@ export function CraftSpace() {
     ) => {
       explodeCancelRef.current?.()
 
-      const rect = spaceRef.current?.getBoundingClientRect()
-      const spaceWidthPx = rect?.width ?? 390
-      const spaceHeightPx = rect?.height ?? 700
+      const bounds = refreshPlayfield()
+      const { w, h } = spaceSize()
       const [dirA, dirB] = opposingExplodeDirs(approach.x, approach.y)
+      const midClamped = clampToPlayfield(mid.x, mid.y, bounds)
 
       setParentMergePhase({
         [parentA]: 'explode',
@@ -87,42 +149,74 @@ export function CraftSpace() {
       })
 
       // Seat parents at the merge point before the impulse so motion is visible.
+      // Keep the new result (if any) where it is — other pieces can be nudged.
       commitElements(
         elementsRef.current.map((el) =>
           el.instanceId === parentA || el.instanceId === parentB
-            ? { ...el, x: mid.x, y: mid.y }
+            ? { ...el, x: midClamped.x, y: midClamped.y }
             : el,
         ),
       )
 
+      const others = elementsRef.current
+        .filter(
+          (el) =>
+            el.instanceId !== parentA && el.instanceId !== parentB,
+        )
+        .map((el) => ({
+          id: el.instanceId,
+          x: el.x,
+          y: el.y,
+          // Finished jewellery stays put; materials get knocked around.
+          pinned: el.kind === 'jewellery',
+        }))
+
       explodeCancelRef.current = runParentExplode({
-        mid,
+        mid: midClamped,
         bodies: [
           { id: parentA, dir: dirA },
           { id: parentB, dir: dirB },
         ],
-        spaceWidthPx,
-        spaceHeightPx,
+        others,
+        spaceWidthPx: w,
+        spaceHeightPx: h,
+        playfield: bounds,
         onFrame: applyExplodePositions,
         onDone: () => {
           explodeCancelRef.current = null
           setParentMergePhase({})
+          // Final board-wide separation after the burst settles.
+          const size = spaceSize()
+          const pf = refreshPlayfield()
+          commitElements(separateAll(elementsRef.current, pf, size.w, size.h))
           onDone()
         },
       })
     },
-    [applyExplodePositions, commitElements],
+    [applyExplodePositions, commitElements, refreshPlayfield, spaceSize],
   )
 
   const handleMove = useCallback(
     (instanceId: string, next: { x: number; y: number }) => {
       if (busyRef.current) return
-      const updated = elementsRef.current.map((el) =>
-        el.instanceId === instanceId ? { ...el, x: next.x, y: next.y } : el,
+      const dragged = elementsRef.current.find((el) => el.instanceId === instanceId)
+      if (!dragged) return
+
+      const bounds = refreshPlayfield()
+      const { w, h } = spaceSize()
+      const pushed = resolveDragPush(
+        elementsRef.current,
+        instanceId,
+        next,
+        bounds,
+        w,
+        h,
+        (otherCatalogId) =>
+          Boolean(findRecipeResult(dragged.catalogId, otherCatalogId)),
       )
-      commitElements(updated)
+      commitElements(pushed)
     },
-    [commitElements],
+    [commitElements, refreshPlayfield, spaceSize],
   )
 
   const bringFront = useCallback((instanceId: string) => {
@@ -148,38 +242,52 @@ export function CraftSpace() {
     (instanceId: string, pos: { x: number; y: number }) => {
       if (busyRef.current) return
 
+      const bounds = refreshPlayfield()
+      const clamped = clampToPlayfield(pos.x, pos.y, bounds)
       const placed = elementsRef.current.map((el) =>
-        el.instanceId === instanceId ? { ...el, x: pos.x, y: pos.y } : el,
+        el.instanceId === instanceId
+          ? { ...el, x: clamped.x, y: clamped.y }
+          : el,
       )
       commitElements(placed)
 
       const dragged = placed.find((el) => el.instanceId === instanceId)
       if (!dragged) return
 
-      const target = findDropTarget(placed, instanceId, pos.x, pos.y)
-      if (!target) return
+      const target = findDropTarget(placed, instanceId, clamped.x, clamped.y)
+      if (!target) {
+        // Soft settle so a non-merge drop doesn't leave overlaps.
+        const { w, h } = spaceSize()
+        commitElements(separateAll(elementsRef.current, bounds, w, h))
+        delete dragOriginRef.current[instanceId]
+        return
+      }
 
       const resultCatalogId = findRecipeResult(dragged.catalogId, target.catalogId)
-      if (!resultCatalogId) return
+      if (!resultCatalogId) {
+        const { w, h } = spaceSize()
+        commitElements(separateAll(elementsRef.current, bounds, w, h))
+        delete dragOriginRef.current[instanceId]
+        return
+      }
 
       const resultDef = getCatalogElement(resultCatalogId)
       if (!resultDef) return
 
-      const mid = {
-        x: (pos.x + target.x) / 2,
-        y: (pos.y + target.y) / 2,
-      }
+      const mid = clampToPlayfield(
+        (clamped.x + target.x) / 2,
+        (clamped.y + target.y) / 2,
+        bounds,
+      )
 
       const origin = dragOriginRef.current[instanceId]
-      // Approach along the drag path when available; else parent separation.
       const approach = origin
-        ? { x: pos.x - origin.x, y: pos.y - origin.y }
+        ? { x: clamped.x - origin.x, y: clamped.y - origin.y }
         : { x: dragged.x - target.x, y: dragged.y - target.y }
 
       const parentA = dragged.instanceId
       const parentB = target.instanceId
 
-      // Mid merges: spawn result, then parents explode apart with physics.
       if (resultDef.kind !== 'jewellery') {
         const result = spawnInstance(resultCatalogId, mid.x, mid.y)
         if (!result) return
@@ -208,7 +316,6 @@ export function CraftSpace() {
         return
       }
 
-      // Finished jewellery: converge → flash → vanish → reveal → explode apart.
       const result = spawnInstance(resultCatalogId, mid.x, mid.y)
       if (!result) return
 
@@ -256,7 +363,6 @@ export function CraftSpace() {
             setRevealAnimId(null)
             setBursts((b) => b.filter((x) => x.id !== burstId))
 
-            // Reappear at the flash center, then fly apart with the same physics.
             startParentExplode(mid, parentA, parentB, approach, () => {
               busyRef.current = false
               delete dragOriginRef.current[instanceId]
@@ -265,7 +371,7 @@ export function CraftSpace() {
         }, MERGE_PUNCH_MS)
       }, MERGE_CONVERGE_MS)
     },
-    [commitElements, startParentExplode],
+    [commitElements, refreshPlayfield, spaceSize, startParentExplode],
   )
 
   return (
@@ -273,7 +379,10 @@ export function CraftSpace() {
       <div className="craft-space__atmosphere" aria-hidden="true" />
       <div className="craft-space__grain" aria-hidden="true" />
 
-      <header className={`craft-space__brand${sheet ? ' is-sheet-open' : ''}`}>
+      <header
+        ref={brandRef}
+        className={`craft-space__brand${sheet ? ' is-sheet-open' : ''}`}
+      >
         <h1 className="craft-space__title">
           <img
             className="craft-space__logo"
@@ -296,6 +405,7 @@ export function CraftSpace() {
           key={el.instanceId}
           data={el}
           boundsRef={spaceRef}
+          getPlayfield={getPlayfield}
           zIndex={10 + Math.max(0, order.indexOf(el.instanceId))}
           mergePhase={parentMergePhase[el.instanceId]}
           revealing={underFlashId === el.instanceId}

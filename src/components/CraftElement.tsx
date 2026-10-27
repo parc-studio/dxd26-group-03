@@ -1,6 +1,7 @@
 import { useCallback, type CSSProperties, type RefObject } from 'react'
 import type { CraftInstance, ParentMergePhase } from '../types'
 import { usePointerDrag } from '../hooks/usePointerDrag'
+import type { PlayfieldBounds } from '../lib/craftPhysics'
 import {
   MERGE_CONVERGE_MS,
   MERGE_PUNCH_MS,
@@ -11,6 +12,7 @@ import './CraftElement.css'
 interface CraftElementProps {
   data: CraftInstance
   boundsRef: RefObject<HTMLElement | null>
+  getPlayfield?: () => PlayfieldBounds
   zIndex: number
   mergePhase?: ParentMergePhase
   /** Product is under the flash (invisible) during the punch. */
@@ -28,6 +30,7 @@ interface CraftElementProps {
 export function CraftElement({
   data,
   boundsRef,
+  getPlayfield,
   zIndex,
   mergePhase,
   revealing = false,
@@ -69,6 +72,7 @@ export function CraftElement({
     onDragStart: handleDragStart,
     onTap: handleTap,
     boundsRef,
+    getPlayfield,
   })
 
   const kindClass =
