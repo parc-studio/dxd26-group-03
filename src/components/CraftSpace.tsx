@@ -8,10 +8,10 @@ import {
   type JewelleryDetail,
 } from '../data/catalog'
 import { findDropTarget } from '../lib/hitTest'
+import { opposingExplodeDirs, runParentExplode } from '../lib/mergeExplode'
 import { playMergeSound } from '../lib/mergeSound'
 import {
   MERGE_CONVERGE_MS,
-  MERGE_PARENT_SPLIT_PX,
   MERGE_PUNCH_MS,
   MERGE_REVEAL_MS,
 } from '../lib/mergeTiming'
@@ -25,36 +25,12 @@ import { JewellerySheet } from './JewellerySheet'
 import { MergeBurst } from './MergeBurst'
 import './CraftSpace.css'
 
-function clampPct(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value))
-}
-
-/** Place parents one left / one right of the merge point (kept, not consumed). */
-function splitParentSlots(
-  mid: { x: number; y: number },
-  spaceWidthPx: number,
-  leftId: string,
-  rightId: string,
-): Record<string, { x: number; y: number }> {
-  const dxPct =
-    spaceWidthPx > 0 ? (MERGE_PARENT_SPLIT_PX / spaceWidthPx) * 100 : 6
-  return {
-    [leftId]: {
-      x: clampPct(mid.x - dxPct, 8, 92),
-      y: clampPct(mid.y, 12, 90),
-    },
-    [rightId]: {
-      x: clampPct(mid.x + dxPct, 8, 92),
-      y: clampPct(mid.y, 12, 90),
-    },
-  }
-}
-
 export function CraftSpace() {
   const spaceRef = useRef<HTMLDivElement>(null)
   const elementsRef = useRef<CraftInstance[]>([])
   const busyRef = useRef(false)
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({})
+  const explodeCancelRef = useRef<(() => void) | null>(null)
 
   const [elements, setElements] = useState<CraftInstance[]>(() => {
     const starters = createStarterInstances()
@@ -78,6 +54,65 @@ export function CraftSpace() {
     elementsRef.current = next
     setElements(next)
   }, [])
+
+  const applyExplodePositions = useCallback(
+    (positions: Record<string, { x: number; y: number }>) => {
+      const next = elementsRef.current.map((el) => {
+        const slot = positions[el.instanceId]
+        return slot ? { ...el, x: slot.x, y: slot.y } : el
+      })
+      commitElements(next)
+    },
+    [commitElements],
+  )
+
+  const startParentExplode = useCallback(
+    (
+      mid: { x: number; y: number },
+      parentA: string,
+      parentB: string,
+      approach: { x: number; y: number },
+      onDone: () => void,
+    ) => {
+      explodeCancelRef.current?.()
+
+      const rect = spaceRef.current?.getBoundingClientRect()
+      const spaceWidthPx = rect?.width ?? 390
+      const spaceHeightPx = rect?.height ?? 700
+      const [dirA, dirB] = opposingExplodeDirs(approach.x, approach.y)
+
+      setParentMergePhase({
+        [parentA]: 'explode',
+        [parentB]: 'explode',
+      })
+
+      // Seat parents at the merge point before the impulse so motion is visible.
+      commitElements(
+        elementsRef.current.map((el) =>
+          el.instanceId === parentA || el.instanceId === parentB
+            ? { ...el, x: mid.x, y: mid.y }
+            : el,
+        ),
+      )
+
+      explodeCancelRef.current = runParentExplode({
+        mid,
+        bodies: [
+          { id: parentA, dir: dirA },
+          { id: parentB, dir: dirB },
+        ],
+        spaceWidthPx,
+        spaceHeightPx,
+        onFrame: applyExplodePositions,
+        onDone: () => {
+          explodeCancelRef.current = null
+          setParentMergePhase({})
+          onDone()
+        },
+      })
+    },
+    [applyExplodePositions, commitElements],
+  )
 
   const handleMove = useCallback(
     (instanceId: string, next: { x: number; y: number }) => {
@@ -135,66 +170,68 @@ export function CraftSpace() {
         y: (pos.y + target.y) / 2,
       }
 
-      // Keep relative left/right from approach so the split feels natural.
-      const leftId =
-        dragged.x <= target.x ? dragged.instanceId : target.instanceId
-      const rightId =
-        leftId === dragged.instanceId
-          ? target.instanceId
-          : dragged.instanceId
-      const spaceWidth = spaceRef.current?.getBoundingClientRect().width ?? 390
-      const splitSlots = splitParentSlots(
-        mid,
-        spaceWidth,
-        leftId,
-        rightId,
-      )
+      const origin = dragOriginRef.current[instanceId]
+      // Approach along the drag path when available; else parent separation.
+      const approach = origin
+        ? { x: pos.x - origin.x, y: pos.y - origin.y }
+        : { x: dragged.x - target.x, y: dragged.y - target.y }
 
-      // Mid (and other non-jewellery) merges: spawn + parents split beside result.
+      const parentA = dragged.instanceId
+      const parentB = target.instanceId
+
+      // Mid merges: spawn result, then parents explode apart with physics.
       if (resultDef.kind !== 'jewellery') {
         const result = spawnInstance(resultCatalogId, mid.x, mid.y)
         if (!result) return
 
-        const split = elementsRef.current.map((el) => {
-          const slot = splitSlots[el.instanceId]
-          return slot ? { ...el, x: slot.x, y: slot.y } : el
-        })
-        const next = [...split, result]
-        commitElements(next)
+        busyRef.current = true
+        playMergeSound()
+
+        const withResult = [
+          ...elementsRef.current.map((el) =>
+            el.instanceId === parentA || el.instanceId === parentB
+              ? { ...el, x: mid.x, y: mid.y }
+              : el,
+          ),
+          result,
+        ]
+        commitElements(withResult)
         setOrder((o) => [
           ...o.filter((id) => id !== result.instanceId),
           result.instanceId,
         ])
-        playMergeSound()
-        delete dragOriginRef.current[instanceId]
+
+        startParentExplode(mid, parentA, parentB, approach, () => {
+          busyRef.current = false
+          delete dragOriginRef.current[instanceId]
+        })
         return
       }
 
-      // Finished jewellery: converge → flash → vanish → reveal → parents reappear split.
+      // Finished jewellery: converge → flash → vanish → reveal → explode apart.
       const result = spawnInstance(resultCatalogId, mid.x, mid.y)
       if (!result) return
 
       busyRef.current = true
       playMergeSound()
 
-      const parentIds = [dragged.instanceId, target.instanceId]
       setParentMergePhase({
-        [dragged.instanceId]: 'converge',
-        [target.instanceId]: 'converge',
+        [parentA]: 'converge',
+        [parentB]: 'converge',
       })
 
-      // Enlarge toward each other at the merge midpoint.
       commitElements(
         elementsRef.current.map((el) =>
-          parentIds.includes(el.instanceId) ? { ...el, x: mid.x, y: mid.y } : el,
+          el.instanceId === parentA || el.instanceId === parentB
+            ? { ...el, x: mid.x, y: mid.y }
+            : el,
         ),
       )
 
       window.setTimeout(() => {
-        // Intense flash; parents vanish into it.
         setParentMergePhase({
-          [dragged.instanceId]: 'vanish',
-          [target.instanceId]: 'vanish',
+          [parentA]: 'vanish',
+          [parentB]: 'vanish',
         })
 
         const burstId = `burst-${Date.now()}`
@@ -203,7 +240,6 @@ export function CraftSpace() {
           { id: burstId, x: mid.x, y: mid.y, kind: 'jewellery' },
         ])
 
-        // Spawn product hidden under the flash, then reveal as punch eases.
         const withResult = [...elementsRef.current, result]
         commitElements(withResult)
         setOrder((o) => [
@@ -213,27 +249,23 @@ export function CraftSpace() {
         setUnderFlashId(result.instanceId)
 
         window.setTimeout(() => {
-          // Flash eases; jewellery becomes readable with lasting glow.
           setUnderFlashId(null)
           setRevealAnimId(result.instanceId)
 
           window.setTimeout(() => {
-            // Parents reappear split left/right of the merge point (kept).
-            const split = elementsRef.current.map((el) => {
-              const slot = splitSlots[el.instanceId]
-              return slot ? { ...el, x: slot.x, y: slot.y } : el
-            })
-            commitElements(split)
-            setParentMergePhase({})
             setRevealAnimId(null)
             setBursts((b) => b.filter((x) => x.id !== burstId))
-            busyRef.current = false
-            delete dragOriginRef.current[instanceId]
+
+            // Reappear at the flash center, then fly apart with the same physics.
+            startParentExplode(mid, parentA, parentB, approach, () => {
+              busyRef.current = false
+              delete dragOriginRef.current[instanceId]
+            })
           }, MERGE_REVEAL_MS)
         }, MERGE_PUNCH_MS)
       }, MERGE_CONVERGE_MS)
     },
-    [commitElements],
+    [commitElements, startParentExplode],
   )
 
   return (

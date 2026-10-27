@@ -116,7 +116,9 @@ export function CraftElement({
       ? ' is-merge-converge'
       : mergePhase === 'vanish'
         ? ' is-merge-vanish'
-        : ''
+        : mergePhase === 'explode'
+          ? ' is-merge-explode'
+          : ''
 
   return (
     <button

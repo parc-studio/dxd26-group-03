@@ -79,5 +79,5 @@ export interface MergeBurstState {
   kind: MergeBurstKind
 }
 
-/** Visual phase for parent pieces during a jewellery merge. */
-export type ParentMergePhase = 'converge' | 'vanish'
+/** Visual phase for parent pieces during a merge. */
+export type ParentMergePhase = 'converge' | 'vanish' | 'explode'
