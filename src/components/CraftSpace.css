@@ -15,10 +15,22 @@
     max(0.75rem, var(--safe-bottom))
     max(0.5rem, var(--safe-left));
   background:
-    radial-gradient(ellipse 90% 70% at 50% 18%, rgba(232, 213, 168, 0.14) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 50% at 80% 70%, rgba(168, 184, 200, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 40% at 15% 75%, rgba(201, 166, 107, 0.06) 0%, transparent 45%),
-    linear-gradient(165deg, var(--space-top) 0%, var(--space-mid) 48%, var(--space-bottom) 100%);
+    radial-gradient(
+      ellipse 85% 60% at 50% 12%,
+      color-mix(in srgb, var(--color-cream) 55%, transparent) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 88% 78%,
+      color-mix(in srgb, var(--color-brand-soft) 14%, transparent) 0%,
+      transparent 55%
+    ),
+    linear-gradient(
+      165deg,
+      var(--color-surface) 0%,
+      var(--color-space-mid) 52%,
+      var(--color-surface-muted) 100%
+    );
 }
 
 .craft-space__atmosphere {
@@ -26,8 +38,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 28% 22%, rgba(255, 250, 240, 0.06) 0%, transparent 28%),
-    radial-gradient(circle at 70% 40%, rgba(255, 250, 240, 0.04) 0%, transparent 22%);
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.55) 0%, transparent 32%),
+    radial-gradient(circle at 72% 42%, rgba(254, 228, 168, 0.2) 0%, transparent 28%);
   animation: atmosphere-breathe 12s ease-in-out infinite;
 }
 
@@ -35,8 +47,8 @@
   pointer-events: none;
   position: absolute;
   inset: 0;
-  opacity: 0.045;
-  mix-blend-mode: overlay;
+  opacity: 0.03;
+  mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -60,31 +72,29 @@
 
 .craft-space__logo {
   display: block;
-  width: min(42vw, 11.5rem);
+  width: min(48vw, 12.5rem);
   height: auto;
   margin-inline: auto;
-  /* Logo asset is dark ink — invert on the dark craft space */
-  filter: invert(1) brightness(1.05);
+  /* Dark mark on cream canvas — no invert */
+  filter: none;
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: none;
 }
 
 .craft-space__brand.is-sheet-open .craft-space__logo {
-  /* Grey Figma veil: show true dark mark */
-  filter: none;
-  width: min(38vw, 10.5rem);
+  width: min(42vw, 11rem);
 }
 
 .craft-space__hint {
-  margin: 0.55rem auto 0;
+  margin: var(--space-3) auto 0;
   max-width: 16.5rem;
-  font-family: var(--font-ui);
-  font-size: 0.8rem;
-  font-weight: 300;
-  letter-spacing: 0.02em;
-  line-height: 1.35;
-  color: var(--ink-soft);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-normal);
+  line-height: var(--leading-snug);
+  color: var(--color-brand-warm);
 }
 
 @keyframes atmosphere-breathe {
@@ -93,7 +103,7 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.72;
+    opacity: 0.78;
   }
 }
 
@@ -115,7 +125,6 @@
   }
 }
 
-/* Desktop breathing room for brand */
 @media (min-width: 768px) {
   .craft-space__brand {
     top: clamp(1.5rem, 4vw, 2.75rem);

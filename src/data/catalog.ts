@@ -60,9 +60,10 @@ export function spawnInstance(
 }
 
 export function createStarterInstances(): CraftInstance[] {
+  // Finished jewellery only appears after a successful jewellery merge.
   return catalog.starters
     .map((s) => spawnInstance(s.catalogId, s.x, s.y))
-    .filter((el): el is CraftInstance => el !== null)
+    .filter((el): el is CraftInstance => el !== null && el.kind !== 'jewellery')
 }
 
 /** Dev-time alignment check: every recipe id exists; every image path is used. */

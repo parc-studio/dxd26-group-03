@@ -1,15 +1,25 @@
 import { useCallback, type CSSProperties, type RefObject } from 'react'
-import type { CraftInstance } from '../types'
+import type { CraftInstance, ParentMergePhase } from '../types'
 import { usePointerDrag } from '../hooks/usePointerDrag'
+import {
+  MERGE_CONVERGE_MS,
+  MERGE_PUNCH_MS,
+  MERGE_REVEAL_MS,
+} from '../lib/mergeTiming'
 import './CraftElement.css'
 
 interface CraftElementProps {
   data: CraftInstance
   boundsRef: RefObject<HTMLElement | null>
   zIndex: number
-  merging?: boolean
+  mergePhase?: ParentMergePhase
+  /** Product is under the flash (invisible) during the punch. */
+  revealing?: boolean
+  /** Soft entrance once the flash eases. */
+  revealAnim?: boolean
   onMove: (instanceId: string, next: { x: number; y: number }) => void
   onDrop: (instanceId: string, next: { x: number; y: number }) => void
+  onDragStart?: (instanceId: string, origin: { x: number; y: number }) => void
   onBringFront: (instanceId: string) => void
   /** Tap a finished jewellery piece to open its detail sheet. */
   onOpenJewellery?: (catalogId: string) => void
@@ -19,12 +29,18 @@ export function CraftElement({
   data,
   boundsRef,
   zIndex,
-  merging = false,
+  mergePhase,
+  revealing = false,
+  revealAnim = false,
   onMove,
   onDrop,
+  onDragStart,
   onBringFront,
   onOpenJewellery,
 }: CraftElementProps) {
+  const merging = Boolean(mergePhase)
+  const locked = merging || revealing
+
   const handleMove = useCallback(
     (next: { x: number; y: number }) => onMove(data.instanceId, next),
     [data.instanceId, onMove],
@@ -33,6 +49,11 @@ export function CraftElement({
   const handleDrop = useCallback(
     (next: { x: number; y: number }) => onDrop(data.instanceId, next),
     [data.instanceId, onDrop],
+  )
+
+  const handleDragStart = useCallback(
+    (origin: { x: number; y: number }) => onDragStart?.(data.instanceId, origin),
+    [data.instanceId, onDragStart],
   )
 
   const handleTap = useCallback(() => {
@@ -45,6 +66,7 @@ export function CraftElement({
     position: { x: data.x, y: data.y },
     onMove: handleMove,
     onDrop: handleDrop,
+    onDragStart: handleDragStart,
     onTap: handleTap,
     boundsRef,
   })
@@ -89,33 +111,45 @@ export function CraftElement({
       ? `Open details for ${data.label}`
       : `Drag ${data.label}`
 
+  const phaseClass =
+    mergePhase === 'converge'
+      ? ' is-merge-converge'
+      : mergePhase === 'vanish'
+        ? ' is-merge-vanish'
+        : ''
+
   return (
     <button
       type="button"
-      className={`craft-el craft-el--${data.category} craft-el--${data.shape}${kindClass}${hasPhoto ? ' craft-el--photo' : ''}${dragging ? ' is-dragging' : ''}${merging ? ' is-merging' : ''}`}
+      className={`craft-el craft-el--${data.category} craft-el--${data.shape}${kindClass}${hasPhoto ? ' craft-el--photo' : ''}${dragging ? ' is-dragging' : ''}${phaseClass}${revealing ? ' is-under-flash' : ''}${revealAnim ? ' is-merge-reveal' : ''}`}
       style={{
         left: `${data.x}%`,
         top: `${data.y}%`,
-        zIndex: dragging ? 1000 : zIndex,
+        zIndex: dragging || mergePhase ? 1100 : revealing || revealAnim ? 1150 : zIndex,
+        ['--merge-converge-ms' as string]: `${MERGE_CONVERGE_MS}ms`,
+        ['--merge-punch-ms' as string]: `${MERGE_PUNCH_MS}ms`,
+        ['--merge-reveal-ms' as string]: `${MERGE_REVEAL_MS}ms`,
       }}
       data-instance-id={data.instanceId}
       data-catalog-id={data.catalogId}
       data-kind={data.kind}
       aria-label={aria}
-      disabled={merging}
+      disabled={locked}
       {...handlers}
       onPointerDown={(e) => {
-        if (merging) return
+        if (locked) return
         onBringFront(data.instanceId)
         handlers.onPointerDown(e)
       }}
     >
+      <span className="craft-el__label" aria-hidden={!dragging}>
+        {data.label}
+      </span>
       <span className="craft-el__shape" style={shapeStyle} aria-hidden="true">
         {insetStyle ? (
           <span className="craft-el__inset" style={insetStyle} />
         ) : null}
       </span>
-      <span className="craft-el__label">{data.label}</span>
     </button>
   )
 }

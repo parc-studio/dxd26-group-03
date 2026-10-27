@@ -1,0 +1,91 @@
+/**
+ * Celestial Jewelry design tokens
+ * Sourced from computed styles on https://celestial-jewelry.ch/ (2026-10-27).
+ * User hints (#462a2b, #fee4a8, #5c3e34, #472b2b, Lora) verified against live CSS.
+ */
+:root {
+  /* --- Color: brand --- */
+  --color-brand: #472b2b; /* primary CTA / heading ink (live); ~#462a2b hint */
+  --color-brand-deep: #462a2b; /* hinted button variant — keep as alias */
+  --color-brand-warm: #5c3e34; /* collection overlays / secondary brown */
+  --color-brand-soft: #a67c6d; /* muted metal-rose accent (site CSS) */
+
+  /* --- Color: cream / gold --- */
+  --color-cream: #ffe5a9; /* hero title on dark (live; ~#fee4a8 hint) */
+  --color-cream-soft: #fcedc2; /* hero supporting copy on dark */
+  --color-cream-hint: #fee4a8; /* user-hinted header cream — alias */
+
+  /* --- Color: surfaces & ink --- */
+  --color-surface: #ffffff;
+  --color-surface-muted: #f7f3ec;
+  --color-ink: #472b2b;
+  --color-ink-body: #1d1e20; /* site body default */
+  --color-ink-nav: #0d141a;
+  --color-ink-muted: #8a7a72;
+  --color-on-brand: #ffffff;
+
+  /* --- Color: craft-space atmosphere (Celestial cream / white) --- */
+  --color-space-top: #fffdf8;
+  --color-space-mid: #fbf6ec;
+  --color-space-bottom: #f7f3ec; /* --color-surface-muted */
+  --color-space-veil: rgba(71, 43, 43, 0.28);
+
+  /* --- Fonts (craft: Lora everywhere; live site loads Lora + Playfair + Inter) --- */
+  --font-display: 'Lora', 'Times New Roman', serif;
+  --font-display-alt: 'Lora', 'Times New Roman', serif;
+  --font-ui: 'Lora', 'Times New Roman', serif;
+
+  /* --- Type scale --- */
+  --text-xs: 0.75rem; /* 12 */
+  --text-sm: 0.875rem; /* 14 */
+  --text-md: 1rem; /* 16 — site body / CTA */
+  --text-lg: 1.125rem; /* 18 */
+  --text-xl: 1.5rem; /* 24 */
+  --text-2xl: 2rem; /* 32 — section H2/H3 */
+  --text-3xl: 2.5rem; /* 40 — collection labels */
+  --text-hero: clamp(2.5rem, 10vw, 4rem); /* ~64px desktop hero */
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.3; /* live H1 ~1.3 */
+  --leading-normal: 1.5;
+  --tracking-normal: 0;
+  --tracking-wide: 0.06em;
+  --tracking-widest: 0.18em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* --- Spacing rhythm (4px base) --- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* --- Radii / elevation --- */
+  --radius-pill: 1.75rem; /* ~28px live CTA */
+  --radius-card: 0.875rem; /* ~14px collection cards */
+  --radius-sheet: 1.35rem;
+  --shadow-sheet: 0 -10px 36px rgba(71, 43, 43, 0.18);
+
+  /* --- Legacy aliases (craft app — light canvas) --- */
+  --space-top: var(--color-space-top);
+  --space-mid: var(--color-space-mid);
+  --space-bottom: var(--color-space-bottom);
+  --ink: var(--color-ink);
+  --ink-soft: var(--color-brand-warm);
+  --ink-muted: var(--color-ink-muted);
+  --gold: var(--color-brand);
+  --metal-cool: var(--color-brand-soft);
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}

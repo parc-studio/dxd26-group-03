@@ -11,6 +11,8 @@ interface UsePointerDragOptions {
   onMove: (next: Position) => void
   /** Called once when a drag ends, with the final position. */
   onDrop?: (next: Position) => void
+  /** Called once when a pointer drag begins, with the pre-move position. */
+  onDragStart?: (origin: Position) => void
   /**
    * Called on a light tap (little movement). When it returns true, the
    * drop/merge handler is skipped — used to open the jewellery sheet.
@@ -45,6 +47,7 @@ export function usePointerDrag({
   position,
   onMove,
   onDrop,
+  onDragStart,
   onTap,
   boundsRef,
 }: UsePointerDragOptions) {
@@ -55,6 +58,7 @@ export function usePointerDrag({
   const positionRef = useRef(position)
   const onMoveRef = useRef(onMove)
   const onDropRef = useRef(onDrop)
+  const onDragStartRef = useRef(onDragStart)
   const onTapRef = useRef(onTap)
   const originClientRef = useRef({ x: 0, y: 0 })
   const movedPxRef = useRef(0)
@@ -71,6 +75,10 @@ export function usePointerDrag({
   useEffect(() => {
     onDropRef.current = onDrop
   }, [onDrop])
+
+  useEffect(() => {
+    onDragStartRef.current = onDragStart
+  }, [onDragStart])
 
   useEffect(() => {
     onTapRef.current = onTap
@@ -126,6 +134,7 @@ export function usePointerDrag({
         y: pointerY - pos.y,
       }
       lastPosRef.current = pos
+      onDragStartRef.current?.(pos)
       setDragging(true)
       setDraggingClass(true)
     },

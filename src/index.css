@@ -1,19 +1,4 @@
-:root {
-  --space-top: #1c1a17;
-  --space-mid: #24211c;
-  --space-bottom: #161412;
-  --ink: #f3ebe0;
-  --ink-soft: #d4c9b8;
-  --ink-muted: #9a8f7e;
-  --gold: #c9a66b;
-  --metal-cool: #a8b0b8;
-  --font-display: 'Cormorant Garamond', 'Times New Roman', serif;
-  --font-ui: 'Outfit', 'Helvetica Neue', sans-serif;
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
-}
+@import './styles/tokens.css';
 
 *,
 *::before,
@@ -39,19 +24,20 @@ html {
 
 body {
   font-family: var(--font-ui);
-  background: var(--space-bottom);
-  color: var(--ink);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-normal);
+  background: var(--color-surface-muted);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   position: fixed;
   inset: 0;
-  /* Avoid iOS bounce / rubber-band under the craft space */
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* Extra lock while an element is being dragged */
 html.is-dragging,
 html.is-dragging body {
   overflow: hidden;

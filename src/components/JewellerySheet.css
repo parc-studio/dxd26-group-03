@@ -16,8 +16,7 @@
   margin: 0;
   padding: 0;
   border: none;
-  /* Figma grey veil behind the white card */
-  background: rgba(120, 120, 120, 0.72);
+  background: var(--color-space-veil);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   cursor: pointer;
@@ -32,19 +31,17 @@
   width: min(100%, 28rem);
   max-width: 28rem;
   margin-inline: auto;
-  /* Leave logo visible above the sheet */
   max-height: calc(100dvh - (var(--safe-top) + 4.25rem));
   display: flex;
   flex-direction: column;
-  border-radius: 1.35rem 1.35rem 0 0;
-  background: #ffffff;
-  box-shadow: 0 -10px 36px rgba(40, 40, 40, 0.18);
-  border: none;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sheet);
   transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
   overflow: hidden;
   transform: translate3d(0, 110%, 0);
-  color: #1a1814;
+  color: var(--color-ink);
 }
 
 .jewellery-sheet.is-open .jewellery-sheet__panel {
@@ -56,10 +53,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1rem 0.2rem;
+  padding: var(--space-3) var(--space-4) var(--space-2);
   touch-action: none;
   cursor: grab;
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .jewellery-sheet__handle {
@@ -67,7 +64,7 @@
   width: 2.35rem;
   height: 0.22rem;
   border-radius: 999px;
-  background: #c8c4be;
+  background: color-mix(in srgb, var(--color-brand-soft) 45%, white);
 }
 
 .jewellery-sheet__scroll {
@@ -76,30 +73,20 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  padding: 0.35rem 0 calc(1.35rem + var(--safe-bottom));
+  padding: 0;
   touch-action: pan-y;
-  background: #fff;
-}
-
-.jewellery-sheet__title {
-  margin: 0.35rem 1.35rem 0.85rem;
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: 1.55rem;
-  line-height: 1.15;
-  letter-spacing: 0.01em;
-  text-align: center;
-  color: #1a1814;
+  background: var(--color-surface);
 }
 
 .jewellery-sheet__hero {
   position: relative;
+  z-index: 1;
   width: 100%;
   margin: 0;
   aspect-ratio: 5 / 4;
-  max-height: 15.5rem;
+  max-height: 16.5rem;
   border-radius: 0;
-  background: #eceae6;
+  background: var(--color-surface-muted);
   overflow: hidden;
 }
 
@@ -120,43 +107,119 @@
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background-repeat: no-repeat;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 8px rgba(71, 43, 43, 0.25);
 }
 
-.jewellery-sheet__materials {
-  margin: 0.95rem 1.5rem 0.85rem;
+.jewellery-sheet__body {
+  position: relative;
+  z-index: 2;
+  padding: var(--space-4) var(--space-5) calc(var(--space-5) + var(--safe-bottom));
+  background: var(--color-surface);
+}
+
+.jewellery-sheet__name {
+  margin: 0 0 var(--space-3);
   font-family: var(--font-display);
-  font-size: 1.02rem;
-  font-weight: 400;
-  font-style: italic;
-  letter-spacing: 0.02em;
-  line-height: 1.3;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-xl);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-normal);
   text-align: center;
-  color: #8a8580;
+  color: var(--color-ink);
 }
 
 .jewellery-sheet__desc {
-  margin: 0 1.6rem 1.5rem;
+  margin: 0 0 var(--space-5);
   font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 400;
-  line-height: 1.55;
+  font-size: var(--text-md);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
   text-align: center;
-  color: #6e6a65;
+  color: var(--color-ink-muted);
+}
+
+.jewellery-sheet__section {
+  margin: 0 0 var(--space-5);
+}
+
+.jewellery-sheet__section-title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+.jewellery-sheet__ingredients {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.jewellery-sheet__ingredient {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.jewellery-sheet__ingredient-swatch {
+  flex-shrink: 0;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 50%;
+  background-color: var(--color-surface-muted);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: 0 1px 4px rgba(71, 43, 43, 0.12);
+}
+
+.jewellery-sheet__ingredient-label {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--color-ink-body);
+}
+
+.jewellery-sheet__price {
+  margin: 0 0 var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid color-mix(in srgb, var(--color-brand-soft) 28%, white);
+}
+
+.jewellery-sheet__price-label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+.jewellery-sheet__price-value {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-medium);
+  color: var(--color-brand);
+  line-height: 1;
 }
 
 .jewellery-sheet__actions {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.85rem;
-  padding: 0.25rem 1.25rem 0.5rem;
+  justify-content: space-between;
+  gap: var(--space-4);
 }
 
 .jewellery-sheet__qty {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: var(--space-1);
 }
 
 .jewellery-sheet__qty-btn {
@@ -164,11 +227,11 @@
   height: 2rem;
   margin: 0;
   padding: 0;
-  border: 1px solid #d8d4ce;
+  border: 1px solid color-mix(in srgb, var(--color-brand-soft) 40%, white);
   border-radius: 50%;
-  background: #fff;
-  color: #1a1814;
-  font-size: 1.05rem;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--text-lg);
   line-height: 1;
   cursor: pointer;
 }
@@ -179,7 +242,7 @@
 }
 
 .jewellery-sheet__qty-btn:focus-visible {
-  outline: 1px solid #1a1814;
+  outline: 1px solid var(--color-brand);
   outline-offset: 2px;
 }
 
@@ -187,8 +250,37 @@
   min-width: 1.4rem;
   text-align: center;
   font-family: var(--font-display);
-  font-size: 1.05rem;
-  color: #1a1814;
+  font-size: var(--text-md);
+  color: var(--color-ink);
+}
+
+.jewellery-sheet__cart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 9.5rem;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0.65rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-normal);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.jewellery-sheet__cart:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.jewellery-sheet__cart:active {
+  opacity: 0.88;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -201,7 +293,7 @@
 @media (min-width: 768px) {
   .jewellery-sheet__panel {
     max-height: calc(100dvh - (var(--safe-top) + 5.5rem));
-    border-radius: 1.35rem 1.35rem 0.9rem 0.9rem;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0.9rem 0.9rem;
     bottom: 0.75rem;
   }
 
@@ -209,7 +301,7 @@
     max-height: 18rem;
   }
 
-  .jewellery-sheet__title {
-    font-size: 1.75rem;
+  .jewellery-sheet__name {
+    font-size: var(--text-2xl);
   }
 }
