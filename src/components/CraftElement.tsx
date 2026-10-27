@@ -118,12 +118,14 @@ export function CraftElement({
         handlers.onPointerDown(e)
       }}
     >
+      <span className="craft-el__label" aria-hidden={!dragging}>
+        {data.label}
+      </span>
       <span className="craft-el__shape" style={shapeStyle} aria-hidden="true">
         {insetStyle ? (
           <span className="craft-el__inset" style={insetStyle} />
         ) : null}
       </span>
-      <span className="craft-el__label">{data.label}</span>
     </button>
   )
 }
