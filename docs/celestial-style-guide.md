@@ -23,11 +23,15 @@ Craft-space dark atmosphere is derived from the brand browns (`--color-space-*`)
 
 ## Fonts
 
-| Family | Role |
-|--------|------|
-| **Lora** | Primary brand serif — headings, nav, CTAs (`--font-display`). |
-| **Playfair Display** | Large collection / display labels (`--font-display-alt`). |
-| **DM Sans** | UI / body companion (`--font-ui`; site body uses DM Sans; Inter also appears on some CTAs). |
+Live site (`celestial-jewelry.ch`, 2026-10-27) loads via Zyrosite Google Fonts CDN:
+
+| Family | Role on live site |
+|--------|-------------------|
+| **Lora** | `--font-primary` — headings / brand (H1–H3, CTAs). |
+| **Playfair Display** | Collection / display accents. |
+| **Inter** | `--font-secondary` — body / nav. |
+
+**DM Sans is not a brand font** on the live site (only appears in a password-page CSS leftover). Craft app uses **Lora everywhere** (`--font-display`, `--font-display-alt`, `--font-ui`).
 
 ## Type
 
@@ -47,5 +51,5 @@ Craft-space dark atmosphere is derived from the brand browns (`--color-space-*`)
 ## Wired in the craft app
 
 - Global tokens: `src/styles/tokens.css` (imported from `src/index.css`)
-- Fonts loaded in `index.html` (Lora, Playfair Display, DM Sans)
+- Fonts loaded in `index.html` (Lora only)
 - Header hint, craft atmosphere, jewellery sheet, and Add to cart / qty controls consume these variables

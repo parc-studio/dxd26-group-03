@@ -30,10 +30,10 @@
   --color-space-bottom: #f7f3ec; /* --color-surface-muted */
   --color-space-veil: rgba(71, 43, 43, 0.28);
 
-  /* --- Fonts (live: Lora + Playfair Display + DM Sans / Inter) --- */
+  /* --- Fonts (craft: Lora everywhere; live site loads Lora + Playfair + Inter) --- */
   --font-display: 'Lora', 'Times New Roman', serif;
-  --font-display-alt: 'Playfair Display', 'Times New Roman', serif;
-  --font-ui: 'DM Sans', 'Helvetica Neue', sans-serif;
+  --font-display-alt: 'Lora', 'Times New Roman', serif;
+  --font-ui: 'Lora', 'Times New Roman', serif;
 
   /* --- Type scale --- */
   --text-xs: 0.75rem; /* 12 */
