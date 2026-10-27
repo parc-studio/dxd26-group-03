@@ -27,8 +27,8 @@ body {
   font-size: var(--text-md);
   line-height: var(--leading-normal);
   letter-spacing: var(--tracking-normal);
-  background: var(--color-space-bottom);
-  color: var(--ink);
+  background: var(--color-surface-muted);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   position: fixed;

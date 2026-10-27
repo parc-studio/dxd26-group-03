@@ -24,11 +24,11 @@
   --color-ink-muted: #8a7a72;
   --color-on-brand: #ffffff;
 
-  /* --- Color: craft-space atmosphere (brand-derived dark) --- */
-  --color-space-top: #2a1a1a;
-  --color-space-mid: #1f1414;
-  --color-space-bottom: #160f0f;
-  --color-space-veil: rgba(92, 62, 52, 0.55);
+  /* --- Color: craft-space atmosphere (Celestial cream / white) --- */
+  --color-space-top: #fffdf8;
+  --color-space-mid: #fbf6ec;
+  --color-space-bottom: #f7f3ec; /* --color-surface-muted */
+  --color-space-veil: rgba(71, 43, 43, 0.28);
 
   /* --- Fonts (live: Lora + Playfair Display + DM Sans / Inter) --- */
   --font-display: 'Lora', 'Times New Roman', serif;
@@ -74,14 +74,14 @@
   --radius-sheet: 1.35rem;
   --shadow-sheet: 0 -10px 36px rgba(71, 43, 43, 0.18);
 
-  /* --- Legacy aliases (craft app) --- */
+  /* --- Legacy aliases (craft app — light canvas) --- */
   --space-top: var(--color-space-top);
   --space-mid: var(--color-space-mid);
   --space-bottom: var(--color-space-bottom);
-  --ink: var(--color-cream);
-  --ink-soft: var(--color-cream-soft);
+  --ink: var(--color-ink);
+  --ink-soft: var(--color-brand-warm);
   --ink-muted: var(--color-ink-muted);
-  --gold: var(--color-cream);
+  --gold: var(--color-brand);
   --metal-cool: var(--color-brand-soft);
 
   --safe-top: env(safe-area-inset-top, 0px);

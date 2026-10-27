@@ -10,6 +10,7 @@ interface CraftElementProps {
   merging?: boolean
   onMove: (instanceId: string, next: { x: number; y: number }) => void
   onDrop: (instanceId: string, next: { x: number; y: number }) => void
+  onDragStart?: (instanceId: string, origin: { x: number; y: number }) => void
   onBringFront: (instanceId: string) => void
   /** Tap a finished jewellery piece to open its detail sheet. */
   onOpenJewellery?: (catalogId: string) => void
@@ -22,6 +23,7 @@ export function CraftElement({
   merging = false,
   onMove,
   onDrop,
+  onDragStart,
   onBringFront,
   onOpenJewellery,
 }: CraftElementProps) {
@@ -35,6 +37,11 @@ export function CraftElement({
     [data.instanceId, onDrop],
   )
 
+  const handleDragStart = useCallback(
+    (origin: { x: number; y: number }) => onDragStart?.(data.instanceId, origin),
+    [data.instanceId, onDragStart],
+  )
+
   const handleTap = useCallback(() => {
     if (data.kind !== 'jewellery' || !onOpenJewellery) return false
     onOpenJewellery(data.catalogId)
@@ -45,6 +52,7 @@ export function CraftElement({
     position: { x: data.x, y: data.y },
     onMove: handleMove,
     onDrop: handleDrop,
+    onDragStart: handleDragStart,
     onTap: handleTap,
     boundsRef,
   })

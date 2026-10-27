@@ -20,6 +20,8 @@ export function CraftSpace() {
   const spaceRef = useRef<HTMLDivElement>(null)
   const elementsRef = useRef<CraftInstance[]>([])
   const busyRef = useRef(false)
+  /** Pre-drag positions so successful merges can snap parents back. */
+  const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({})
 
   const [elements, setElements] = useState<CraftInstance[]>(() => {
     const starters = createStarterInstances()
@@ -29,7 +31,6 @@ export function CraftSpace() {
   const [order, setOrder] = useState<string[]>(() =>
     elementsRef.current.map((el) => el.instanceId),
   )
-  const [mergingIds, setMergingIds] = useState<string[]>([])
   const [bursts, setBursts] = useState<MergeBurstState[]>([])
   const [sheet, setSheet] = useState<JewelleryDetail | null>(null)
 
@@ -51,6 +52,13 @@ export function CraftSpace() {
   const bringFront = useCallback((instanceId: string) => {
     setOrder((prev) => [...prev.filter((x) => x !== instanceId), instanceId])
   }, [])
+
+  const handleDragStart = useCallback(
+    (instanceId: string, origin: { x: number; y: number }) => {
+      dragOriginRef.current[instanceId] = origin
+    },
+    [],
+  )
 
   const openJewellery = useCallback((catalogId: string) => {
     if (busyRef.current) return
@@ -81,28 +89,27 @@ export function CraftSpace() {
       const result = spawnInstance(resultCatalogId, pos.x, pos.y)
       if (!result) return
 
-      busyRef.current = true
-      const consumeIds = [dragged.instanceId, target.instanceId]
-      setMergingIds(consumeIds)
-      playMergeSound()
+      const origin = dragOriginRef.current[instanceId] ?? {
+        x: dragged.x,
+        y: dragged.y,
+      }
 
+      // Keep both parents; snap the dragged piece back to its pre-move spot.
+      const restored = elementsRef.current.map((el) =>
+        el.instanceId === instanceId ? { ...el, x: origin.x, y: origin.y } : el,
+      )
+      const next = [...restored, result]
+      commitElements(next)
+      setOrder((o) => [...o.filter((id) => id !== result.instanceId), result.instanceId])
+
+      playMergeSound()
       const burstId = `burst-${Date.now()}`
       setBursts((b) => [...b, { id: burstId, x: pos.x, y: pos.y }])
-
       window.setTimeout(() => {
-        const without = elementsRef.current.filter(
-          (el) => !consumeIds.includes(el.instanceId),
-        )
-        const next = [...without, result]
-        commitElements(next)
-        setOrder((o) => [
-          ...o.filter((id) => !consumeIds.includes(id)),
-          result.instanceId,
-        ])
-        setMergingIds([])
         setBursts((b) => b.filter((x) => x.id !== burstId))
-        busyRef.current = false
       }, MERGE_MS)
+
+      delete dragOriginRef.current[instanceId]
     },
     [commitElements],
   )
@@ -136,9 +143,9 @@ export function CraftSpace() {
           data={el}
           boundsRef={spaceRef}
           zIndex={10 + Math.max(0, order.indexOf(el.instanceId))}
-          merging={mergingIds.includes(el.instanceId)}
           onMove={handleMove}
           onDrop={handleDrop}
+          onDragStart={handleDragStart}
           onBringFront={bringFront}
           onOpenJewellery={openJewellery}
         />
