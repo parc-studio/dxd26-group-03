@@ -8,8 +8,9 @@
   margin: 0;
   padding: 0.65rem 1.35rem;
   border: none;
-  background: #fff;
-  color: #1a1814;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand);
+  color: var(--color-on-brand);
   cursor: pointer;
   font: inherit;
   isolation: isolate;
@@ -21,26 +22,27 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
-  color: #2a2621;
+  color: var(--color-cream);
   overflow: visible;
+  opacity: 0.92;
 }
 
 .chain-btn__label {
   position: relative;
   z-index: 1;
   font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-normal);
   line-height: 1;
-  color: #1a1814;
+  color: var(--color-on-brand);
 }
 
 .chain-btn:focus-visible {
-  outline: 1px solid #1a1814;
+  outline: 1px solid var(--color-cream);
   outline-offset: 4px;
 }
 
 .chain-btn:active .chain-btn__label {
-  opacity: 0.7;
+  opacity: 0.75;
 }

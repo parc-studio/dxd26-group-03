@@ -15,10 +15,10 @@
     max(0.75rem, var(--safe-bottom))
     max(0.5rem, var(--safe-left));
   background:
-    radial-gradient(ellipse 90% 70% at 50% 18%, rgba(232, 213, 168, 0.14) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 50% at 80% 70%, rgba(168, 184, 200, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 40% at 15% 75%, rgba(201, 166, 107, 0.06) 0%, transparent 45%),
-    linear-gradient(165deg, var(--space-top) 0%, var(--space-mid) 48%, var(--space-bottom) 100%);
+    radial-gradient(ellipse 90% 70% at 50% 18%, color-mix(in srgb, var(--color-cream) 22%, transparent) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 45% at 82% 72%, color-mix(in srgb, var(--color-brand-warm) 18%, transparent) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 14% 78%, color-mix(in srgb, var(--color-brand-soft) 12%, transparent) 0%, transparent 45%),
+    linear-gradient(165deg, var(--color-space-top) 0%, var(--color-space-mid) 48%, var(--color-space-bottom) 100%);
 }
 
 .craft-space__atmosphere {
@@ -71,20 +71,20 @@
 }
 
 .craft-space__brand.is-sheet-open .craft-space__logo {
-  /* Grey sheet veil: show true dark mark */
+  /* Sheet open: dark mark on warm brand veil */
   filter: none;
   width: min(42vw, 11rem);
 }
 
 .craft-space__hint {
-  margin: 0.55rem auto 0;
+  margin: var(--space-3) auto 0;
   max-width: 16.5rem;
-  font-family: var(--font-ui);
-  font-size: 0.8rem;
-  font-weight: 300;
-  letter-spacing: 0.02em;
-  line-height: 1.35;
-  color: var(--ink-soft);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-normal);
+  line-height: var(--leading-snug);
+  color: var(--color-cream-soft);
 }
 
 @keyframes atmosphere-breathe {
