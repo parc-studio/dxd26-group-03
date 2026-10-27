@@ -9,7 +9,6 @@ interface JewellerySheetProps {
 }
 
 const DISMISS_PX = 96
-const HERO_SCALE_MIN = 0.6
 
 export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   const [qty, setQty] = useState(1)
@@ -17,9 +16,6 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   const [closing, setClosing] = useState(false)
   const [entered, setEntered] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const heroRef = useRef<HTMLDivElement>(null)
-  const heroHeightRef = useRef(0)
-  const scrollRafRef = useRef(0)
   const dragRef = useRef<{
     pointerId: number
     startY: number
@@ -29,55 +25,6 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true))
     return () => cancelAnimationFrame(id)
-  }, [])
-
-  const applyHeroScale = useCallback(() => {
-    const sc = scrollRef.current
-    const hero = heroRef.current
-    if (!sc || !hero) return
-
-    if (
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
-      hero.style.transform = 'scale(1)'
-      hero.style.marginBottom = '0px'
-      return
-    }
-
-    if (!heroHeightRef.current) {
-      hero.style.transform = 'scale(1)'
-      hero.style.marginBottom = '0px'
-      heroHeightRef.current = hero.offsetHeight
-    }
-    const natural = heroHeightRef.current || hero.offsetHeight
-    const max = Math.max(0, sc.scrollHeight - sc.clientHeight)
-    const t = max > 0 ? Math.min(1, Math.max(0, sc.scrollTop / max)) : 0
-    const scale = 1 - t * (1 - HERO_SCALE_MIN)
-    hero.style.transform = `scale(${scale})`
-    hero.style.marginBottom = `${(scale - 1) * natural}px`
-  }, [])
-
-  const onScrollContent = useCallback(() => {
-    if (scrollRafRef.current) return
-    scrollRafRef.current = requestAnimationFrame(() => {
-      scrollRafRef.current = 0
-      applyHeroScale()
-    })
-  }, [applyHeroScale])
-
-  useEffect(() => {
-    const id = window.setTimeout(() => {
-      heroHeightRef.current = 0
-      applyHeroScale()
-    }, 50)
-    return () => window.clearTimeout(id)
-  }, [applyHeroScale, detail.id])
-
-  useEffect(() => {
-    return () => {
-      if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current)
-    }
   }, [])
 
   const finishClose = useCallback(() => {
@@ -225,13 +172,12 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
         <div
           className="jewellery-sheet__scroll"
           ref={scrollRef}
-          onScroll={onScrollContent}
           onPointerDown={onBodyPointerDown}
           onPointerMove={onBodyPointerMove}
           onPointerUp={onBodyPointerUp}
           onPointerCancel={onBodyPointerUp}
         >
-          <div className="jewellery-sheet__hero" ref={heroRef} aria-hidden="true">
+          <div className="jewellery-sheet__hero" aria-hidden="true">
             <div
               className="jewellery-sheet__hero-img"
               style={{ backgroundImage: `url(${detail.image})` }}
@@ -312,8 +258,6 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
               </ChainBorderButton>
             </div>
           </div>
-
-          <div className="jewellery-sheet__scroll-travel" aria-hidden="true" />
         </div>
       </div>
     </div>
