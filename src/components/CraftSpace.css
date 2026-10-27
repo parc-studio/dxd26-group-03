@@ -60,20 +60,20 @@
 
 .craft-space__logo {
   display: block;
-  width: min(42vw, 11.5rem);
+  width: min(48vw, 12.5rem);
   height: auto;
   margin-inline: auto;
-  /* Logo asset is dark ink — invert on the dark craft space */
-  filter: invert(1) brightness(1.05);
+  /* New mark is dark on transparent — invert on the dark craft space */
+  filter: invert(1) brightness(1.08);
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: none;
 }
 
 .craft-space__brand.is-sheet-open .craft-space__logo {
-  /* Grey Figma veil: show true dark mark */
+  /* Grey sheet veil: show true dark mark */
   filter: none;
-  width: min(38vw, 10.5rem);
+  width: min(42vw, 11rem);
 }
 
 .craft-space__hint {

@@ -58,8 +58,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   const onHandlePointerMove = (e: React.PointerEvent<HTMLElement>) => {
     const d = dragRef.current
     if (!d || d.pointerId !== e.pointerId || !d.dragging) return
-    const dy = Math.max(0, e.clientY - d.startY)
-    setDragY(dy)
+    setDragY(Math.max(0, e.clientY - d.startY))
   }
 
   const onHandlePointerUp = (e: React.PointerEvent<HTMLElement>) => {
@@ -130,6 +129,14 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
     closing || !entered ? 0 : Math.max(0.2, 1 - dragY / 280)
   const panelTransition = dragY > 0 && !closing ? 'none' : undefined
 
+  const priceLabel = new Intl.NumberFormat('en-CH', {
+    style: 'currency',
+    currency: 'CHF',
+    maximumFractionDigits: 0,
+  }).format(detail.price)
+
+  const pieceName = detail.displayName || detail.label
+
   return (
     <div
       className={`jewellery-sheet${entered && !closing ? ' is-open' : ''}${closing ? ' is-closing' : ''}`}
@@ -162,6 +169,23 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
           <span className="jewellery-sheet__handle" aria-hidden="true" />
         </div>
 
+        <div className="jewellery-sheet__hero" aria-hidden="true">
+          <div
+            className="jewellery-sheet__hero-img"
+            style={{ backgroundImage: `url(${detail.image})` }}
+          />
+          {detail.inset ? (
+            <span
+              className="jewellery-sheet__hero-inset"
+              style={{
+                backgroundImage: `url(${detail.inset})`,
+                backgroundPosition: detail.insetImagePosition ?? 'center',
+                backgroundSize: detail.insetImageSize ?? 'cover',
+              }}
+            />
+          ) : null}
+        </div>
+
         <div
           className="jewellery-sheet__scroll"
           ref={scrollRef}
@@ -170,30 +194,34 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
           onPointerUp={onBodyPointerUp}
           onPointerCancel={onBodyPointerUp}
         >
-          <h2 id="jewellery-sheet-title" className="jewellery-sheet__title">
-            {detail.displayName}
+          <h2 id="jewellery-sheet-title" className="jewellery-sheet__name">
+            {pieceName}
           </h2>
 
-          <div className="jewellery-sheet__hero" aria-hidden="true">
-            <div
-              className="jewellery-sheet__hero-img"
-              style={{ backgroundImage: `url(${detail.image})` }}
-            />
-            {detail.inset ? (
-              <span
-                className="jewellery-sheet__hero-inset"
-                style={{
-                  backgroundImage: `url(${detail.inset})`,
-                  backgroundPosition: detail.insetImagePosition ?? 'center',
-                  backgroundSize: detail.insetImageSize ?? 'cover',
-                }}
-              />
-            ) : null}
-          </div>
-
-          <p className="jewellery-sheet__materials">{detail.materialsLine}</p>
-
           <p className="jewellery-sheet__desc">{detail.description}</p>
+
+          <section className="jewellery-sheet__section" aria-label="Elements">
+            <h3 className="jewellery-sheet__section-title">Elements</h3>
+            <ul className="jewellery-sheet__ingredients">
+              {detail.ingredients.map((part) => (
+                <li key={part.id} className="jewellery-sheet__ingredient">
+                  <span
+                    className="jewellery-sheet__ingredient-swatch"
+                    style={{ backgroundImage: `url(${part.image})` }}
+                    aria-hidden="true"
+                  />
+                  <span className="jewellery-sheet__ingredient-label">
+                    {part.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <div className="jewellery-sheet__price">
+            <span className="jewellery-sheet__price-label">Price</span>
+            <span className="jewellery-sheet__price-value">{priceLabel}</span>
+          </div>
 
           <div className="jewellery-sheet__actions">
             <div className="jewellery-sheet__qty" aria-label="Quantity">

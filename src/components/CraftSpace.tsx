@@ -116,10 +116,10 @@ export function CraftSpace() {
         <h1 className="craft-space__title">
           <img
             className="craft-space__logo"
-            src="/celestial-logo.png"
+            src="/celestial-logo-new.png"
             alt="celestial Switzerland"
-            width={220}
-            height={72}
+            width={375}
+            height={145}
             draggable={false}
           />
         </h1>
