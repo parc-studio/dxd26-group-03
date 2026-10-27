@@ -11,6 +11,7 @@ import { findDropTarget } from '../lib/hitTest'
 import { playMergeSound } from '../lib/mergeSound'
 import {
   MERGE_CONVERGE_MS,
+  MERGE_PARENT_SPLIT_PX,
   MERGE_PUNCH_MS,
   MERGE_REVEAL_MS,
 } from '../lib/mergeTiming'
@@ -24,11 +25,35 @@ import { JewellerySheet } from './JewellerySheet'
 import { MergeBurst } from './MergeBurst'
 import './CraftSpace.css'
 
+function clampPct(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value))
+}
+
+/** Place parents one left / one right of the merge point (kept, not consumed). */
+function splitParentSlots(
+  mid: { x: number; y: number },
+  spaceWidthPx: number,
+  leftId: string,
+  rightId: string,
+): Record<string, { x: number; y: number }> {
+  const dxPct =
+    spaceWidthPx > 0 ? (MERGE_PARENT_SPLIT_PX / spaceWidthPx) * 100 : 6
+  return {
+    [leftId]: {
+      x: clampPct(mid.x - dxPct, 8, 92),
+      y: clampPct(mid.y, 12, 90),
+    },
+    [rightId]: {
+      x: clampPct(mid.x + dxPct, 8, 92),
+      y: clampPct(mid.y, 12, 90),
+    },
+  }
+}
+
 export function CraftSpace() {
   const spaceRef = useRef<HTMLDivElement>(null)
   const elementsRef = useRef<CraftInstance[]>([])
   const busyRef = useRef(false)
-  /** Pre-drag positions so successful merges can snap parents back. */
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({})
 
   const [elements, setElements] = useState<CraftInstance[]>(() => {
@@ -105,26 +130,36 @@ export function CraftSpace() {
       const resultDef = getCatalogElement(resultCatalogId)
       if (!resultDef) return
 
-      const dragOrigin = dragOriginRef.current[instanceId] ?? {
-        x: dragged.x,
-        y: dragged.y,
-      }
-      const targetOrigin = { x: target.x, y: target.y }
       const mid = {
         x: (pos.x + target.x) / 2,
         y: (pos.y + target.y) / 2,
       }
 
-      // Mid (and other non-jewellery) merges: simple spawn + parent snap-back.
+      // Keep relative left/right from approach so the split feels natural.
+      const leftId =
+        dragged.x <= target.x ? dragged.instanceId : target.instanceId
+      const rightId =
+        leftId === dragged.instanceId
+          ? target.instanceId
+          : dragged.instanceId
+      const spaceWidth = spaceRef.current?.getBoundingClientRect().width ?? 390
+      const splitSlots = splitParentSlots(
+        mid,
+        spaceWidth,
+        leftId,
+        rightId,
+      )
+
+      // Mid (and other non-jewellery) merges: spawn + parents split beside result.
       if (resultDef.kind !== 'jewellery') {
         const result = spawnInstance(resultCatalogId, mid.x, mid.y)
         if (!result) return
 
-        const restored = elementsRef.current.map((el) => {
-          if (el.instanceId === instanceId) return { ...el, x: dragOrigin.x, y: dragOrigin.y }
-          return el
+        const split = elementsRef.current.map((el) => {
+          const slot = splitSlots[el.instanceId]
+          return slot ? { ...el, x: slot.x, y: slot.y } : el
         })
-        const next = [...restored, result]
+        const next = [...split, result]
         commitElements(next)
         setOrder((o) => [
           ...o.filter((id) => id !== result.instanceId),
@@ -135,7 +170,7 @@ export function CraftSpace() {
         return
       }
 
-      // Finished jewellery: converge → flash punch → reveal → parents snap back.
+      // Finished jewellery: converge → flash → vanish → reveal → parents reappear split.
       const result = spawnInstance(resultCatalogId, mid.x, mid.y)
       if (!result) return
 
@@ -183,17 +218,12 @@ export function CraftSpace() {
           setRevealAnimId(result.instanceId)
 
           window.setTimeout(() => {
-            // Parents snap back to pre-drag spots (kept, not consumed).
-            const restored = elementsRef.current.map((el) => {
-              if (el.instanceId === dragged.instanceId) {
-                return { ...el, x: dragOrigin.x, y: dragOrigin.y }
-              }
-              if (el.instanceId === target.instanceId) {
-                return { ...el, x: targetOrigin.x, y: targetOrigin.y }
-              }
-              return el
+            // Parents reappear split left/right of the merge point (kept).
+            const split = elementsRef.current.map((el) => {
+              const slot = splitSlots[el.instanceId]
+              return slot ? { ...el, x: slot.x, y: slot.y } : el
             })
-            commitElements(restored)
+            commitElements(split)
             setParentMergePhase({})
             setRevealAnimId(null)
             setBursts((b) => b.filter((x) => x.id !== burstId))
