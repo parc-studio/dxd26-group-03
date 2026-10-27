@@ -47,9 +47,39 @@
   z-index: 1000;
 }
 
-.craft-el.is-merging {
+.craft-el.is-merge-converge {
   pointer-events: none;
-  animation: craft-merge-out 520ms ease-in both;
+  animation: none;
+  z-index: 1100;
+  transition:
+    left var(--merge-converge-ms, 320ms) ease-out,
+    top var(--merge-converge-ms, 320ms) ease-out,
+    transform var(--merge-converge-ms, 320ms) ease-out;
+  transform: translate(-50%, -50%) scale(1.42);
+  filter: drop-shadow(0 10px 20px rgba(71, 43, 43, 0.22));
+}
+
+.craft-el.is-merge-vanish {
+  pointer-events: none;
+  animation: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.12);
+  transition:
+    opacity 140ms ease-in,
+    transform 180ms ease-in;
+  filter: none;
+}
+
+.craft-el.is-under-flash {
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.55);
+  animation: none;
+}
+
+.craft-el.is-merge-reveal {
+  pointer-events: none;
+  animation: jewellery-reveal var(--merge-reveal-ms, 800ms) ease-out both;
 }
 
 .craft-el__shape {
@@ -200,8 +230,20 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
+/* Lasting soft halo — finished-product signifier */
+.craft-el--jewellery-piece .craft-el__shape {
+  filter: drop-shadow(0 8px 16px rgba(71, 43, 43, 0.18));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-cream) 55%, transparent),
+    0 0 18px color-mix(in srgb, var(--color-cream) 70%, transparent),
+    0 0 36px color-mix(in srgb, var(--color-brand-soft) 28%, transparent);
+}
+
 .craft-el--jewellery-piece.craft-el--ring .craft-el__shape {
-  filter: drop-shadow(0 8px 16px rgba(71, 43, 43, 0.2));
+  filter:
+    drop-shadow(0 8px 16px rgba(71, 43, 43, 0.18))
+    drop-shadow(0 0 14px color-mix(in srgb, var(--color-cream) 65%, transparent));
+  box-shadow: none;
 }
 
 @keyframes craft-float {
@@ -214,18 +256,18 @@
   }
 }
 
-@keyframes craft-merge-out {
+@keyframes jewellery-reveal {
   0% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.62);
   }
   55% {
-    opacity: 0.85;
-    transform: translate(-50%, -50%) scale(1.18);
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.06);
   }
   100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.35);
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -234,9 +276,11 @@
     animation: none;
   }
 
-  .craft-el.is-merging {
-    animation: none;
-    opacity: 0.4;
+  .craft-el.is-merge-converge,
+  .craft-el.is-merge-vanish,
+  .craft-el.is-merge-reveal {
+    transition-duration: 1ms;
+    animation-duration: 1ms;
   }
 }
 
