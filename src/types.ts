@@ -38,6 +38,10 @@ export interface CatalogElement {
   ingredients?: string[]
   /** Price in whole currency units (placeholder). */
   price?: number
+  /** Figma-style product title shown in the sheet. */
+  displayName?: string
+  /** Centered materials line under the product image. */
+  materialsLine?: string
 }
 
 export interface Recipe {

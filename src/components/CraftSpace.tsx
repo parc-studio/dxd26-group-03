@@ -113,8 +113,16 @@ export function CraftSpace() {
       <div className="craft-space__grain" aria-hidden="true" />
 
       <header className={`craft-space__brand${sheet ? ' is-sheet-open' : ''}`}>
-        <p className="craft-space__eyebrow">Craft space</p>
-        <h1 className="craft-space__title">Celestial</h1>
+        <h1 className="craft-space__title">
+          <img
+            className="craft-space__logo"
+            src="/celestial-logo.png"
+            alt="celestial Switzerland"
+            width={220}
+            height={72}
+            draggable={false}
+          />
+        </h1>
         {!sheet ? (
           <p className="craft-space__hint">
             Drag materials to craft. Tap a finished piece for details.

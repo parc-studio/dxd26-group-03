@@ -109,6 +109,8 @@ export function assertCatalogAligned(knownImageFiles: string[]): string[] {
 export interface JewelleryDetail {
   id: string
   label: string
+  displayName: string
+  materialsLine: string
   image: string
   inset?: string
   insetImagePosition?: string
@@ -129,9 +131,12 @@ export function getJewelleryDetail(catalogId: string): JewelleryDetail | null {
       image: part?.image ?? def.image,
     }
   })
+  const materialsFallback = ingredients.map((p) => p.label).join(' & ')
   return {
     id: def.id,
     label: def.label,
+    displayName: def.displayName ?? def.label,
+    materialsLine: def.materialsLine ?? materialsFallback,
     image: def.image,
     inset: def.inset,
     insetImagePosition: def.insetImagePosition,

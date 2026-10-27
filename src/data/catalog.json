@@ -101,7 +101,9 @@
         "gold_ring_oval_empty",
         "aqua_oval_bead"
       ],
-      "price": 148
+      "price": 148,
+      "displayName": "Bague 'Athéna'",
+      "materialsLine": "Aqua & or"
     },
     {
       "id": "gold_oval_rose_ring",
@@ -120,7 +122,9 @@
         "gold_ring_oval_empty",
         "rose_quartz_faceted"
       ],
-      "price": 162
+      "price": 162,
+      "displayName": "Bague 'Rosée'",
+      "materialsLine": "Quartz rose & or"
     },
     {
       "id": "gold_oval_ribbed_ring",
@@ -139,7 +143,9 @@
         "gold_ring_oval_empty",
         "gold_ribbed_bead"
       ],
-      "price": 138
+      "price": 138,
+      "displayName": "Bague 'Cannelée'",
+      "materialsLine": "Or strié"
     },
     {
       "id": "gold_oval_cluster_ring",
@@ -159,7 +165,9 @@
         "aqua_oval_bead",
         "gold_ribbed_bead"
       ],
-      "price": 178
+      "price": 178,
+      "displayName": "Bague 'Constellation'",
+      "materialsLine": "Aqua, or strié"
     },
     {
       "id": "silver_filigree_aqua_ring",
@@ -178,7 +186,9 @@
         "silver_ring_filigree_empty",
         "aqua_oval_bead"
       ],
-      "price": 128
+      "price": 128,
+      "displayName": "Bague 'Néréide'",
+      "materialsLine": "Aqua & argenté"
     },
     {
       "id": "silver_filigree_rose_ring",
@@ -197,7 +207,9 @@
         "silver_ring_filigree_empty",
         "rose_quartz_faceted"
       ],
-      "price": 136
+      "price": 136,
+      "displayName": "Bague 'Aurore'",
+      "materialsLine": "Quartz rose & argenté"
     },
     {
       "id": "silver_rose_accent_ring",
@@ -217,7 +229,9 @@
         "rose_quartz_faceted",
         "gold_ribbed_bead"
       ],
-      "price": 154
+      "price": 154,
+      "displayName": "Bague 'Éclat'",
+      "materialsLine": "Quartz rose, or & argenté"
     },
     {
       "id": "gold_wide_aqua_ring",
@@ -236,7 +250,9 @@
         "gold_ring_wide_empty",
         "aqua_oval_bead"
       ],
-      "price": 168
+      "price": 168,
+      "displayName": "Bague 'Horizon'",
+      "materialsLine": "Aqua & or large"
     },
     {
       "id": "gold_wide_rose_ring",
@@ -255,7 +271,9 @@
         "gold_ring_wide_empty",
         "rose_quartz_faceted"
       ],
-      "price": 174
+      "price": 174,
+      "displayName": "Bague 'Blush'",
+      "materialsLine": "Quartz rose & or large"
     },
     {
       "id": "gold_wide_ribbed_ring",
@@ -274,7 +292,9 @@
         "gold_ring_wide_empty",
         "gold_ribbed_bead"
       ],
-      "price": 158
+      "price": 158,
+      "displayName": "Bague 'Texture'",
+      "materialsLine": "Or strié & or large"
     }
   ],
   "recipes": [

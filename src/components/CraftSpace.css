@@ -53,24 +53,27 @@
   animation: brand-in 900ms ease-out both;
 }
 
-.craft-space__eyebrow {
-  margin: 0 0 0.2rem;
-  font-family: var(--font-ui);
-  font-size: 0.65rem;
-  font-weight: 400;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-}
-
 .craft-space__title {
   margin: 0;
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: clamp(2.35rem, 11vw, 4.5rem);
-  line-height: 0.95;
-  letter-spacing: 0.02em;
-  color: var(--ink);
+  line-height: 0;
+}
+
+.craft-space__logo {
+  display: block;
+  width: min(42vw, 11.5rem);
+  height: auto;
+  margin-inline: auto;
+  /* Logo asset is dark ink — invert on the dark craft space */
+  filter: invert(1) brightness(1.05);
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.craft-space__brand.is-sheet-open .craft-space__logo {
+  /* Grey Figma veil: show true dark mark */
+  filter: none;
+  width: min(38vw, 10.5rem);
 }
 
 .craft-space__hint {
@@ -118,9 +121,12 @@
     top: clamp(1.5rem, 4vw, 2.75rem);
   }
 
-  .craft-space__eyebrow {
-    font-size: 0.7rem;
-    letter-spacing: 0.22em;
+  .craft-space__logo {
+    width: min(28vw, 13rem);
+  }
+
+  .craft-space__brand.is-sheet-open .craft-space__logo {
+    width: min(24vw, 11.5rem);
   }
 
   .craft-space__hint {

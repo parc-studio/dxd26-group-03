@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { JewelleryDetail } from '../data/catalog'
+import { ChainBorderButton } from './ChainBorderButton'
 import './JewellerySheet.css'
 
 interface JewellerySheetProps {
@@ -70,14 +71,10 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
     } catch {
       /* already released */
     }
-    if (dragY >= DISMISS_PX) {
-      requestClose()
-    } else {
-      setDragY(0)
-    }
+    if (dragY >= DISMISS_PX) requestClose()
+    else setDragY(0)
   }
 
-  /** Allow swipe-down from scroll body only when scrolled to top. */
   const onBodyPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const sc = scrollRef.current
     if (!sc || sc.scrollTop > 2) return
@@ -130,14 +127,8 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
 
   const panelOffset = closing || !entered ? '110%' : `${dragY}px`
   const backdropOpacity =
-    closing || !entered ? 0 : Math.max(0.12, 1 - dragY / 280)
+    closing || !entered ? 0 : Math.max(0.2, 1 - dragY / 280)
   const panelTransition = dragY > 0 && !closing ? 'none' : undefined
-
-  const priceLabel = new Intl.NumberFormat('en-CH', {
-    style: 'currency',
-    currency: 'CHF',
-    maximumFractionDigits: 0,
-  }).format(detail.price)
 
   return (
     <div
@@ -169,31 +160,6 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
           onPointerCancel={onHandlePointerUp}
         >
           <span className="jewellery-sheet__handle" aria-hidden="true" />
-          <button
-            type="button"
-            className="jewellery-sheet__close"
-            aria-label="Close details"
-            onClick={requestClose}
-          >
-            Close
-          </button>
-        </div>
-
-        <div className="jewellery-sheet__hero" aria-hidden="true">
-          <div
-            className="jewellery-sheet__hero-img"
-            style={{ backgroundImage: `url(${detail.image})` }}
-          />
-          {detail.inset ? (
-            <span
-              className="jewellery-sheet__hero-inset"
-              style={{
-                backgroundImage: `url(${detail.inset})`,
-                backgroundPosition: detail.insetImagePosition ?? 'center',
-                backgroundSize: detail.insetImageSize ?? 'cover',
-              }}
-            />
-          ) : null}
         </div>
 
         <div
@@ -205,64 +171,63 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
           onPointerCancel={onBodyPointerUp}
         >
           <h2 id="jewellery-sheet-title" className="jewellery-sheet__title">
-            {detail.label}
+            {detail.displayName}
           </h2>
+
+          <div className="jewellery-sheet__hero" aria-hidden="true">
+            <div
+              className="jewellery-sheet__hero-img"
+              style={{ backgroundImage: `url(${detail.image})` }}
+            />
+            {detail.inset ? (
+              <span
+                className="jewellery-sheet__hero-inset"
+                style={{
+                  backgroundImage: `url(${detail.inset})`,
+                  backgroundPosition: detail.insetImagePosition ?? 'center',
+                  backgroundSize: detail.insetImageSize ?? 'cover',
+                }}
+              />
+            ) : null}
+          </div>
+
+          <p className="jewellery-sheet__materials">{detail.materialsLine}</p>
 
           <p className="jewellery-sheet__desc">{detail.description}</p>
 
-          <section className="jewellery-sheet__section" aria-label="Elements">
-            <h3 className="jewellery-sheet__section-title">Elements</h3>
-            <ul className="jewellery-sheet__ingredients">
-              {detail.ingredients.map((part) => (
-                <li key={part.id} className="jewellery-sheet__ingredient">
-                  <span
-                    className="jewellery-sheet__ingredient-swatch"
-                    style={{ backgroundImage: `url(${part.image})` }}
-                    aria-hidden="true"
-                  />
-                  <span className="jewellery-sheet__ingredient-label">
-                    {part.label}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section className="jewellery-sheet__buy" aria-label="Price and quantity">
-            <div className="jewellery-sheet__price">
-              <span className="jewellery-sheet__price-label">Price</span>
-              <span className="jewellery-sheet__price-value">{priceLabel}</span>
+          <div className="jewellery-sheet__actions">
+            <div className="jewellery-sheet__qty" aria-label="Quantity">
+              <button
+                type="button"
+                className="jewellery-sheet__qty-btn"
+                aria-label="Decrease quantity"
+                disabled={qty <= 1}
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+              >
+                −
+              </button>
+              <span className="jewellery-sheet__qty-value" aria-live="polite">
+                {qty}
+              </span>
+              <button
+                type="button"
+                className="jewellery-sheet__qty-btn"
+                aria-label="Increase quantity"
+                onClick={() => setQty((q) => Math.min(9, q + 1))}
+              >
+                +
+              </button>
             </div>
-            <div className="jewellery-sheet__qty">
-              <span className="jewellery-sheet__qty-label">Quantity</span>
-              <div className="jewellery-sheet__qty-controls">
-                <button
-                  type="button"
-                  className="jewellery-sheet__qty-btn"
-                  aria-label="Decrease quantity"
-                  disabled={qty <= 1}
-                  onClick={() => setQty((q) => Math.max(1, q - 1))}
-                >
-                  −
-                </button>
-                <span className="jewellery-sheet__qty-value" aria-live="polite">
-                  {qty}
-                </span>
-                <button
-                  type="button"
-                  className="jewellery-sheet__qty-btn"
-                  aria-label="Increase quantity"
-                  onClick={() => setQty((q) => Math.min(9, q + 1))}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          </section>
 
-          <p className="jewellery-sheet__footnote">
-            Placeholder details — Fotini will refine images and copy.
-          </p>
+            <ChainBorderButton
+              className="jewellery-sheet__cart"
+              onClick={() => {
+                /* prototype placeholder */
+              }}
+            >
+              Add to cart
+            </ChainBorderButton>
+          </div>
         </div>
       </div>
     </div>
