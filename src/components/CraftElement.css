@@ -117,6 +117,8 @@
   left: 50%;
   bottom: calc(100% + 0.2rem);
   transform: translateX(-50%);
+  width: max-content;
+  max-width: min(12rem, 80vw);
   font-family: var(--font-ui);
   font-size: 0.68rem;
   font-weight: 500;
@@ -124,9 +126,11 @@
   line-height: 1.15;
   text-transform: uppercase;
   color: var(--color-brand-warm);
-  max-width: 6.5rem;
   text-align: center;
-  white-space: normal;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
+  word-break: normal;
+  overflow-wrap: normal;
   pointer-events: none;
   text-shadow: none;
   opacity: 0;
@@ -247,7 +251,7 @@
   .craft-el__label {
     font-size: 0.65rem;
     letter-spacing: 0.05em;
-    max-width: 7rem;
+    max-width: min(14rem, 40vw);
   }
 
   .craft-el--circle .craft-el__shape {
