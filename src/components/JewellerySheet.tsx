@@ -9,6 +9,7 @@ interface JewellerySheetProps {
 }
 
 const DISMISS_PX = 96
+const HERO_SCALE_MIN = 0.6
 
 export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   const [qty, setQty] = useState(1)
@@ -16,6 +17,9 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   const [closing, setClosing] = useState(false)
   const [entered, setEntered] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const heroRef = useRef<HTMLDivElement>(null)
+  const heroHeightRef = useRef(0)
+  const scrollRafRef = useRef(0)
   const dragRef = useRef<{
     pointerId: number
     startY: number
@@ -25,6 +29,58 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true))
     return () => cancelAnimationFrame(id)
+  }, [])
+
+  const applyHeroScale = useCallback(() => {
+    const sc = scrollRef.current
+    const hero = heroRef.current
+    if (!sc || !hero) return
+
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      hero.style.transform = 'scale(1)'
+      hero.style.marginBottom = '0px'
+      return
+    }
+
+    if (!heroHeightRef.current) {
+      hero.style.transform = 'scale(1)'
+      hero.style.marginBottom = '0px'
+      heroHeightRef.current = hero.offsetHeight
+    }
+    const natural = heroHeightRef.current || hero.offsetHeight
+    // Freeze max scroll from unscaled layout so progress stays stable while shrinking
+    const liveMax = Math.max(0, sc.scrollHeight - sc.clientHeight)
+    const baselineMax = Math.max(liveMax, natural * 0.55)
+    const t =
+      baselineMax > 0 ? Math.min(1, Math.max(0, sc.scrollTop / baselineMax)) : 0
+    const scale = 1 - t * (1 - HERO_SCALE_MIN)
+    hero.style.transform = `scale(${scale})`
+    hero.style.marginBottom = `${(scale - 1) * natural}px`
+  }, [])
+
+  const onScrollContent = useCallback(() => {
+    if (scrollRafRef.current) return
+    scrollRafRef.current = requestAnimationFrame(() => {
+      scrollRafRef.current = 0
+      applyHeroScale()
+    })
+  }, [applyHeroScale])
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      heroHeightRef.current = 0
+      applyHeroScale()
+    }, 50)
+    return () => window.clearTimeout(id)
+  }, [applyHeroScale, detail.id])
+
+  useEffect(() => {
+    return () => {
+      if (scrollRafRef.current) cancelAnimationFrame(scrollRafRef.current)
+    }
   }, [])
 
   const finishClose = useCallback(() => {
@@ -169,93 +225,98 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
           <span className="jewellery-sheet__handle" aria-hidden="true" />
         </div>
 
-        <div className="jewellery-sheet__hero" aria-hidden="true">
-          <div
-            className="jewellery-sheet__hero-img"
-            style={{ backgroundImage: `url(${detail.image})` }}
-          />
-          {detail.inset ? (
-            <span
-              className="jewellery-sheet__hero-inset"
-              style={{
-                backgroundImage: `url(${detail.inset})`,
-                backgroundPosition: detail.insetImagePosition ?? 'center',
-                backgroundSize: detail.insetImageSize ?? 'cover',
-              }}
-            />
-          ) : null}
-        </div>
-
         <div
           className="jewellery-sheet__scroll"
           ref={scrollRef}
+          onScroll={onScrollContent}
           onPointerDown={onBodyPointerDown}
           onPointerMove={onBodyPointerMove}
           onPointerUp={onBodyPointerUp}
           onPointerCancel={onBodyPointerUp}
         >
-          <h2 id="jewellery-sheet-title" className="jewellery-sheet__name">
-            {pieceName}
-          </h2>
-
-          <p className="jewellery-sheet__desc">{detail.description}</p>
-
-          <section className="jewellery-sheet__section" aria-label="Elements">
-            <h3 className="jewellery-sheet__section-title">Elements</h3>
-            <ul className="jewellery-sheet__ingredients">
-              {detail.ingredients.map((part) => (
-                <li key={part.id} className="jewellery-sheet__ingredient">
-                  <span
-                    className="jewellery-sheet__ingredient-swatch"
-                    style={{ backgroundImage: `url(${part.image})` }}
-                    aria-hidden="true"
-                  />
-                  <span className="jewellery-sheet__ingredient-label">
-                    {part.label}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <div className="jewellery-sheet__price">
-            <span className="jewellery-sheet__price-label">Price</span>
-            <span className="jewellery-sheet__price-value">{priceLabel}</span>
+          <div className="jewellery-sheet__hero" ref={heroRef} aria-hidden="true">
+            <div
+              className="jewellery-sheet__hero-img"
+              style={{ backgroundImage: `url(${detail.image})` }}
+            />
+            {detail.inset ? (
+              <span
+                className="jewellery-sheet__hero-inset"
+                style={{
+                  backgroundImage: `url(${detail.inset})`,
+                  backgroundPosition: detail.insetImagePosition ?? 'center',
+                  backgroundSize: detail.insetImageSize ?? 'cover',
+                }}
+              />
+            ) : null}
           </div>
 
-          <div className="jewellery-sheet__actions">
-            <div className="jewellery-sheet__qty" aria-label="Quantity">
-              <button
-                type="button"
-                className="jewellery-sheet__qty-btn"
-                aria-label="Decrease quantity"
-                disabled={qty <= 1}
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-              >
-                −
-              </button>
-              <span className="jewellery-sheet__qty-value" aria-live="polite">
-                {qty}
-              </span>
-              <button
-                type="button"
-                className="jewellery-sheet__qty-btn"
-                aria-label="Increase quantity"
-                onClick={() => setQty((q) => Math.min(9, q + 1))}
-              >
-                +
-              </button>
+          <div className="jewellery-sheet__body">
+            <h2 id="jewellery-sheet-title" className="jewellery-sheet__name">
+              {pieceName}
+            </h2>
+
+            <p className="jewellery-sheet__desc">{detail.description}</p>
+
+            <section className="jewellery-sheet__section" aria-label="Elements">
+              <h3 className="jewellery-sheet__section-title">Elements</h3>
+              <ul className="jewellery-sheet__ingredients">
+                {detail.ingredients.map((part) => (
+                  <li key={part.id} className="jewellery-sheet__ingredient">
+                    <span
+                      className="jewellery-sheet__ingredient-swatch"
+                      style={{ backgroundImage: `url(${part.image})` }}
+                      aria-hidden="true"
+                    />
+                    <span className="jewellery-sheet__ingredient-label">
+                      {part.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <div className="jewellery-sheet__price">
+              <span className="jewellery-sheet__price-label">Price</span>
+              <span className="jewellery-sheet__price-value">{priceLabel}</span>
             </div>
 
-            <ChainBorderButton
-              className="jewellery-sheet__cart"
-              onClick={() => {
-                /* prototype placeholder */
-              }}
-            >
-              Add to cart
-            </ChainBorderButton>
+            <div className="jewellery-sheet__actions">
+              <div className="jewellery-sheet__qty" aria-label="Quantity">
+                <button
+                  type="button"
+                  className="jewellery-sheet__qty-btn"
+                  aria-label="Decrease quantity"
+                  disabled={qty <= 1}
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                >
+                  −
+                </button>
+                <span className="jewellery-sheet__qty-value" aria-live="polite">
+                  {qty}
+                </span>
+                <button
+                  type="button"
+                  className="jewellery-sheet__qty-btn"
+                  aria-label="Increase quantity"
+                  onClick={() => setQty((q) => Math.min(9, q + 1))}
+                >
+                  +
+                </button>
+              </div>
+
+              <ChainBorderButton
+                className="jewellery-sheet__cart"
+                onClick={() => {
+                  /* prototype placeholder */
+                }}
+              >
+                Add to cart
+              </ChainBorderButton>
+            </div>
           </div>
+
+          <div className="jewellery-sheet__scroll-travel" aria-hidden="true" />
         </div>
       </div>
     </div>

@@ -67,16 +67,30 @@
   background: #c8c4be;
 }
 
+.jewellery-sheet__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 0;
+  touch-action: pan-y;
+  background: #fff;
+}
+
 .jewellery-sheet__hero {
   position: relative;
-  flex-shrink: 0;
+  z-index: 1;
   width: 100%;
   margin: 0;
   aspect-ratio: 5 / 4;
-  max-height: 15.5rem;
+  max-height: 16.5rem;
   border-radius: 0;
   background: #eceae6;
   overflow: hidden;
+  transform: scale(1);
+  transform-origin: center top;
+  will-change: transform, margin-bottom;
 }
 
 .jewellery-sheet__hero-img {
@@ -99,15 +113,17 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
-.jewellery-sheet__scroll {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+.jewellery-sheet__body {
+  position: relative;
+  z-index: 2;
   padding: 0.85rem 1.25rem calc(1.35rem + var(--safe-bottom));
-  touch-action: pan-y;
   background: #fff;
+}
+
+/* Invisible travel below actions so scroll can ease image 1 → 0.6 */
+.jewellery-sheet__scroll-travel {
+  height: 12rem;
+  pointer-events: none;
 }
 
 .jewellery-sheet__name {
@@ -251,6 +267,12 @@
   .jewellery-sheet__panel,
   .jewellery-sheet__backdrop {
     transition: none;
+  }
+
+  .jewellery-sheet__hero {
+    transform: none !important;
+    margin-bottom: 0 !important;
+    will-change: auto;
   }
 }
 
