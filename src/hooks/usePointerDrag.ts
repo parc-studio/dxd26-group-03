@@ -11,9 +11,16 @@ interface UsePointerDragOptions {
   onMove: (next: Position) => void
   /** Called once when a drag ends, with the final position. */
   onDrop?: (next: Position) => void
+  /**
+   * Called on a light tap (little movement). When it returns true, the
+   * drop/merge handler is skipped — used to open the jewellery sheet.
+   */
+  onTap?: () => boolean | void
   /** Element that defines the drag bounds (the craft space). */
   boundsRef: React.RefObject<HTMLElement | null>
 }
+
+const TAP_MOVE_PX = 10
 
 let activeDragCount = 0
 
@@ -38,6 +45,7 @@ export function usePointerDrag({
   position,
   onMove,
   onDrop,
+  onTap,
   boundsRef,
 }: UsePointerDragOptions) {
   const [dragging, setDragging] = useState(false)
@@ -47,6 +55,9 @@ export function usePointerDrag({
   const positionRef = useRef(position)
   const onMoveRef = useRef(onMove)
   const onDropRef = useRef(onDrop)
+  const onTapRef = useRef(onTap)
+  const originClientRef = useRef({ x: 0, y: 0 })
+  const movedPxRef = useRef(0)
 
   useEffect(() => {
     positionRef.current = position
@@ -60,6 +71,10 @@ export function usePointerDrag({
   useEffect(() => {
     onDropRef.current = onDrop
   }, [onDrop])
+
+  useEffect(() => {
+    onTapRef.current = onTap
+  }, [onTap])
 
   useEffect(() => {
     return () => {
@@ -98,6 +113,8 @@ export function usePointerDrag({
       event.stopPropagation()
       event.currentTarget.setPointerCapture(event.pointerId)
       pointerIdRef.current = event.pointerId
+      originClientRef.current = { x: event.clientX, y: event.clientY }
+      movedPxRef.current = 0
 
       const rect = bounds.getBoundingClientRect()
       const pointerX = ((event.clientX - rect.left) / rect.width) * 100
@@ -119,6 +136,9 @@ export function usePointerDrag({
     (event: React.PointerEvent<HTMLElement>) => {
       if (pointerIdRef.current !== event.pointerId) return
       event.preventDefault()
+      const dx = event.clientX - originClientRef.current.x
+      const dy = event.clientY - originClientRef.current.y
+      movedPxRef.current = Math.hypot(dx, dy)
       moveToClient(event.clientX, event.clientY)
     },
     [moveToClient],
@@ -134,6 +154,12 @@ export function usePointerDrag({
       event.currentTarget.releasePointerCapture(event.pointerId)
     } catch {
       /* already released */
+    }
+
+    const wasTap = movedPxRef.current < TAP_MOVE_PX
+    if (wasTap) {
+      const handled = onTapRef.current?.()
+      if (handled) return
     }
     onDropRef.current?.(lastPosRef.current)
   }, [])

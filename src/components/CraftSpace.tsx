@@ -1,9 +1,16 @@
 import { useCallback, useRef, useState } from 'react'
-import { createStarterInstances, findRecipeResult, spawnInstance } from '../data/catalog'
+import {
+  createStarterInstances,
+  findRecipeResult,
+  getJewelleryDetail,
+  spawnInstance,
+  type JewelleryDetail,
+} from '../data/catalog'
 import { findDropTarget } from '../lib/hitTest'
 import { playMergeSound } from '../lib/mergeSound'
 import type { CraftInstance, MergeBurstState } from '../types'
 import { CraftElement } from './CraftElement'
+import { JewellerySheet } from './JewellerySheet'
 import { MergeBurst } from './MergeBurst'
 import './CraftSpace.css'
 
@@ -24,6 +31,7 @@ export function CraftSpace() {
   )
   const [mergingIds, setMergingIds] = useState<string[]>([])
   const [bursts, setBursts] = useState<MergeBurstState[]>([])
+  const [sheet, setSheet] = useState<JewelleryDetail | null>(null)
 
   const commitElements = useCallback((next: CraftInstance[]) => {
     elementsRef.current = next
@@ -43,6 +51,14 @@ export function CraftSpace() {
   const bringFront = useCallback((instanceId: string) => {
     setOrder((prev) => [...prev.filter((x) => x !== instanceId), instanceId])
   }, [])
+
+  const openJewellery = useCallback((catalogId: string) => {
+    if (busyRef.current) return
+    const detail = getJewelleryDetail(catalogId)
+    if (detail) setSheet(detail)
+  }, [])
+
+  const closeJewellery = useCallback(() => setSheet(null), [])
 
   const handleDrop = useCallback(
     (instanceId: string, pos: { x: number; y: number }) => {
@@ -100,7 +116,7 @@ export function CraftSpace() {
         <p className="craft-space__eyebrow">Craft space</p>
         <h1 className="craft-space__title">Celestial</h1>
         <p className="craft-space__hint">
-          Drag materials onto each other to craft.
+          Drag materials to craft. Tap a finished piece for details.
         </p>
       </header>
 
@@ -114,12 +130,17 @@ export function CraftSpace() {
           onMove={handleMove}
           onDrop={handleDrop}
           onBringFront={bringFront}
+          onOpenJewellery={openJewellery}
         />
       ))}
 
       {bursts.map((b) => (
         <MergeBurst key={b.id} x={b.x} y={b.y} />
       ))}
+
+      {sheet ? (
+        <JewellerySheet detail={sheet} onClose={closeJewellery} />
+      ) : null}
     </div>
   )
 }

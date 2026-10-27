@@ -1,146 +1,394 @@
 {
   "elements": [
     {
-      "id": "pearl",
-      "label": "Pearl",
-      "category": "beads",
-      "shape": "circle",
-      "kind": "material"
-    },
-    {
-      "id": "glass",
-      "label": "Glass",
-      "category": "beads",
-      "shape": "circle",
-      "kind": "material"
-    },
-    {
-      "id": "seed",
-      "label": "Seed",
-      "category": "beads",
-      "shape": "circle",
-      "kind": "material"
-    },
-    {
-      "id": "diamond",
-      "label": "Diamond",
-      "category": "stones",
-      "shape": "diamond",
-      "kind": "material"
-    },
-    {
-      "id": "amethyst",
-      "label": "Amethyst",
-      "category": "stones",
-      "shape": "diamond",
-      "kind": "material"
-    },
-    {
-      "id": "quartz",
-      "label": "Quartz",
-      "category": "stones",
-      "shape": "oval",
-      "kind": "material"
-    },
-    {
-      "id": "gold_plate",
-      "label": "Gold plate",
+      "id": "gold_ring_oval_empty",
+      "label": "Gold oval ring (empty)",
       "category": "gold",
-      "shape": "rect",
-      "kind": "material"
+      "shape": "ring",
+      "kind": "material",
+      "image": "/textures/gold-ring-oval-empty.png"
     },
     {
-      "id": "gold_wire",
-      "label": "Gold wire",
+      "id": "silver_ring_filigree_empty",
+      "label": "Silver filigree ring (empty)",
+      "category": "silver",
+      "shape": "ring",
+      "kind": "material",
+      "image": "/textures/silver-ring-filigree-empty.png"
+    },
+    {
+      "id": "gold_ring_wide_empty",
+      "label": "Gold wide ring (empty)",
       "category": "gold",
-      "shape": "oval",
-      "kind": "material"
+      "shape": "ring",
+      "kind": "material",
+      "image": "/textures/gold-ring-wide-empty.png"
     },
     {
-      "id": "silver",
-      "label": "Silver",
-      "category": "silver",
-      "shape": "rect",
-      "kind": "material"
-    },
-    {
-      "id": "steel",
-      "label": "Steel",
-      "category": "silver",
-      "shape": "circle",
-      "kind": "material"
-    },
-    {
-      "id": "fine_chain",
-      "label": "Fine chain",
-      "category": "chains",
-      "shape": "link",
-      "kind": "material"
-    },
-    {
-      "id": "link_chain",
-      "label": "Link chain",
-      "category": "chains",
-      "shape": "link",
-      "kind": "material"
-    },
-    {
-      "id": "gold_bead",
-      "label": "Gold bead",
+      "id": "gold_ribbed_bead",
+      "label": "Gold ribbed bead",
       "category": "beads",
       "shape": "circle",
-      "kind": "mid"
+      "kind": "material",
+      "image": "/textures/gold-ribbed-beads.png",
+      "imagePosition": "48% 45%",
+      "imageSize": "160%"
     },
     {
-      "id": "set_stone",
-      "label": "Set stone",
+      "id": "aqua_oval_bead",
+      "label": "Aqua oval bead",
+      "category": "beads",
+      "shape": "oval",
+      "kind": "material",
+      "image": "/textures/aqua-oval-beads.png",
+      "imagePosition": "28% 48%",
+      "imageSize": "180%"
+    },
+    {
+      "id": "rose_quartz_faceted",
+      "label": "Rose quartz bead",
       "category": "stones",
-      "shape": "diamond",
-      "kind": "mid"
+      "shape": "circle",
+      "kind": "material",
+      "image": "/textures/rose-quartz-faceted.png",
+      "imagePosition": "42% 52%",
+      "imageSize": "220%"
     },
     {
-      "id": "wired_pearl",
-      "label": "Wired pearl",
+      "id": "aqua_ribbed_cluster",
+      "label": "Aqua–ribbed cluster",
       "category": "beads",
       "shape": "oval",
-      "kind": "mid"
+      "kind": "mid",
+      "image": "/textures/aqua-oval-beads.png",
+      "imagePosition": "55% 48%",
+      "imageSize": "170%",
+      "inset": "/textures/gold-ribbed-beads.png",
+      "insetPosition": "78% 72%",
+      "insetSize": "42%",
+      "insetImagePosition": "48% 45%",
+      "insetImageSize": "200%"
     },
     {
-      "id": "celestial_pendant",
-      "label": "Pendant",
-      "category": "jewellery",
-      "shape": "oval",
-      "kind": "jewellery"
+      "id": "rose_gold_accent",
+      "label": "Rose gold accent",
+      "category": "stones",
+      "shape": "circle",
+      "kind": "mid",
+      "image": "/textures/rose-quartz-faceted.png",
+      "imagePosition": "58% 40%",
+      "imageSize": "240%",
+      "inset": "/textures/gold-ribbed-beads.png",
+      "insetPosition": "82% 78%",
+      "insetSize": "38%",
+      "insetImagePosition": "48% 45%",
+      "insetImageSize": "200%"
     },
     {
-      "id": "star_earring",
-      "label": "Earring",
+      "id": "gold_oval_aqua_ring",
+      "label": "Gold oval aqua ring",
       "category": "jewellery",
-      "shape": "diamond",
-      "kind": "jewellery"
+      "shape": "ring",
+      "kind": "jewellery",
+      "image": "/textures/gold-ring-oval-empty.png",
+      "inset": "/textures/aqua-oval-beads.png",
+      "insetPosition": "50% 40%",
+      "insetSize": "34%",
+      "insetImagePosition": "28% 48%",
+      "insetImageSize": "240%",
+      "description": "An oval gold setting cradling a cool aqua bead — light caught in still water.",
+      "ingredients": [
+        "gold_ring_oval_empty",
+        "aqua_oval_bead"
+      ],
+      "price": 148
+    },
+    {
+      "id": "gold_oval_rose_ring",
+      "label": "Gold oval rose ring",
+      "category": "jewellery",
+      "shape": "ring",
+      "kind": "jewellery",
+      "image": "/textures/gold-ring-oval-empty.png",
+      "inset": "/textures/rose-quartz-faceted.png",
+      "insetPosition": "50% 40%",
+      "insetSize": "34%",
+      "insetImagePosition": "42% 52%",
+      "insetImageSize": "280%",
+      "description": "Soft rose quartz seated in an openwork gold oval — a quiet blush against metal.",
+      "ingredients": [
+        "gold_ring_oval_empty",
+        "rose_quartz_faceted"
+      ],
+      "price": 162
+    },
+    {
+      "id": "gold_oval_ribbed_ring",
+      "label": "Gold oval ribbed ring",
+      "category": "jewellery",
+      "shape": "ring",
+      "kind": "jewellery",
+      "image": "/textures/gold-ring-oval-empty.png",
+      "inset": "/textures/gold-ribbed-beads.png",
+      "insetPosition": "50% 40%",
+      "insetSize": "32%",
+      "insetImagePosition": "48% 45%",
+      "insetImageSize": "200%",
+      "description": "A ribbed gold bead nested in the oval mount — texture meeting polish.",
+      "ingredients": [
+        "gold_ring_oval_empty",
+        "gold_ribbed_bead"
+      ],
+      "price": 138
+    },
+    {
+      "id": "gold_oval_cluster_ring",
+      "label": "Gold oval cluster ring",
+      "category": "jewellery",
+      "shape": "ring",
+      "kind": "jewellery",
+      "image": "/textures/gold-ring-oval-empty.png",
+      "inset": "/textures/aqua-oval-beads.png",
+      "insetPosition": "50% 40%",
+      "insetSize": "34%",
+      "insetImagePosition": "28% 48%",
+      "insetImageSize": "240%",
+      "description": "Aqua and ribbed gold together in the oval ring — a small constellation of craft.",
+      "ingredients": [
+        "gold_ring_oval_empty",
+        "aqua_oval_bead",
+        "gold_ribbed_bead"
+      ],
+      "price": 178
+    },
+    {
+      "id": "silver_filigree_aqua_ring",
+      "label": "Silver filigree aqua ring",
+      "category": "jewellery",
+      "shape": "ring",
+      "kind": "jewellery",
+      "image": "/textures/silver-ring-filigree-empty.png",
+      "inset": "/textures/aqua-oval-beads.png",
+      "insetPosition": "50% 30%",
+      "insetSize": "36%",
+      "insetImagePosition": "28% 48%",
+      "insetImageSize": "240%",
+      "description": "Filigree silver with an aqua centre — cool metal, cooler stone.",
+      "ingredients": [
+        "silver_ring_filigree_empty",
+        "aqua_oval_bead"
+      ],
+      "price": 128
+    },
+    {
+      "id": "silver_filigree_rose_ring",
+      "label": "Silver filigree rose ring",
+      "category": "jewellery",
+      "shape": "ring",
+      "kind": "jewellery",
+      "image": "/textures/silver-ring-filigree-empty.png",
+      "inset": "/textures/rose-quartz-faceted.png",
+      "insetPosition": "50% 30%",
+      "insetSize": "36%",
+      "insetImagePosition": "42% 52%",
+      "insetImageSize": "280%",
+      "description": "Rose quartz in a silver filigree bezel — pink light through openwork.",
+      "ingredients": [
+        "silver_ring_filigree_empty",
+        "rose_quartz_faceted"
+      ],
+      "price": 136
+    },
+    {
+      "id": "silver_rose_accent_ring",
+      "label": "Silver rose accent ring",
+      "category": "jewellery",
+      "shape": "ring",
+      "kind": "jewellery",
+      "image": "/textures/silver-ring-filigree-empty.png",
+      "inset": "/textures/rose-quartz-faceted.png",
+      "insetPosition": "50% 30%",
+      "insetSize": "36%",
+      "insetImagePosition": "42% 52%",
+      "insetImageSize": "280%",
+      "description": "Rose quartz with a gold accent, set in silver filigree — layered and soft.",
+      "ingredients": [
+        "silver_ring_filigree_empty",
+        "rose_quartz_faceted",
+        "gold_ribbed_bead"
+      ],
+      "price": 154
+    },
+    {
+      "id": "gold_wide_aqua_ring",
+      "label": "Gold wide aqua ring",
+      "category": "jewellery",
+      "shape": "ring",
+      "kind": "jewellery",
+      "image": "/textures/gold-ring-wide-empty.png",
+      "inset": "/textures/aqua-oval-beads.png",
+      "insetPosition": "50% 38%",
+      "insetSize": "28%",
+      "insetImagePosition": "28% 48%",
+      "insetImageSize": "240%",
+      "description": "A wide gold band with an aqua stone — bold frame, calm centre.",
+      "ingredients": [
+        "gold_ring_wide_empty",
+        "aqua_oval_bead"
+      ],
+      "price": 168
+    },
+    {
+      "id": "gold_wide_rose_ring",
+      "label": "Gold wide rose ring",
+      "category": "jewellery",
+      "shape": "ring",
+      "kind": "jewellery",
+      "image": "/textures/gold-ring-wide-empty.png",
+      "inset": "/textures/rose-quartz-faceted.png",
+      "insetPosition": "50% 38%",
+      "insetSize": "28%",
+      "insetImagePosition": "42% 52%",
+      "insetImageSize": "280%",
+      "description": "Wide gold and faceted rose quartz — warmth meeting blush.",
+      "ingredients": [
+        "gold_ring_wide_empty",
+        "rose_quartz_faceted"
+      ],
+      "price": 174
+    },
+    {
+      "id": "gold_wide_ribbed_ring",
+      "label": "Gold wide ribbed ring",
+      "category": "jewellery",
+      "shape": "ring",
+      "kind": "jewellery",
+      "image": "/textures/gold-ring-wide-empty.png",
+      "inset": "/textures/gold-ribbed-beads.png",
+      "insetPosition": "50% 38%",
+      "insetSize": "26%",
+      "insetImagePosition": "48% 45%",
+      "insetImageSize": "200%",
+      "description": "Ribbed gold bead on a wide engraved band — all metal, all texture.",
+      "ingredients": [
+        "gold_ring_wide_empty",
+        "gold_ribbed_bead"
+      ],
+      "price": 158
     }
   ],
   "recipes": [
-    { "a": "pearl", "b": "gold_wire", "result": "gold_bead" },
-    { "a": "gold_bead", "b": "fine_chain", "result": "celestial_pendant" },
-    { "a": "diamond", "b": "silver", "result": "set_stone" },
-    { "a": "set_stone", "b": "fine_chain", "result": "star_earring" },
-    { "a": "pearl", "b": "silver", "result": "wired_pearl" },
-    { "a": "amethyst", "b": "gold_wire", "result": "set_stone" },
-    { "a": "glass", "b": "gold_plate", "result": "gold_bead" }
+    {
+      "a": "gold_ring_oval_empty",
+      "b": "aqua_oval_bead",
+      "result": "gold_oval_aqua_ring"
+    },
+    {
+      "a": "gold_ring_oval_empty",
+      "b": "rose_quartz_faceted",
+      "result": "gold_oval_rose_ring"
+    },
+    {
+      "a": "gold_ring_oval_empty",
+      "b": "gold_ribbed_bead",
+      "result": "gold_oval_ribbed_ring"
+    },
+    {
+      "a": "gold_ring_oval_empty",
+      "b": "aqua_ribbed_cluster",
+      "result": "gold_oval_cluster_ring"
+    },
+    {
+      "a": "silver_ring_filigree_empty",
+      "b": "aqua_oval_bead",
+      "result": "silver_filigree_aqua_ring"
+    },
+    {
+      "a": "silver_ring_filigree_empty",
+      "b": "rose_quartz_faceted",
+      "result": "silver_filigree_rose_ring"
+    },
+    {
+      "a": "silver_ring_filigree_empty",
+      "b": "rose_gold_accent",
+      "result": "silver_rose_accent_ring"
+    },
+    {
+      "a": "gold_ring_wide_empty",
+      "b": "aqua_oval_bead",
+      "result": "gold_wide_aqua_ring"
+    },
+    {
+      "a": "gold_ring_wide_empty",
+      "b": "rose_quartz_faceted",
+      "result": "gold_wide_rose_ring"
+    },
+    {
+      "a": "gold_ring_wide_empty",
+      "b": "gold_ribbed_bead",
+      "result": "gold_wide_ribbed_ring"
+    },
+    {
+      "a": "aqua_oval_bead",
+      "b": "gold_ribbed_bead",
+      "result": "aqua_ribbed_cluster"
+    },
+    {
+      "a": "rose_quartz_faceted",
+      "b": "gold_ribbed_bead",
+      "result": "rose_gold_accent"
+    }
   ],
   "starters": [
-    { "catalogId": "pearl", "x": 18, "y": 30 },
-    { "catalogId": "glass", "x": 34, "y": 38 },
-    { "catalogId": "seed", "x": 16, "y": 44 },
-    { "catalogId": "diamond", "x": 70, "y": 30 },
-    { "catalogId": "amethyst", "x": 84, "y": 38 },
-    { "catalogId": "quartz", "x": 66, "y": 46 },
-    { "catalogId": "gold_plate", "x": 20, "y": 58 },
-    { "catalogId": "gold_wire", "x": 36, "y": 66 },
-    { "catalogId": "silver", "x": 68, "y": 58 },
-    { "catalogId": "steel", "x": 84, "y": 66 },
-    { "catalogId": "fine_chain", "x": 38, "y": 80 },
-    { "catalogId": "link_chain", "x": 60, "y": 86 }
+    {
+      "catalogId": "gold_ring_oval_empty",
+      "x": 22,
+      "y": 36
+    },
+    {
+      "catalogId": "silver_ring_filigree_empty",
+      "x": 50,
+      "y": 34
+    },
+    {
+      "catalogId": "gold_ring_wide_empty",
+      "x": 78,
+      "y": 36
+    },
+    {
+      "catalogId": "aqua_oval_bead",
+      "x": 20,
+      "y": 58
+    },
+    {
+      "catalogId": "rose_quartz_faceted",
+      "x": 42,
+      "y": 62
+    },
+    {
+      "catalogId": "gold_ribbed_bead",
+      "x": 64,
+      "y": 58
+    },
+    {
+      "catalogId": "aqua_oval_bead",
+      "x": 82,
+      "y": 64
+    },
+    {
+      "catalogId": "rose_quartz_faceted",
+      "x": 28,
+      "y": 78
+    },
+    {
+      "catalogId": "gold_ribbed_bead",
+      "x": 55,
+      "y": 80
+    },
+    {
+      "catalogId": "gold_oval_aqua_ring",
+      "x": 50,
+      "y": 52
+    }
   ]
 }
