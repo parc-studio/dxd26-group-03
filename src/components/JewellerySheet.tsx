@@ -11,7 +11,7 @@ interface JewellerySheetProps {
 }
 
 const DISMISS_PX = 96
-const HERO_MODEL_URL = `${import.meta.env.BASE_URL}necklace2-1.obj`
+const HERO_MODEL_URL = `${import.meta.env.BASE_URL}necklace2-2.glb`
 
 export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   const [qty, setQty] = useState(1)
@@ -180,11 +180,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
           onPointerUp={onBodyPointerUp}
           onPointerCancel={onBodyPointerUp}
         >
-          <div
-            className="jewellery-sheet__hero"
-            // Rotating the model must not start the sheet's drag-to-dismiss.
-            onPointerDown={(e) => e.stopPropagation()}
-          >
+          <div className="jewellery-sheet__hero" aria-hidden="true">
             <Suspense fallback={null}>
               <HeroModel
                 className="jewellery-sheet__hero-model"
