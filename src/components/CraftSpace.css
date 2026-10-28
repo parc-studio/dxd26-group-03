@@ -15,37 +15,50 @@
 }
 
 .craft-space__header {
-  /* Tune bag + hamburger size here (Fotini). */
-  --craft-header-icon-size: 1.875rem;
+  /* Tune bag + hamburger glyph size here (Fotini). */
+  --craft-header-icon-size: 1.375rem;
+  /* Celestial site header metrics (box-model.png): 248 | 34 | 56 */
+  --craft-header-logo-col: 248px;
+  --craft-header-bag-col: 34px;
+  --craft-header-menu-col: 56px;
+  --craft-header-row: 51px;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   z-index: 45;
-  display: flex;
+  display: grid;
+  grid-template-columns:
+    minmax(0, var(--craft-header-logo-col))
+    var(--craft-header-bag-col)
+    var(--craft-header-menu-col);
+  grid-template-rows: var(--craft-header-row);
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  column-gap: 0;
   width: 100%;
   box-sizing: border-box;
-  padding:
-    max(0.75rem, var(--safe-top))
-    max(1rem, var(--safe-right))
-    0.75rem
-    max(1rem, var(--safe-left));
+  margin: 0;
+  padding: 24px 16px;
+  padding-top: calc(24px + var(--safe-top));
+  border: 0;
   background: var(--color-surface-muted);
-  border: none;
   box-shadow: none;
   pointer-events: none;
 }
 
 .craft-space__title {
+  grid-column: 1;
   margin: 0;
+  min-width: 0;
   line-height: 0;
 }
 
 .craft-space__logo-btn {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: var(--craft-header-row);
   margin: 0;
   padding: 0;
   border: none;
@@ -62,8 +75,12 @@
 
 .craft-space__logo {
   display: block;
-  width: min(42vw, 9.5rem);
+  width: auto;
+  max-width: 100%;
   height: auto;
+  max-height: var(--craft-header-row);
+  object-fit: contain;
+  object-position: left center;
   /* Dark mark on cream canvas — no invert */
   filter: none;
   user-select: none;
@@ -71,23 +88,12 @@
   pointer-events: none;
 }
 
-.craft-space__header.is-sheet-open .craft-space__logo {
-  width: min(36vw, 8.5rem);
-}
-
-.craft-space__actions {
-  display: flex;
-  align-items: center;
-  gap: 0.95rem;
-  pointer-events: auto;
-}
-
 .craft-space__icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: calc(var(--craft-header-icon-size) + 0.65rem);
-  height: calc(var(--craft-header-icon-size) + 0.65rem);
+  width: 100%;
+  height: var(--craft-header-row);
   margin: 0;
   padding: 0;
   border: none;
@@ -96,6 +102,15 @@
   box-shadow: none;
   color: var(--color-brand);
   cursor: pointer;
+  pointer-events: auto;
+}
+
+.craft-space__icon-btn--bag {
+  grid-column: 2;
+}
+
+.craft-space__icon-btn--menu {
+  grid-column: 3;
 }
 
 .craft-space__icon-btn:focus-visible {
@@ -109,25 +124,36 @@
   height: var(--craft-header-icon-size);
 }
 
+/* Narrow phones: keep column pattern, shrink logo track proportionally */
+@media (max-width: 360px) {
+  .craft-space__header {
+    --craft-header-logo-col: min(248px, 58vw);
+    --craft-header-bag-col: 32px;
+    --craft-header-menu-col: 48px;
+  }
+}
+
+/* Wider viewports: same padding + column sizes, flex spacer before icons */
+@media (min-width: 400px) {
+  .craft-space__header {
+    grid-template-columns:
+      var(--craft-header-logo-col)
+      minmax(0, 1fr)
+      var(--craft-header-bag-col)
+      var(--craft-header-menu-col);
+  }
+
+  .craft-space__icon-btn--bag {
+    grid-column: 3;
+  }
+
+  .craft-space__icon-btn--menu {
+    grid-column: 4;
+  }
+}
+
 @media (min-width: 768px) {
   .craft-space__header {
-    --craft-header-icon-size: 2rem;
-    padding:
-      max(1rem, var(--safe-top))
-      clamp(1.25rem, 3vw, 2rem)
-      1rem
-      clamp(1.25rem, 3vw, 2rem);
-  }
-
-  .craft-space__logo {
-    width: min(22vw, 11rem);
-  }
-
-  .craft-space__header.is-sheet-open .craft-space__logo {
-    width: min(20vw, 9.5rem);
-  }
-
-  .craft-space__actions {
-    gap: 1.15rem;
+    --craft-header-icon-size: 1.5rem;
   }
 }

@@ -468,46 +468,44 @@ export function CraftSpace() {
             />
           </button>
         </h1>
-        <div className="craft-space__actions">
-          <button
-            type="button"
-            className="craft-space__icon-btn"
-            aria-label="Shopping bag"
+        <button
+          type="button"
+          className="craft-space__icon-btn craft-space__icon-btn--bag"
+          aria-label="Shopping bag"
+        >
+          <svg
+            className="craft-space__icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <svg
-              className="craft-space__icon"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6.5 8.5h11l-.7 11.2a1.5 1.5 0 0 1-1.5 1.4H8.7a1.5 1.5 0 0 1-1.5-1.4L6.5 8.5Z" />
-              <path d="M9 8.5V7a3 3 0 0 1 6 0v1.5" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            className="craft-space__icon-btn"
-            aria-label="Menu"
+            <path d="M6.5 8.5h11l-.7 11.2a1.5 1.5 0 0 1-1.5 1.4H8.7a1.5 1.5 0 0 1-1.5-1.4L6.5 8.5Z" />
+            <path d="M9 8.5V7a3 3 0 0 1 6 0v1.5" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className="craft-space__icon-btn craft-space__icon-btn--menu"
+          aria-label="Menu"
+        >
+          <svg
+            className="craft-space__icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
           >
-            <svg
-              className="craft-space__icon"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-            >
-              <path d="M4 7h16" />
-              <path d="M4 12h16" />
-              <path d="M4 17h16" />
-            </svg>
-          </button>
-        </div>
+            <path d="M4 7h16" />
+            <path d="M4 12h16" />
+            <path d="M4 17h16" />
+          </svg>
+        </button>
       </header>
 
       {elements.map((el) => (
