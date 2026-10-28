@@ -33,14 +33,15 @@ const SHOWCASE = {
 }
 
 // Making-of photos for the showcased piece, shown before the price.
-const GALLERY = [
+// Files follow the chosen metal: WIP-gold.jfif, final-silver.jfif, …
+const gallery = (metal: Metal) => [
   {
-    src: `${import.meta.env.BASE_URL}WIP.jfif`,
-    alt: 'Jeweller’s bench with blue apatite and peridot stones, a spool of fine chain and pliers',
+    src: `${import.meta.env.BASE_URL}WIP-${metal}.jfif`,
+    alt: `Jeweller’s bench with blue apatite and peridot stones, a spool of fine ${metal} chain and pliers`,
   },
   {
-    src: `${import.meta.env.BASE_URL}final2.jfif`,
-    alt: 'The finished Mirror of the Seas necklace',
+    src: `${import.meta.env.BASE_URL}final-${metal}.jfif`,
+    alt: `The finished Mirror of the Seas necklace in ${metal}`,
   },
 ]
 
@@ -53,7 +54,7 @@ const swatch = (id: string) => getCatalogElement(id)?.image ?? ''
 
 export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   const [qty, setQty] = useState(1)
-  const [metal, setMetal] = useState<Metal>('gold')
+  const [metal, setMetal] = useState<Metal>('silver')
   const [dragY, setDragY] = useState(0)
   const [closing, setClosing] = useState(false)
   const [entered, setEntered] = useState(false)
@@ -286,7 +287,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
 
             <section className="jewellery-sheet__section" aria-label="Making of">
               <div className="jewellery-sheet__gallery">
-                {GALLERY.map((photo) => (
+                {gallery(metal).map((photo) => (
                   <figure key={photo.src} className="jewellery-sheet__photo">
                     <img
                       className="jewellery-sheet__photo-img"

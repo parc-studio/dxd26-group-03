@@ -32,16 +32,15 @@ const GEM_GLOW = 0.15
 export type Metal = 'gold' | 'silver'
 
 const METALS: Record<Metal, () => THREE.MeshPhysicalMaterial> = {
-  // or poli : le clearcoat ajoute un second reflet très net par-dessus
+  // or 18 carats poli : réflectance mesurée de l'or, un peu éclaircie, sans
+  // clearcoat (un vernis donne un reflet blanc « plastique » que l'or n'a pas)
   gold: () =>
     new THREE.MeshPhysicalMaterial({
       name: 'Gold',
-      color: new THREE.Color().setRGB(1.0, 0.71, 0.29, THREE.LinearSRGBColorSpace),
+      color: new THREE.Color().setRGB(1.0, 0.8, 0.42, THREE.LinearSRGBColorSpace),
       metalness: 1,
-      roughness: 0.18,
-      clearcoat: 0.3,
-      clearcoatRoughness: 0.05,
-      envMapIntensity: 1.0,
+      roughness: 0.12,
+      envMapIntensity: 1.2,
     }),
   // argent poli : presque blanc et très lisse, pour que chaque maillon
   // accroche un petit reflet net comme sur une photo de chaîne fine
@@ -112,8 +111,10 @@ export default function HeroModel({ src, metal, className }: HeroModelProps) {
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.outputColorSpace = THREE.SRGBColorSpace
-    renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 0.8
+    // Khronos PBR Neutral : conçu pour le rendu produit, il garde la teinte des
+    // métaux là où ACES tire l'or vers l'orange et délave les reflets
+    renderer.toneMapping = THREE.NeutralToneMapping
+    renderer.toneMappingExposure = 0.85
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFShadowMap
     renderer.domElement.style.display = 'block'
