@@ -1,9 +1,18 @@
-.celestial-header {
-  --background-color: rgb(255, 255, 255);
-  --v72ca93ba: 32px;
+/* Shared by JewellerySheet / JewelleryReveal so both sit flush under the bar */
+:root {
+  --celestial-header-pad-y: 24px;
   --celestial-header-logo-w: 130px;
   --celestial-header-logo-h: 51px;
   --celestial-header-burger-w: 18px;
+  --celestial-header-offset: calc(
+    var(--celestial-header-pad-y) + var(--celestial-header-logo-h) +
+      var(--celestial-header-pad-y) + var(--safe-top)
+  );
+}
+
+.celestial-header {
+  --background-color: rgb(255, 255, 255);
+  --v72ca93ba: 32px;
   position: absolute;
   top: 0;
   left: 0;
@@ -18,8 +27,8 @@
   max-width: 100%;
   box-sizing: border-box;
   margin: 0;
-  padding: 24px 16px;
-  padding-top: calc(24px + var(--safe-top));
+  padding: var(--celestial-header-pad-y) 16px;
+  padding-top: calc(var(--celestial-header-pad-y) + var(--safe-top));
   border: 0;
   background: var(--background-color);
   box-shadow: none;
@@ -135,9 +144,12 @@
 }
 
 @media (max-width: 390px) {
-  .celestial-header {
+  :root {
     --celestial-header-logo-w: min(130px, 34vw);
     --celestial-header-logo-h: 44px;
+  }
+
+  .celestial-header {
     column-gap: 4px;
   }
 }

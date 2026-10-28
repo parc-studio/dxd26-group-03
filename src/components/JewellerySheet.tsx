@@ -1,36 +1,34 @@
-import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
-import { getCatalogElement, type JewelleryDetail } from '../data/catalog'
-import type { Metal } from './HeroModel'
-import './JewellerySheet.css'
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
+import { getCatalogElement, type JewelleryDetail } from "../data/catalog";
+import { jewelleryHeroModelUrl } from "../lib/jewelleryModel";
+import type { Metal } from "./HeroModel";
+import "./JewellerySheet.css";
 
 // Loaded on demand to keep three.js out of the main bundle.
-const HeroModel = lazy(() => import('./HeroModel'))
+const HeroModel = lazy(() => import("./HeroModel"));
 
 interface JewellerySheetProps {
-  detail: JewelleryDetail
-  onClose: () => void
+  detail: JewelleryDetail;
+  onClose: () => void;
 }
-
-const heroModelUrl = (metal: Metal) =>
-  `${import.meta.env.BASE_URL}chain1-${metal}.glb`
 
 // Text for the piece shown by the 3D model, which is the same for every
 // jewellery result; swatches reuse the closest catalog textures.
 const SHOWCASE = {
-  name: 'Necklace Poseidon',
+  name: "Necklace Poseidon",
   stock: 1,
   description:
-    'A fine chain traced like a shoreline, set with peridot and blue apatite ' +
-    'that catch the light like sun on shallow and deep water.',
+    "A fine chain traced like a shoreline, set with peridot and blue apatite " +
+    "that catch the light like sun on shallow and deep water.",
   chains: {
-    gold: { id: 'chain_gold', label: 'Stainless steel' },
-    silver: { id: 'chain_silver', label: 'Stainless steel' },
+    gold: { id: "chain_gold", label: "Stainless steel" },
+    silver: { id: "chain_silver", label: "Stainless steel" },
   },
   gems: [
-    { id: 'peridot', label: 'Peridot' },
-    { id: 'apatite', label: 'Apatite' },
+    { id: "peridot", label: "Peridot" },
+    { id: "apatite", label: "Apatite" },
   ],
-}
+};
 
 // Making-of photos for the showcased piece, shown before the price.
 // Files follow the chosen metal: WIP-gold.jfif, final-silver.jfif, …
@@ -43,55 +41,55 @@ const gallery = (metal: Metal) => [
     src: `${import.meta.env.BASE_URL}final-${metal}.jfif`,
     alt: `The finished Poseidon necklace in ${metal}`,
   },
-]
+];
 
 const METAL_OPTIONS: { value: Metal; label: string }[] = [
-  { value: 'gold', label: 'Gold' },
-  { value: 'silver', label: 'Silver' },
-]
+  { value: "gold", label: "Gold" },
+  { value: "silver", label: "Silver" },
+];
 
-const swatch = (id: string) => getCatalogElement(id)?.image ?? ''
+const swatch = (id: string) => getCatalogElement(id)?.image ?? "";
 
 export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
-  const [qty, setQty] = useState(1)
-  const [metal, setMetal] = useState<Metal>('silver')
-  const [closing, setClosing] = useState(false)
-  const [entered, setEntered] = useState(false)
+  const [qty, setQty] = useState(1);
+  const [metal, setMetal] = useState<Metal>("silver");
+  const [closing, setClosing] = useState(false);
+  const [entered, setEntered] = useState(false);
   // Element whose name bubble is showing after a tap on its swatch.
-  const [shownElement, setShownElement] = useState<string | null>(null)
+  const [shownElement, setShownElement] = useState<string | null>(null);
 
   useEffect(() => {
-    const id = requestAnimationFrame(() => setEntered(true))
-    return () => cancelAnimationFrame(id)
-  }, [])
+    const id = requestAnimationFrame(() => setEntered(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   useEffect(() => {
-    if (!shownElement) return
-    const id = window.setTimeout(() => setShownElement(null), 2000)
-    return () => window.clearTimeout(id)
-  }, [shownElement])
+    if (!shownElement) return;
+    const id = window.setTimeout(() => setShownElement(null), 2000);
+    return () => window.clearTimeout(id);
+  }, [shownElement]);
 
   const requestClose = useCallback(() => {
-    setClosing(true)
-    window.setTimeout(onClose, 280)
-  }, [onClose])
+    setClosing(true);
+    window.setTimeout(onClose, 280);
+  }, [onClose]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') requestClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [requestClose])
+      if (e.key === "Escape") requestClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [requestClose]);
 
   // Shop format: "CHF25.00", no space after the currency.
-  const priceLabel = `CHF${detail.price.toFixed(2)}`
+  const priceLabel = `CHF${detail.price.toFixed(2)}`;
 
-  const pieceName = SHOWCASE.name
+  const pieceName = SHOWCASE.name;
 
   return (
     <div
-      className={`jewellery-sheet${entered && !closing ? ' is-open' : ''}${closing ? ' is-closing' : ''}`}
+      className={`jewellery-sheet${entered && !closing ? " is-open" : ""}${closing ? " is-closing" : ""}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="jewellery-sheet-title"
@@ -104,7 +102,13 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
             aria-label="Back"
             onClick={requestClose}
           >
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              fill="none"
+              aria-hidden="true"
+            >
               <path
                 d="M15 5l-7 7 7 7"
                 stroke="currentColor"
@@ -122,14 +126,18 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
               <Suspense fallback={null}>
                 <HeroModel
                   className="jewellery-sheet__hero-model"
-                  src={heroModelUrl(metal)}
+                  src={jewelleryHeroModelUrl(detail.id, metal)}
                   metal={metal}
                 />
               </Suspense>
             </div>
 
             <div className="jewellery-sheet__hero-controls">
-              <div className="jewellery-sheet__metal" role="group" aria-label="Chain metal">
+              <div
+                className="jewellery-sheet__metal"
+                role="group"
+                aria-label="Chain metal"
+              >
                 {METAL_OPTIONS.map((option) => (
                   <button
                     key={option.value}
@@ -143,9 +151,12 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
                 ))}
               </div>
 
-              <ul className="jewellery-sheet__ingredients" aria-label="Elements">
+              <ul
+                className="jewellery-sheet__ingredients"
+                aria-label="Elements"
+              >
                 {[
-                  { ...SHOWCASE.chains[metal], className: '' },
+                  { ...SHOWCASE.chains[metal], className: "" },
                   ...SHOWCASE.gems.map((part) => ({
                     ...part,
                     className: ` jewellery-sheet__ingredient-swatch--${part.id}`,
@@ -159,11 +170,16 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
                       aria-label={part.label}
                       aria-expanded={shownElement === part.id}
                       onClick={() =>
-                        setShownElement((id) => (id === part.id ? null : part.id))
+                        setShownElement((id) =>
+                          id === part.id ? null : part.id,
+                        )
                       }
                     />
                     {shownElement === part.id && (
-                      <span className="jewellery-sheet__ingredient-name" role="status">
+                      <span
+                        className="jewellery-sheet__ingredient-name"
+                        role="status"
+                      >
                         {part.label}
                       </span>
                     )}
@@ -180,7 +196,10 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
 
             <p className="jewellery-sheet__desc">{SHOWCASE.description}</p>
 
-            <section className="jewellery-sheet__section" aria-label="Making of">
+            <section
+              className="jewellery-sheet__section"
+              aria-label="Making of"
+            >
               <div className="jewellery-sheet__gallery">
                 {gallery(metal).map((photo) => (
                   <figure key={photo.src} className="jewellery-sheet__photo">
@@ -202,7 +221,11 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
         <footer className="jewellery-sheet__footer">
           <div className="jewellery-sheet__stock-row">
             <p className="jewellery-sheet__price">{priceLabel}</p>
-            <div className="jewellery-sheet__qty" role="group" aria-label="Quantity">
+            <div
+              className="jewellery-sheet__qty"
+              role="group"
+              aria-label="Quantity"
+            >
               <button
                 type="button"
                 className="jewellery-sheet__qty-btn"
@@ -239,5 +262,5 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
         </footer>
       </div>
     </div>
-  )
+  );
 }

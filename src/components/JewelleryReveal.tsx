@@ -1,5 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import type { JewelleryDetail } from '../data/catalog'
+import { jewelleryHeroModelUrl } from '../lib/jewelleryModel'
 import { JEWELLERY_REVEAL_EXIT_MS } from '../lib/mergeTiming'
 import type { Metal } from './HeroModel'
 import './JewelleryReveal.css'
@@ -12,9 +13,6 @@ interface JewelleryRevealProps {
   onClose: () => void
   onViewProduct: () => void
 }
-
-const heroModelUrl = (metal: Metal) =>
-  `${import.meta.env.BASE_URL}chain1-${metal}.glb`
 
 export function JewelleryReveal({
   detail,
@@ -73,7 +71,7 @@ export function JewelleryReveal({
         <Suspense fallback={null}>
           <HeroModel
             className="jewellery-reveal__model"
-            src={heroModelUrl(metal)}
+            src={jewelleryHeroModelUrl(detail.id, metal)}
             metal={metal}
             transparentBackground
           />
