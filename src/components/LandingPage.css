@@ -141,15 +141,18 @@
   -webkit-user-drag: none;
 }
 
-/* Soft frost over browse + craft previews; CTAs sit above */
+/* Soft frost over browse + craft previews; CTAs sit above.
+   Fotini: tune --landing-veil-opacity (was 42%, now 28%). */
 .landing__veil {
+  --landing-veil-opacity: 28%;
+  --landing-veil-blur: 8px;
   position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  background: color-mix(in srgb, #fff 42%, transparent);
-  backdrop-filter: blur(10px) saturate(1.05);
-  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  background: color-mix(in srgb, #fff var(--landing-veil-opacity), transparent);
+  backdrop-filter: blur(var(--landing-veil-blur)) saturate(1.05);
+  -webkit-backdrop-filter: blur(var(--landing-veil-blur)) saturate(1.05);
 }
 
 .landing__cta-wrap {
