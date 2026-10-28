@@ -24,7 +24,11 @@ import {
 } from "../lib/craftPhysics";
 import { findDropTarget, findMatchingTarget } from "../lib/hitTest";
 import { opposingExplodeDirs, runParentExplode } from "../lib/mergeExplode";
-import { MERGE_CONVERGE_MS, MERGE_PUNCH_MS } from "../lib/mergeTiming";
+import {
+  MERGE_CONVERGE_MS,
+  MERGE_JEWELLERY_EXPLODE_SCALE,
+  MERGE_PUNCH_MS,
+} from "../lib/mergeTiming";
 import { resolveJewelleryMetal } from "../lib/jewelleryModel";
 import { attachShakeListener } from "../lib/shakeDetect";
 import { runShakeJostle } from "../lib/shakeJostle";
@@ -240,6 +244,7 @@ export function CraftSpace() {
       parentB: string,
       approach: { x: number; y: number },
       onDone: () => void,
+      impulseScale = 1,
     ) => {
       explodeCancelRef.current?.();
 
@@ -283,6 +288,7 @@ export function CraftSpace() {
         spaceWidthPx: w,
         spaceHeightPx: h,
         playfield: bounds,
+        impulseScale,
         onFrame: applyExplodePositions,
         onDone: () => {
           explodeCancelRef.current = null;
@@ -731,11 +737,18 @@ export function CraftSpace() {
             setJewelleryReveal(detail);
           }
 
-          startParentExplode(mid, parentA, parentB, approach, () => {
-            explodeDoneRef.current = true;
-            delete dragOriginRef.current[instanceId];
-            clearBusyIfIdle();
-          });
+          startParentExplode(
+            mid,
+            parentA,
+            parentB,
+            approach,
+            () => {
+              explodeDoneRef.current = true;
+              delete dragOriginRef.current[instanceId];
+              clearBusyIfIdle();
+            },
+            MERGE_JEWELLERY_EXPLODE_SCALE,
+          );
         }, MERGE_PUNCH_MS);
       }, MERGE_CONVERGE_MS);
     },

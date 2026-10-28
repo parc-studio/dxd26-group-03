@@ -36,3 +36,9 @@ export const MERGE_EXPLODE_STOP_SPEED_PX = 14
 
 /** Safety cap so a soft explode cannot hang the board. */
 export const MERGE_EXPLODE_MAX_MS = 900
+
+/**
+ * Impulse scale for finished-jewellery merges (reveal opens at the same time).
+ * Keep parents on the board, but a smaller burst so it fights the focus view less.
+ */
+export const MERGE_JEWELLERY_EXPLODE_SCALE = 0.38

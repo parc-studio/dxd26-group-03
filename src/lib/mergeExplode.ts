@@ -60,6 +60,8 @@ export function runParentExplode(options: {
   spaceWidthPx: number
   spaceHeightPx: number
   playfield: PlayfieldBounds
+  /** 1 = full burst; use ~0.35–0.45 under JewelleryReveal. */
+  impulseScale?: number
   onFrame: (positions: Record<string, { x: number; y: number }>) => void
   onDone: () => void
 }): () => void {
@@ -70,14 +72,16 @@ export function runParentExplode(options: {
     spaceWidthPx,
     spaceHeightPx,
     playfield,
+    impulseScale = 1,
     onFrame,
     onDone,
   } = options
 
   const w = Math.max(1, spaceWidthPx)
   const h = Math.max(1, spaceHeightPx)
-  const speedScale = MERGE_PARENT_SPLIT_PX / 100
+  const speedScale = (MERGE_PARENT_SPLIT_PX / 100) * impulseScale
   const speed0 = MERGE_EXPLODE_SPEED_PX * speedScale
+  const maxMs = MERGE_EXPLODE_MAX_MS * Math.min(1, 0.55 + impulseScale * 0.45)
   const impulseIds = new Set(bodies.map((b) => b.id))
 
   const state: PhysicsBody[] = [
@@ -178,7 +182,7 @@ export function runParentExplode(options: {
 
     if (
       maxSpeedPx < MERGE_EXPLODE_STOP_SPEED_PX ||
-      now - started > MERGE_EXPLODE_MAX_MS
+      now - started > maxMs
     ) {
       finish()
       return
