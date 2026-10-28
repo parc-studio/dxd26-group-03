@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   createStarterInstances,
   findRecipeResult,
@@ -7,7 +13,7 @@ import {
   isAppointmentPair,
   spawnInstance,
   type JewelleryDetail,
-} from '../data/catalog'
+} from "../data/catalog";
 import {
   clampToPlayfield,
   defaultPlayfield,
@@ -15,203 +21,207 @@ import {
   resolveDragPush,
   separateAll,
   type PlayfieldBounds,
-} from '../lib/craftPhysics'
-import { findDropTarget, findMatchingTarget } from '../lib/hitTest'
-import { opposingExplodeDirs, runParentExplode } from '../lib/mergeExplode'
-import {
-  MERGE_CONVERGE_MS,
-  MERGE_PUNCH_MS,
-} from '../lib/mergeTiming'
+} from "../lib/craftPhysics";
+import { findDropTarget, findMatchingTarget } from "../lib/hitTest";
+import { opposingExplodeDirs, runParentExplode } from "../lib/mergeExplode";
+import { MERGE_CONVERGE_MS, MERGE_PUNCH_MS } from "../lib/mergeTiming";
+import { attachShakeListener } from "../lib/shakeDetect";
+import { runShakeJostle } from "../lib/shakeJostle";
 import type {
   CraftInstance,
   MergeBurstState,
   ParentMergePhase,
-} from '../types'
-import { AppointmentToast } from './AppointmentToast'
-import { CelestialHeader } from './CelestialHeader'
-import { CraftElement } from './CraftElement'
-import { JewelleryReveal } from './JewelleryReveal'
-import { JewellerySheet } from './JewellerySheet'
-import { MergeBurst } from './MergeBurst'
-import './CraftSpace.css'
+} from "../types";
+import { AppointmentToast } from "./AppointmentToast";
+import { CelestialHeader } from "./CelestialHeader";
+import { CraftElement } from "./CraftElement";
+import "./CraftSpace.css";
+import { JewelleryReveal } from "./JewelleryReveal";
+import { JewellerySheet } from "./JewellerySheet";
+import { MergeBurst } from "./MergeBurst";
 
-const APPOINTMENT_TOAST_MS = 6000
+const APPOINTMENT_TOAST_MS = 6000;
 /** Hold overlap this long before showing the appointment toast. */
-const APPOINTMENT_HOLD_MS = 350
+const APPOINTMENT_HOLD_MS = 350;
 
-const CRAFT_HASH = '/craft'
+const CRAFT_HASH = "/craft";
 
 /** Catalog id of the product open in the URL (`#/craft/<id>`), if any. */
 function readProductFromHash(): string | null {
-  const match = window.location.hash.match(/^#\/?craft\/([^/?#]+)/)
-  return match ? decodeURIComponent(match[1]) : null
+  const match = window.location.hash.match(/^#\/?craft\/([^/?#]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
 }
 
 function detailFromHash(): JewelleryDetail | null {
-  const id = readProductFromHash()
-  return id ? getJewelleryDetail(id) : null
+  const id = readProductFromHash();
+  return id ? getJewelleryDetail(id) : null;
 }
 
 export function CraftSpace() {
-  const spaceRef = useRef<HTMLDivElement>(null)
-  const brandRef = useRef<HTMLElement>(null)
-  const playfieldRef = useRef<PlayfieldBounds>(defaultPlayfield())
-  const elementsRef = useRef<CraftInstance[]>([])
-  const busyRef = useRef(false)
-  const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({})
-  const explodeCancelRef = useRef<(() => void) | null>(null)
+  const spaceRef = useRef<HTMLDivElement>(null);
+  const brandRef = useRef<HTMLElement>(null);
+  const playfieldRef = useRef<PlayfieldBounds>(defaultPlayfield());
+  const elementsRef = useRef<CraftInstance[]>([]);
+  const busyRef = useRef(false);
+  const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
+  const explodeCancelRef = useRef<(() => void) | null>(null);
+  const shakeJostleRef = useRef<{
+    cancel: () => void;
+    kick: (intensity?: number) => void;
+  } | null>(null);
+  const shakeResetPendingRef = useRef(false);
 
   const [elements, setElements] = useState<CraftInstance[]>(() => {
-    const starters = createStarterInstances()
-    elementsRef.current = starters
-    return starters
-  })
+    const starters = createStarterInstances();
+    elementsRef.current = starters;
+    return starters;
+  });
   const [order, setOrder] = useState<string[]>(() =>
     elementsRef.current.map((el) => el.instanceId),
-  )
-  const [bursts, setBursts] = useState<MergeBurstState[]>([])
-  const [sheet, setSheet] = useState<JewelleryDetail | null>(detailFromHash)
-  const [cartCount, setCartCount] = useState(0)
+  );
+  const [bursts, setBursts] = useState<MergeBurstState[]>([]);
+  const [sheet, setSheet] = useState<JewelleryDetail | null>(detailFromHash);
+  const [cartCount, setCartCount] = useState(0);
   /** True when the open sheet pushed its own history entry (close → back). */
-  const sheetPushedRef = useRef(false)
+  const sheetPushedRef = useRef(false);
   const [jewelleryReveal, setJewelleryReveal] =
-    useState<JewelleryDetail | null>(null)
+    useState<JewelleryDetail | null>(null);
   const [parentMergePhase, setParentMergePhase] = useState<
     Record<string, ParentMergePhase>
-  >({})
-  const [underFlashId, setUnderFlashId] = useState<string | null>(null)
+  >({});
+  const [underFlashId, setUnderFlashId] = useState<string | null>(null);
   const [appointmentToast, setAppointmentToast] = useState<
-    'off' | 'on' | 'leaving'
-  >('off')
-  const appointmentToastVisibleRef = useRef(false)
-  const appointmentToastTimerRef = useRef<number | null>(null)
-  const appointmentHoldTimerRef = useRef<number | null>(null)
-  const jewelleryRevealOpenRef = useRef(false)
-  const explodeDoneRef = useRef(true)
+    "off" | "on" | "leaving"
+  >("off");
+  const appointmentToastVisibleRef = useRef(false);
+  const appointmentToastTimerRef = useRef<number | null>(null);
+  const appointmentHoldTimerRef = useRef<number | null>(null);
+  const jewelleryRevealOpenRef = useRef(false);
+  const explodeDoneRef = useRef(true);
 
   const commitElements = useCallback((next: CraftInstance[]) => {
-    elementsRef.current = next
-    setElements(next)
-  }, [])
+    elementsRef.current = next;
+    setElements(next);
+  }, []);
 
   const clearAppointmentHold = useCallback(() => {
     if (appointmentHoldTimerRef.current !== null) {
-      window.clearTimeout(appointmentHoldTimerRef.current)
-      appointmentHoldTimerRef.current = null
+      window.clearTimeout(appointmentHoldTimerRef.current);
+      appointmentHoldTimerRef.current = null;
     }
-  }, [])
+  }, []);
 
   const beginAppointmentToastLeave = useCallback(() => {
-    clearAppointmentHold()
+    clearAppointmentHold();
     if (appointmentToastTimerRef.current !== null) {
-      window.clearTimeout(appointmentToastTimerRef.current)
-      appointmentToastTimerRef.current = null
+      window.clearTimeout(appointmentToastTimerRef.current);
+      appointmentToastTimerRef.current = null;
     }
-    setAppointmentToast((phase) => (phase === 'on' ? 'leaving' : phase))
-  }, [clearAppointmentHold])
+    setAppointmentToast((phase) => (phase === "on" ? "leaving" : phase));
+  }, [clearAppointmentHold]);
 
   const finishAppointmentToastLeave = useCallback(() => {
-    appointmentToastVisibleRef.current = false
-    setAppointmentToast('off')
-  }, [])
+    appointmentToastVisibleRef.current = false;
+    setAppointmentToast("off");
+  }, []);
 
   const showAppointmentToast = useCallback(() => {
-    if (appointmentToastVisibleRef.current) return
-    appointmentToastVisibleRef.current = true
-    setAppointmentToast('on')
+    if (appointmentToastVisibleRef.current) return;
+    appointmentToastVisibleRef.current = true;
+    setAppointmentToast("on");
     if (appointmentToastTimerRef.current !== null) {
-      window.clearTimeout(appointmentToastTimerRef.current)
+      window.clearTimeout(appointmentToastTimerRef.current);
     }
     appointmentToastTimerRef.current = window.setTimeout(() => {
-      appointmentToastTimerRef.current = null
-      setAppointmentToast((phase) => (phase === 'on' ? 'leaving' : phase))
-    }, APPOINTMENT_TOAST_MS)
-  }, [])
+      appointmentToastTimerRef.current = null;
+      setAppointmentToast((phase) => (phase === "on" ? "leaving" : phase));
+    }, APPOINTMENT_TOAST_MS);
+  }, []);
 
   const armAppointmentHold = useCallback(() => {
-    if (appointmentToastVisibleRef.current) return
-    if (appointmentHoldTimerRef.current !== null) return
+    if (appointmentToastVisibleRef.current) return;
+    if (appointmentHoldTimerRef.current !== null) return;
     appointmentHoldTimerRef.current = window.setTimeout(() => {
-      appointmentHoldTimerRef.current = null
-      showAppointmentToast()
-    }, APPOINTMENT_HOLD_MS)
-  }, [showAppointmentToast])
+      appointmentHoldTimerRef.current = null;
+      showAppointmentToast();
+    }, APPOINTMENT_HOLD_MS);
+  }, [showAppointmentToast]);
 
   useEffect(() => {
     return () => {
       if (appointmentToastTimerRef.current !== null) {
-        window.clearTimeout(appointmentToastTimerRef.current)
+        window.clearTimeout(appointmentToastTimerRef.current);
       }
       if (appointmentHoldTimerRef.current !== null) {
-        window.clearTimeout(appointmentHoldTimerRef.current)
+        window.clearTimeout(appointmentHoldTimerRef.current);
       }
-    }
-  }, [])
+    };
+  }, []);
 
   const refreshPlayfield = useCallback(() => {
-    const space = spaceRef.current
-    if (!space) return playfieldRef.current
-    const next = measurePlayfield(space, brandRef.current)
-    playfieldRef.current = next
-    return next
-  }, [])
+    const space = spaceRef.current;
+    if (!space) return playfieldRef.current;
+    const next = measurePlayfield(space, brandRef.current);
+    playfieldRef.current = next;
+    return next;
+  }, []);
 
   const getPlayfield = useCallback(() => {
-    return playfieldRef.current
-  }, [])
+    return playfieldRef.current;
+  }, []);
 
   const spaceSize = useCallback(() => {
-    const rect = spaceRef.current?.getBoundingClientRect()
+    const rect = spaceRef.current?.getBoundingClientRect();
     return {
       w: rect?.width ?? 390,
       h: rect?.height ?? 700,
-    }
-  }, [])
+    };
+  }, []);
 
   // Measure playfield under the logo/hint and de-overlap starters.
   useLayoutEffect(() => {
-    const bounds = refreshPlayfield()
-    const { w, h } = spaceSize()
+    const bounds = refreshPlayfield();
+    const { w, h } = spaceSize();
     const seated = separateAll(
       elementsRef.current.map((el) => {
-        const c = clampToPlayfield(el.x, el.y, bounds)
-        return { ...el, x: c.x, y: c.y }
+        const c = clampToPlayfield(el.x, el.y, bounds);
+        return { ...el, x: c.x, y: c.y };
       }),
       bounds,
       w,
       h,
-    )
-    commitElements(seated)
+    );
+    commitElements(seated);
 
     const onResize = () => {
-      const nextBounds = refreshPlayfield()
-      const size = spaceSize()
+      const nextBounds = refreshPlayfield();
+      const size = spaceSize();
       commitElements(
         separateAll(
           elementsRef.current.map((el) => {
-            const c = clampToPlayfield(el.x, el.y, nextBounds)
-            return { ...el, x: c.x, y: c.y }
+            const c = clampToPlayfield(el.x, el.y, nextBounds);
+            return { ...el, x: c.x, y: c.y };
           }),
           nextBounds,
           size.w,
           size.h,
         ),
-      )
-    }
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
-  }, [commitElements, refreshPlayfield, spaceSize])
+      );
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [commitElements, refreshPlayfield, spaceSize]);
 
   const applyExplodePositions = useCallback(
     (positions: Record<string, { x: number; y: number }>) => {
       const next = elementsRef.current.map((el) => {
-        const slot = positions[el.instanceId]
-        return slot ? { ...el, x: slot.x, y: slot.y } : el
-      })
-      commitElements(next)
+        const slot = positions[el.instanceId];
+        return slot ? { ...el, x: slot.x, y: slot.y } : el;
+      });
+      commitElements(next);
     },
     [commitElements],
-  )
+  );
 
   const startParentExplode = useCallback(
     (
@@ -221,17 +231,17 @@ export function CraftSpace() {
       approach: { x: number; y: number },
       onDone: () => void,
     ) => {
-      explodeCancelRef.current?.()
+      explodeCancelRef.current?.();
 
-      const bounds = refreshPlayfield()
-      const { w, h } = spaceSize()
-      const [dirA, dirB] = opposingExplodeDirs(approach.x, approach.y)
-      const midClamped = clampToPlayfield(mid.x, mid.y, bounds)
+      const bounds = refreshPlayfield();
+      const { w, h } = spaceSize();
+      const [dirA, dirB] = opposingExplodeDirs(approach.x, approach.y);
+      const midClamped = clampToPlayfield(mid.x, mid.y, bounds);
 
       setParentMergePhase({
-        [parentA]: 'explode',
-        [parentB]: 'explode',
-      })
+        [parentA]: "explode",
+        [parentB]: "explode",
+      });
 
       // Seat parents at the merge point before the impulse so motion is visible.
       // Keep the new result (if any) where it is — other pieces can be nudged.
@@ -241,20 +251,17 @@ export function CraftSpace() {
             ? { ...el, x: midClamped.x, y: midClamped.y }
             : el,
         ),
-      )
+      );
 
       const others = elementsRef.current
-        .filter(
-          (el) =>
-            el.instanceId !== parentA && el.instanceId !== parentB,
-        )
+        .filter((el) => el.instanceId !== parentA && el.instanceId !== parentB)
         .map((el) => ({
           id: el.instanceId,
           x: el.x,
           y: el.y,
           // Finished jewellery stays put; materials get knocked around.
-          pinned: el.kind === 'jewellery',
-        }))
+          pinned: el.kind === "jewellery",
+        }));
 
       explodeCancelRef.current = runParentExplode({
         mid: midClamped,
@@ -268,27 +275,29 @@ export function CraftSpace() {
         playfield: bounds,
         onFrame: applyExplodePositions,
         onDone: () => {
-          explodeCancelRef.current = null
-          setParentMergePhase({})
+          explodeCancelRef.current = null;
+          setParentMergePhase({});
           // Final board-wide separation after the burst settles.
-          const size = spaceSize()
-          const pf = refreshPlayfield()
-          commitElements(separateAll(elementsRef.current, pf, size.w, size.h))
-          onDone()
+          const size = spaceSize();
+          const pf = refreshPlayfield();
+          commitElements(separateAll(elementsRef.current, pf, size.w, size.h));
+          onDone();
         },
-      })
+      });
     },
     [applyExplodePositions, commitElements, refreshPlayfield, spaceSize],
-  )
+  );
 
   const handleMove = useCallback(
     (instanceId: string, next: { x: number; y: number }) => {
-      if (busyRef.current) return
-      const dragged = elementsRef.current.find((el) => el.instanceId === instanceId)
-      if (!dragged) return
+      if (busyRef.current) return;
+      const dragged = elementsRef.current.find(
+        (el) => el.instanceId === instanceId,
+      );
+      if (!dragged) return;
 
-      const bounds = refreshPlayfield()
-      const { w, h } = spaceSize()
+      const bounds = refreshPlayfield();
+      const { w, h } = spaceSize();
       const pushed = resolveDragPush(
         elementsRef.current,
         instanceId,
@@ -299,11 +308,11 @@ export function CraftSpace() {
         (otherCatalogId) =>
           Boolean(findRecipeResult(dragged.catalogId, otherCatalogId)) ||
           isAppointmentPair(dragged.catalogId, otherCatalogId),
-      )
-      commitElements(pushed)
+      );
+      commitElements(pushed);
 
-      const draggedNow = pushed.find((el) => el.instanceId === instanceId)
-      if (!draggedNow) return
+      const draggedNow = pushed.find((el) => el.instanceId === instanceId);
+      if (!draggedNow) return;
       const appointmentTarget = findMatchingTarget(
         pushed,
         instanceId,
@@ -311,11 +320,11 @@ export function CraftSpace() {
         draggedNow.y,
         (otherCatalogId) =>
           isAppointmentPair(draggedNow.catalogId, otherCatalogId),
-      )
+      );
       if (appointmentTarget) {
-        armAppointmentHold()
+        armAppointmentHold();
       } else {
-        clearAppointmentHold()
+        clearAppointmentHold();
       }
     },
     [
@@ -325,95 +334,224 @@ export function CraftSpace() {
       refreshPlayfield,
       spaceSize,
     ],
-  )
+  );
 
   const bringFront = useCallback((instanceId: string) => {
-    setOrder((prev) => [...prev.filter((x) => x !== instanceId), instanceId])
-  }, [])
+    setOrder((prev) => [...prev.filter((x) => x !== instanceId), instanceId]);
+  }, []);
 
   const handleDragStart = useCallback(
     (instanceId: string, origin: { x: number; y: number }) => {
-      dragOriginRef.current[instanceId] = origin
+      dragOriginRef.current[instanceId] = origin;
     },
     [],
-  )
+  );
 
   const clearBusyIfIdle = useCallback(() => {
     if (!jewelleryRevealOpenRef.current && explodeDoneRef.current) {
-      busyRef.current = false
+      busyRef.current = false;
     }
-  }, [])
+  }, []);
+
+  /** Wipe merges/products and seat a fresh starter scatter. */
+  const resetCraftToStarters = useCallback(() => {
+    explodeCancelRef.current?.();
+    explodeCancelRef.current = null;
+    shakeJostleRef.current?.cancel();
+    shakeJostleRef.current = null;
+    shakeResetPendingRef.current = false;
+
+    jewelleryRevealOpenRef.current = false;
+    setJewelleryReveal(null);
+    setBursts([]);
+    setParentMergePhase({});
+    setUnderFlashId(null);
+    dragOriginRef.current = {};
+    explodeDoneRef.current = true;
+    clearAppointmentHold();
+    beginAppointmentToastLeave();
+
+    sheetPushedRef.current = false;
+    if (readProductFromHash()) {
+      window.history.replaceState(null, "", `#${CRAFT_HASH}`);
+    }
+    setSheet(null);
+
+    const starters = createStarterInstances();
+    const bounds = refreshPlayfield();
+    const { w, h } = spaceSize();
+    const seated = separateAll(
+      starters.map((el) => {
+        const c = clampToPlayfield(el.x, el.y, bounds);
+        return { ...el, x: c.x, y: c.y };
+      }),
+      bounds,
+      w,
+      h,
+    );
+    commitElements(seated);
+    setOrder(seated.map((el) => el.instanceId));
+    busyRef.current = false;
+  }, [
+    beginAppointmentToastLeave,
+    clearAppointmentHold,
+    commitElements,
+    refreshPlayfield,
+    spaceSize,
+  ]);
+
+  const startShakeJostle = useCallback(() => {
+    explodeCancelRef.current?.();
+    explodeCancelRef.current = null;
+    shakeJostleRef.current?.cancel();
+
+    busyRef.current = true;
+    shakeResetPendingRef.current = true;
+    jewelleryRevealOpenRef.current = false;
+    setJewelleryReveal(null);
+    setBursts([]);
+    setParentMergePhase({});
+    setUnderFlashId(null);
+    clearAppointmentHold();
+    beginAppointmentToastLeave();
+    sheetPushedRef.current = false;
+    if (readProductFromHash()) {
+      window.history.replaceState(null, "", `#${CRAFT_HASH}`);
+    }
+    setSheet(null);
+
+    const bounds = refreshPlayfield();
+    const { w, h } = spaceSize();
+    const live = elementsRef.current;
+    if (live.length === 0) {
+      resetCraftToStarters();
+      return;
+    }
+
+    shakeJostleRef.current = runShakeJostle({
+      bodies: live.map((el) => ({
+        id: el.instanceId,
+        x: el.x,
+        y: el.y,
+      })),
+      spaceWidthPx: w,
+      spaceHeightPx: h,
+      playfield: bounds,
+      onFrame: applyExplodePositions,
+      onDone: () => {
+        shakeJostleRef.current = null;
+        if (shakeResetPendingRef.current) {
+          resetCraftToStarters();
+        } else {
+          busyRef.current = false;
+        }
+      },
+    });
+  }, [
+    applyExplodePositions,
+    beginAppointmentToastLeave,
+    clearAppointmentHold,
+    refreshPlayfield,
+    resetCraftToStarters,
+    spaceSize,
+  ]);
+
+  // Android-first shake → jostle → reset. iOS permission gated for later.
+  // Note: listener is attached once; startShakeJostle is read via ref so we
+  // don't detach/reattach on every callback identity change.
+  const startShakeJostleRef = useRef(startShakeJostle);
+  startShakeJostleRef.current = startShakeJostle;
+
+  useEffect(() => {
+    const detach = attachShakeListener({
+      onShakePulse: (intensity) => {
+        shakeJostleRef.current?.kick(intensity);
+      },
+      onShake: () => {
+        console.info(
+          "[craft-shake]",
+          "CraftSpace handling onShake → jostle+reset",
+        );
+        startShakeJostleRef.current();
+      },
+    });
+    return () => {
+      detach();
+      shakeJostleRef.current?.cancel();
+      shakeJostleRef.current = null;
+    };
+  }, []);
 
   // The URL drives the product sheet, so back/forward and shared links work.
   useEffect(() => {
     const onHashChange = () => {
-      const detail = detailFromHash()
-      if (!detail) sheetPushedRef.current = false
-      setSheet(detail)
-    }
-    window.addEventListener('hashchange', onHashChange)
-    return () => window.removeEventListener('hashchange', onHashChange)
-  }, [])
+      const detail = detailFromHash();
+      if (!detail) sheetPushedRef.current = false;
+      setSheet(detail);
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
 
   const showSheet = useCallback((detail: JewelleryDetail) => {
-    if (readProductFromHash() === detail.id) return
-    sheetPushedRef.current = true
-    window.location.hash = `${CRAFT_HASH}/${encodeURIComponent(detail.id)}`
-  }, [])
+    if (readProductFromHash() === detail.id) return;
+    sheetPushedRef.current = true;
+    window.location.hash = `${CRAFT_HASH}/${encodeURIComponent(detail.id)}`;
+  }, []);
 
   const openJewellery = useCallback(
     (catalogId: string) => {
-      if (busyRef.current && !jewelleryRevealOpenRef.current) return
-      const detail = getJewelleryDetail(catalogId)
-      if (detail) showSheet(detail)
+      if (busyRef.current && !jewelleryRevealOpenRef.current) return;
+      const detail = getJewelleryDetail(catalogId);
+      if (detail) showSheet(detail);
     },
     [showSheet],
-  )
+  );
 
   const closeJewellery = useCallback(() => {
     if (sheetPushedRef.current) {
-      sheetPushedRef.current = false
-      window.history.back()
-      return
+      sheetPushedRef.current = false;
+      window.history.back();
+      return;
     }
     // Landed directly on a product URL: swap it for the craft route in place.
-    window.history.replaceState(null, '', `#${CRAFT_HASH}`)
-    setSheet(null)
-  }, [])
+    window.history.replaceState(null, "", `#${CRAFT_HASH}`);
+    setSheet(null);
+  }, []);
 
   const closeJewelleryReveal = useCallback(() => {
-    jewelleryRevealOpenRef.current = false
-    setJewelleryReveal(null)
-    clearBusyIfIdle()
-  }, [clearBusyIfIdle])
+    jewelleryRevealOpenRef.current = false;
+    setJewelleryReveal(null);
+    clearBusyIfIdle();
+  }, [clearBusyIfIdle]);
 
   const viewProductFromReveal = useCallback(() => {
-    if (!jewelleryReveal) return
-    const detail = jewelleryReveal
-    jewelleryRevealOpenRef.current = false
-    setJewelleryReveal(null)
-    showSheet(detail)
-    clearBusyIfIdle()
-  }, [jewelleryReveal, clearBusyIfIdle, showSheet])
+    if (!jewelleryReveal) return;
+    const detail = jewelleryReveal;
+    jewelleryRevealOpenRef.current = false;
+    setJewelleryReveal(null);
+    showSheet(detail);
+    clearBusyIfIdle();
+  }, [jewelleryReveal, clearBusyIfIdle, showSheet]);
 
   const handleDrop = useCallback(
     (instanceId: string, pos: { x: number; y: number }) => {
-      if (busyRef.current) return
-      clearAppointmentHold()
+      if (busyRef.current) return;
+      clearAppointmentHold();
 
-      const bounds = refreshPlayfield()
-      const clamped = clampToPlayfield(pos.x, pos.y, bounds)
+      const bounds = refreshPlayfield();
+      const clamped = clampToPlayfield(pos.x, pos.y, bounds);
       const placed = elementsRef.current.map((el) =>
         el.instanceId === instanceId
           ? { ...el, x: clamped.x, y: clamped.y }
           : el,
-      )
-      commitElements(placed)
+      );
+      commitElements(placed);
 
-      const dragged = placed.find((el) => el.instanceId === instanceId)
-      if (!dragged) return
+      const dragged = placed.find((el) => el.instanceId === instanceId);
+      if (!dragged) return;
 
-      const target = findDropTarget(placed, instanceId, clamped.x, clamped.y)
+      const target = findDropTarget(placed, instanceId, clamped.x, clamped.y);
       const appointmentTarget = findMatchingTarget(
         placed,
         instanceId,
@@ -421,59 +559,59 @@ export function CraftSpace() {
         clamped.y,
         (otherCatalogId) =>
           isAppointmentPair(dragged.catalogId, otherCatalogId),
-      )
+      );
       const recipeCatalogId = target
         ? findRecipeResult(dragged.catalogId, target.catalogId)
-        : null
+        : null;
 
       // A real recipe on the nearest piece still crafts. Otherwise a thin
       // ring + any stone books an appointment instead of bouncing silently.
       if (!recipeCatalogId && appointmentTarget) {
-        showAppointmentToast()
-        const { w, h } = spaceSize()
-        commitElements(separateAll(elementsRef.current, bounds, w, h))
-        delete dragOriginRef.current[instanceId]
-        return
+        showAppointmentToast();
+        const { w, h } = spaceSize();
+        commitElements(separateAll(elementsRef.current, bounds, w, h));
+        delete dragOriginRef.current[instanceId];
+        return;
       }
 
       if (!target) {
         // Soft settle so a non-merge drop doesn't leave overlaps.
-        const { w, h } = spaceSize()
-        commitElements(separateAll(elementsRef.current, bounds, w, h))
-        delete dragOriginRef.current[instanceId]
-        return
+        const { w, h } = spaceSize();
+        commitElements(separateAll(elementsRef.current, bounds, w, h));
+        delete dragOriginRef.current[instanceId];
+        return;
       }
 
-      const resultCatalogId = recipeCatalogId
+      const resultCatalogId = recipeCatalogId;
       if (!resultCatalogId) {
-        const { w, h } = spaceSize()
-        commitElements(separateAll(elementsRef.current, bounds, w, h))
-        delete dragOriginRef.current[instanceId]
-        return
+        const { w, h } = spaceSize();
+        commitElements(separateAll(elementsRef.current, bounds, w, h));
+        delete dragOriginRef.current[instanceId];
+        return;
       }
 
-      const resultDef = getCatalogElement(resultCatalogId)
-      if (!resultDef) return
+      const resultDef = getCatalogElement(resultCatalogId);
+      if (!resultDef) return;
 
       const mid = clampToPlayfield(
         (clamped.x + target.x) / 2,
         (clamped.y + target.y) / 2,
         bounds,
-      )
+      );
 
-      const origin = dragOriginRef.current[instanceId]
+      const origin = dragOriginRef.current[instanceId];
       const approach = origin
         ? { x: clamped.x - origin.x, y: clamped.y - origin.y }
-        : { x: dragged.x - target.x, y: dragged.y - target.y }
+        : { x: dragged.x - target.x, y: dragged.y - target.y };
 
-      const parentA = dragged.instanceId
-      const parentB = target.instanceId
+      const parentA = dragged.instanceId;
+      const parentB = target.instanceId;
 
-      if (resultDef.kind !== 'jewellery') {
-        const result = spawnInstance(resultCatalogId, mid.x, mid.y)
-        if (!result) return
+      if (resultDef.kind !== "jewellery") {
+        const result = spawnInstance(resultCatalogId, mid.x, mid.y);
+        if (!result) return;
 
-        busyRef.current = true
+        busyRef.current = true;
 
         const withResult = [
           ...elementsRef.current.map((el) =>
@@ -482,31 +620,31 @@ export function CraftSpace() {
               : el,
           ),
           result,
-        ]
-        commitElements(withResult)
+        ];
+        commitElements(withResult);
         setOrder((o) => [
           ...o.filter((id) => id !== result.instanceId),
           result.instanceId,
-        ])
+        ]);
 
         startParentExplode(mid, parentA, parentB, approach, () => {
-          busyRef.current = false
-          delete dragOriginRef.current[instanceId]
-        })
-        return
+          busyRef.current = false;
+          delete dragOriginRef.current[instanceId];
+        });
+        return;
       }
 
-      const result = spawnInstance(resultCatalogId, mid.x, mid.y)
-      if (!result) return
-      const detail = getJewelleryDetail(resultCatalogId)
+      const result = spawnInstance(resultCatalogId, mid.x, mid.y);
+      if (!result) return;
+      const detail = getJewelleryDetail(resultCatalogId);
 
-      busyRef.current = true
-      explodeDoneRef.current = false
+      busyRef.current = true;
+      explodeDoneRef.current = false;
 
       setParentMergePhase({
-        [parentA]: 'converge',
-        [parentB]: 'converge',
-      })
+        [parentA]: "converge",
+        [parentB]: "converge",
+      });
 
       commitElements(
         elementsRef.current.map((el) =>
@@ -514,44 +652,44 @@ export function CraftSpace() {
             ? { ...el, x: mid.x, y: mid.y }
             : el,
         ),
-      )
+      );
 
       window.setTimeout(() => {
         setParentMergePhase({
-          [parentA]: 'vanish',
-          [parentB]: 'vanish',
-        })
+          [parentA]: "vanish",
+          [parentB]: "vanish",
+        });
 
-        const burstId = `burst-${Date.now()}`
+        const burstId = `burst-${Date.now()}`;
         setBursts((b) => [
           ...b,
-          { id: burstId, x: mid.x, y: mid.y, kind: 'jewellery' },
-        ])
+          { id: burstId, x: mid.x, y: mid.y, kind: "jewellery" },
+        ]);
 
-        const withResult = [...elementsRef.current, result]
-        commitElements(withResult)
+        const withResult = [...elementsRef.current, result];
+        commitElements(withResult);
         setOrder((o) => [
           ...o.filter((id) => id !== result.instanceId),
           result.instanceId,
-        ])
-        setUnderFlashId(result.instanceId)
+        ]);
+        setUnderFlashId(result.instanceId);
 
         window.setTimeout(() => {
-          setUnderFlashId(null)
-          setBursts((b) => b.filter((x) => x.id !== burstId))
+          setUnderFlashId(null);
+          setBursts((b) => b.filter((x) => x.id !== burstId));
 
           if (detail) {
-            jewelleryRevealOpenRef.current = true
-            setJewelleryReveal(detail)
+            jewelleryRevealOpenRef.current = true;
+            setJewelleryReveal(detail);
           }
 
           startParentExplode(mid, parentA, parentB, approach, () => {
-            explodeDoneRef.current = true
-            delete dragOriginRef.current[instanceId]
-            clearBusyIfIdle()
-          })
-        }, MERGE_PUNCH_MS)
-      }, MERGE_CONVERGE_MS)
+            explodeDoneRef.current = true;
+            delete dragOriginRef.current[instanceId];
+            clearBusyIfIdle();
+          });
+        }, MERGE_PUNCH_MS);
+      }, MERGE_CONVERGE_MS);
     },
     [
       clearAppointmentHold,
@@ -562,14 +700,33 @@ export function CraftSpace() {
       spaceSize,
       startParentExplode,
     ],
-  )
+  );
 
   return (
     <div
-      className={`craft-space${jewelleryReveal ? ' is-jewellery-revealing' : ''}`}
+      className={`craft-space${jewelleryReveal ? " is-jewellery-revealing" : ""}`}
       ref={spaceRef}
     >
-      <CelestialHeader ref={brandRef} cartCount={cartCount} />
+      <CelestialHeader
+        ref={brandRef}
+        cartCount={cartCount}
+        onLogoLongPress={() => {
+          console.info("[craft-shake]", "logo long-press → jostle+reset");
+          startShakeJostle();
+        }}
+      />
+
+      {/* Temporary: verify jostle+reset without DeviceMotion (LAN http / iOS). */}
+      <button
+        type="button"
+        className="craft-shake-debug"
+        onClick={() => {
+          console.info("[craft-shake]", "debug Shake button → jostle+reset");
+          startShakeJostle();
+        }}
+      >
+        Shake
+      </button>
 
       {elements.map((el) => (
         <CraftElement
@@ -592,9 +749,9 @@ export function CraftSpace() {
         <MergeBurst key={b.id} x={b.x} y={b.y} kind={b.kind} />
       ))}
 
-      {appointmentToast !== 'off' ? (
+      {appointmentToast !== "off" ? (
         <AppointmentToast
-          exiting={appointmentToast === 'leaving'}
+          exiting={appointmentToast === "leaving"}
           onClose={beginAppointmentToastLeave}
           onExited={finishAppointmentToastLeave}
         />
@@ -604,9 +761,9 @@ export function CraftSpace() {
         <JewelleryReveal
           detail={jewelleryReveal}
           metal={
-            jewelleryReveal.ingredients.some((p) => p.id.includes('silver'))
-              ? 'silver'
-              : 'gold'
+            jewelleryReveal.ingredients.some((p) => p.id.includes("silver"))
+              ? "silver"
+              : "gold"
           }
           onClose={closeJewelleryReveal}
           onViewProduct={viewProductFromReveal}
@@ -621,5 +778,5 @@ export function CraftSpace() {
         />
       ) : null}
     </div>
-  )
+  );
 }

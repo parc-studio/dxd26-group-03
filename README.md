@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Then open the local URL Vite prints (usually `http://localhost:5173`).
+Then open the local URL Vite prints (usually `https://localhost:5173` — self-signed; accept the warning).
 
 ## What’s in this slice
 
@@ -26,6 +26,29 @@ Out of scope for now: jewellery popup, parent/duplicate logic, real product imag
 npm run dev
 ```
 
-Open `http://<this-Mac-LAN-IP>:5173` on the same Wi‑Fi (Vite listens with `server.host: true`).
+Vite serves **HTTPS** on the LAN (`@vitejs/plugin-basic-ssl`) so DeviceMotion can work on Android Chrome. Plain `http://LAN-IP` is **not** a secure context and often gets **zero** `devicemotion` events.
 
-Try: drag **Pearl** onto **Gold wire**, then the **Gold bead** onto **Fine chain**.
+1. Note the Mac LAN IP (e.g. `10.189.8.89`).
+2. On the phone (same Wi‑Fi), open **`https://<LAN-IP>:5173/#/craft`** (not http).
+3. Accept the self-signed certificate warning (“Advanced” → proceed).
+4. Shake the phone — pieces should jostle, then reset to a fresh starter layout.
+
+### Shake debug (no motion sensors needed)
+
+On `#/craft`:
+
+- Tap the temporary **Shake** button (bottom-right), or
+- **Long-press the celestial logo** (~0.65s)
+
+Both run the same jostle → reset path as a real shake. Check the browser console for `[craft-shake]` logs (`listener attached`, `first … event`, `SHAKE FIRED`, etc.).
+
+### Chrome remote sensors (desktop)
+
+Chrome DevTools → ⋮ → More tools → Sensors → set Orientation to a preset / play with acceleration to simulate shake while on `#/craft`. Prefer `https://localhost:5173/#/craft`.
+
+### Android vs iPhone
+
+- **Android Chrome (target):** motion should work on the **HTTPS** LAN URL after accepting the cert. Watch console: if you never see `first devicemotion event`, sensors are blocked or off.
+- **iPhone Safari:** still needs `DeviceMotionEvent.requestPermission()` from a user gesture (not wired yet). Use the Shake button / logo long-press for now. Helper: `getDeviceMotionPermissionApi()` in `src/lib/shakeDetect.ts`.
+
+Implementation: `src/lib/shakeDetect.ts`, `src/lib/shakeJostle.ts`, wired in `CraftSpace`.
