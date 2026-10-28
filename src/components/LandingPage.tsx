@@ -46,22 +46,25 @@ export function LandingPage({ onCreateYourOwn }: LandingPageProps) {
 
       <div className="landing__split">
         <section className="landing__pane landing__pane--boutique" aria-label="Browse jewellery">
-          <div className="landing__products">
-            {PRODUCTS.map((product) => (
-              <article key={product.id} className="landing__product">
-                <div className="landing__product-media">
-                  <img
-                    src={product.image}
-                    alt=""
-                    className="landing__product-image"
-                    draggable={false}
-                  />
-                </div>
-                <h2 className="landing__product-name">{product.name}</h2>
-                <p className="landing__product-price">{product.price}</p>
-              </article>
-            ))}
+          <div className="landing__pane-body">
+            <div className="landing__products">
+              {PRODUCTS.map((product) => (
+                <article key={product.id} className="landing__product">
+                  <div className="landing__product-media">
+                    <img
+                      src={product.image}
+                      alt=""
+                      className="landing__product-image"
+                      draggable={false}
+                    />
+                  </div>
+                  <h2 className="landing__product-name">{product.name}</h2>
+                  <p className="landing__product-price">{product.price}</p>
+                </article>
+              ))}
+            </div>
           </div>
+          <div className="landing__veil" aria-hidden="true" />
           <div className="landing__cta-wrap">
             <a className="landing__cta" href="#/" aria-disabled="true">
               browse jewellery
@@ -70,22 +73,25 @@ export function LandingPage({ onCreateYourOwn }: LandingPageProps) {
         </section>
 
         <section className="landing__pane landing__pane--craft" aria-label="Create your own">
-          <div className="landing__preview" aria-hidden="true">
-            {PREVIEW_PIECES.map((piece) => (
-              <img
-                key={piece.src + piece.left}
-                className="landing__preview-piece"
-                src={piece.src}
-                alt=""
-                draggable={false}
-                style={{
-                  left: piece.left,
-                  top: piece.top,
-                  width: piece.size,
-                }}
-              />
-            ))}
+          <div className="landing__pane-body">
+            <div className="landing__preview" aria-hidden="true">
+              {PREVIEW_PIECES.map((piece) => (
+                <img
+                  key={piece.src + piece.left}
+                  className="landing__preview-piece"
+                  src={piece.src}
+                  alt=""
+                  draggable={false}
+                  style={{
+                    left: piece.left,
+                    top: piece.top,
+                    width: piece.size,
+                  }}
+                />
+              ))}
+            </div>
           </div>
+          <div className="landing__veil" aria-hidden="true" />
           <div className="landing__cta-wrap">
             <button
               type="button"

@@ -9,7 +9,15 @@
   overscroll-behavior: none;
   -webkit-user-select: none;
   user-select: none;
-  padding: 0;
+  /* Content aligns with header’s 16px sides; header stays full-bleed */
+  padding: 0 16px;
+  box-sizing: border-box;
   /* Pure white craft surface (Celestial header/page) */
   background: #fff;
+}
+
+.craft-space .celestial-header {
+  left: -16px;
+  right: -16px;
+  width: auto;
 }

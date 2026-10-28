@@ -26,6 +26,9 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   width: 100%;
+  box-sizing: border-box;
+  /* Align with header content edges */
+  padding: 0 16px;
   overflow: hidden;
 }
 
@@ -39,6 +42,13 @@
 
 .landing__pane--boutique {
   border-right: 1px solid color-mix(in srgb, var(--color-brand) 10%, transparent);
+}
+
+.landing__pane-body {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
 }
 
 .landing__products {
@@ -131,6 +141,17 @@
   -webkit-user-drag: none;
 }
 
+/* Soft frost over browse + craft previews; CTAs sit above */
+.landing__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: color-mix(in srgb, #fff 42%, transparent);
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+}
+
 .landing__cta-wrap {
   position: absolute;
   left: 50%;
@@ -177,5 +198,13 @@
     min-height: 2.85rem;
     padding: 0.8rem 1.75rem;
     font-size: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing__veil {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: color-mix(in srgb, #fff 72%, transparent);
   }
 }

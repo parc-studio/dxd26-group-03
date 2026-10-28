@@ -13,8 +13,13 @@ export const CelestialHeader = forwardRef<HTMLElement, CelestialHeaderProps>(
           <button
             type="button"
             className="celestial-header__logo-btn"
-            aria-label="Reload celestial"
-            onClick={onLogoClick ?? (() => window.location.reload())}
+            aria-label="Go to celestial home"
+            onClick={
+              onLogoClick ??
+              (() => {
+                window.location.hash = '/'
+              })
+            }
           >
             <img
               className="celestial-header__logo"
