@@ -256,12 +256,17 @@ export function resolveDragPush(
   })
 }
 
-/** Static separation pass (starters / post-settle). */
+/**
+ * Static separation pass (starters / post-settle).
+ * Optional `allowsOverlap(catalogA, catalogB)` skips bounce between pairs that
+ * may stack (recipes + appointment/booking pairs).
+ */
 export function separateAll(
   instances: CraftInstance[],
   bounds: PlayfieldBounds,
   spaceWidthPx: number,
   spaceHeightPx: number,
+  allowsOverlap?: (catalogA: string, catalogB: string) => boolean,
 ): CraftInstance[] {
   const bodies: PhysicsBody[] = instances.map((el) => ({
     id: el.instanceId,
@@ -271,8 +276,25 @@ export function separateAll(
     vy: 0,
   }))
 
+  const catalogByInstance = new Map(
+    instances.map((el) => [el.instanceId, el.catalogId]),
+  )
+
+  const skipPair =
+    allowsOverlap &&
+    ((aId: string, bId: string) => {
+      const a = catalogByInstance.get(aId)
+      const b = catalogByInstance.get(bId)
+      return Boolean(a && b && allowsOverlap(a, b))
+    })
+
   for (let pass = 0; pass < 6; pass++) {
-    resolveBodyCollisions(bodies, spaceWidthPx, spaceHeightPx)
+    resolveBodyCollisions(
+      bodies,
+      spaceWidthPx,
+      spaceHeightPx,
+      skipPair || undefined,
+    )
     bounceWalls(bodies, bounds)
   }
 

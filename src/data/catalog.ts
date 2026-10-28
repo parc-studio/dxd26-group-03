@@ -67,6 +67,15 @@ export function isAppointmentPair(a: string, b: string): boolean {
   return appointmentPairSet.has(pairKey(a, b))
 }
 
+/**
+ * Pairs that may sit on top of each other (no bounce/separation):
+ * valid recipes and appointment/booking combinations.
+ */
+export function allowsCraftOverlap(a: string, b: string): boolean {
+  if (a === b) return false
+  return Boolean(findRecipeResult(a, b)) || isAppointmentPair(a, b)
+}
+
 export function spawnInstance(
   catalogId: string,
   x: number,

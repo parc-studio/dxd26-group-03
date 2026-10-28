@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import {
+  allowsCraftOverlap,
   createStarterInstances,
   findRecipeResult,
   getCatalogElement,
@@ -204,6 +205,7 @@ export function CraftSpace() {
       bounds,
       w,
       h,
+      allowsCraftOverlap,
     );
     commitElements(seated);
 
@@ -219,6 +221,7 @@ export function CraftSpace() {
           nextBounds,
           size.w,
           size.h,
+          allowsCraftOverlap,
         ),
       );
     };
@@ -296,7 +299,15 @@ export function CraftSpace() {
           // Final board-wide separation after the burst settles.
           const size = spaceSize();
           const pf = refreshPlayfield();
-          commitElements(separateAll(elementsRef.current, pf, size.w, size.h));
+          commitElements(
+            separateAll(
+              elementsRef.current,
+              pf,
+              size.w,
+              size.h,
+              allowsCraftOverlap,
+            ),
+          );
           onDone();
         },
       });
@@ -322,8 +333,7 @@ export function CraftSpace() {
         w,
         h,
         (otherCatalogId) =>
-          Boolean(findRecipeResult(dragged.catalogId, otherCatalogId)) ||
-          isAppointmentPair(dragged.catalogId, otherCatalogId),
+          allowsCraftOverlap(dragged.catalogId, otherCatalogId),
       );
       commitElements(pushed);
 
@@ -405,6 +415,7 @@ export function CraftSpace() {
       bounds,
       w,
       h,
+      allowsCraftOverlap,
     );
     commitElements(seated);
     setOrder(seated.map((el) => el.instanceId));
@@ -612,7 +623,16 @@ export function CraftSpace() {
       if (!recipeCatalogId && appointmentTarget) {
         showAppointmentToast();
         const { w, h } = spaceSize();
-        commitElements(separateAll(elementsRef.current, bounds, w, h));
+        // Keep appointment pairs stacked; only separate unrelated overlaps.
+        commitElements(
+          separateAll(
+            elementsRef.current,
+            bounds,
+            w,
+            h,
+            allowsCraftOverlap,
+          ),
+        );
         delete dragOriginRef.current[instanceId];
         return;
       }
@@ -620,7 +640,15 @@ export function CraftSpace() {
       if (!target) {
         // Soft settle so a non-merge drop doesn't leave overlaps.
         const { w, h } = spaceSize();
-        commitElements(separateAll(elementsRef.current, bounds, w, h));
+        commitElements(
+          separateAll(
+            elementsRef.current,
+            bounds,
+            w,
+            h,
+            allowsCraftOverlap,
+          ),
+        );
         delete dragOriginRef.current[instanceId];
         return;
       }
@@ -628,7 +656,15 @@ export function CraftSpace() {
       const resultCatalogId = recipeCatalogId;
       if (!resultCatalogId) {
         const { w, h } = spaceSize();
-        commitElements(separateAll(elementsRef.current, bounds, w, h));
+        commitElements(
+          separateAll(
+            elementsRef.current,
+            bounds,
+            w,
+            h,
+            allowsCraftOverlap,
+          ),
+        );
         delete dragOriginRef.current[instanceId];
         return;
       }
