@@ -1,5 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { getCatalogElement, type JewelleryDetail } from '../data/catalog'
+import { jewelleryHeroModelUrl } from '../lib/jewelleryModel'
 import type { Metal } from './HeroModel'
 import './JewellerySheet.css'
 
@@ -10,9 +11,6 @@ interface JewellerySheetProps {
   detail: JewelleryDetail
   onClose: () => void
 }
-
-const heroModelUrl = (metal: Metal) =>
-  `${import.meta.env.BASE_URL}chain1-${metal}.glb`
 
 // Text for the piece shown by the 3D model, which is the same for every
 // jewellery result; swatches reuse the closest catalog textures.
@@ -116,7 +114,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
             <Suspense fallback={null}>
               <HeroModel
                 className="jewellery-sheet__hero-model"
-                src={heroModelUrl(metal)}
+                src={jewelleryHeroModelUrl(detail.id, metal)}
                 metal={metal}
               />
             </Suspense>
