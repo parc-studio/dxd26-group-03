@@ -10,38 +10,47 @@
   -webkit-user-select: none;
   user-select: none;
   padding: 0;
-  /* Flat cream / off-white — no yellow spotlight */
-  background: var(--color-surface-muted);
+  /* Pure white craft surface (Celestial header/page) */
+  background: #fff;
 }
 
 .craft-space__header {
-  /* Tune bag + hamburger size here (Fotini). */
-  --craft-header-icon-size: 1.875rem;
+  /* Celestial mobile header tokens */
+  --background-color: rgb(255, 255, 255);
+  /* Site --v72ca93ba: icon hit area */
+  --v72ca93ba: 32px;
+  --craft-header-logo-w: 130px;
+  --craft-header-logo-h: 51px;
+  --craft-header-burger-w: 18px;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   z-index: 45;
-  display: flex;
+  display: grid;
+  /* logo | spacer | cart | hamburger — spacer absorbs free width */
+  grid-template-columns: min-content 1fr auto auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+  justify-items: stretch;
+  column-gap: 0;
   width: 100%;
   box-sizing: border-box;
-  padding:
-    max(0.75rem, var(--safe-top))
-    max(1rem, var(--safe-right))
-    0.75rem
-    max(1rem, var(--safe-left));
-  background: var(--color-surface-muted);
-  border: none;
+  margin: 0;
+  /* Exact audited edges — left/right visual inset matches */
+  padding: 24px 16px;
+  padding-top: calc(24px + var(--safe-top));
+  border: 0;
+  background: var(--background-color);
   box-shadow: none;
   pointer-events: none;
+  color: var(--color-brand);
 }
 
 .craft-space__title {
   margin: 0;
+  min-width: 0;
   line-height: 0;
+  justify-self: start;
 }
 
 .craft-space__logo-btn {
@@ -62,72 +71,91 @@
 
 .craft-space__logo {
   display: block;
-  width: min(42vw, 9.5rem);
-  height: auto;
-  /* Dark mark on cream canvas — no invert */
+  width: var(--craft-header-logo-w);
+  height: var(--craft-header-logo-h);
+  max-width: min(var(--craft-header-logo-w), 42vw);
+  object-fit: contain;
+  object-position: left center;
   filter: none;
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: none;
 }
 
-.craft-space__header.is-sheet-open .craft-space__logo {
-  width: min(36vw, 8.5rem);
+.craft-space__spacer {
+  min-width: 0;
+  pointer-events: none;
 }
 
-.craft-space__actions {
-  display: flex;
-  align-items: center;
-  gap: 0.95rem;
-  pointer-events: auto;
-}
-
-.craft-space__icon-btn {
+.craft-space__cart {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: calc(var(--craft-header-icon-size) + 0.65rem);
-  height: calc(var(--craft-header-icon-size) + 0.65rem);
+  justify-self: end;
+  width: var(--v72ca93ba);
+  height: var(--v72ca93ba);
   margin: 0;
   padding: 0;
   border: none;
-  border-radius: 0;
   background: transparent;
-  box-shadow: none;
-  color: var(--color-brand);
+  color: inherit;
   cursor: pointer;
+  pointer-events: auto;
 }
 
-.craft-space__icon-btn:focus-visible {
+.craft-space__cart:focus-visible {
   outline: 1px solid var(--color-brand);
   outline-offset: 3px;
 }
 
-.craft-space__icon {
+.craft-space__cart-icon {
   display: block;
-  width: var(--craft-header-icon-size);
-  height: var(--craft-header-icon-size);
+  width: 19px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
-@media (min-width: 768px) {
+/* Burger glyph flush to the right content edge (matches logo’s 16px left). */
+.craft-space__burger {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  justify-self: end;
+  gap: 5px;
+  box-sizing: border-box;
+  width: var(--craft-header-burger-w);
+  height: var(--v72ca93ba);
+  /* Expand hit target leftward without shifting visual right edge */
+  padding: 0;
+  padding-left: calc(var(--v72ca93ba) - var(--craft-header-burger-w));
+  margin: 0;
+  margin-left: calc((var(--v72ca93ba) - var(--craft-header-burger-w)) * -1);
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.craft-space__burger:focus-visible {
+  outline: 1px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.craft-space__burger-bun,
+.craft-space__burger-meat {
+  display: block;
+  width: var(--craft-header-burger-w);
+  height: 1.5px;
+  margin-left: auto;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+@media (max-width: 360px) {
   .craft-space__header {
-    --craft-header-icon-size: 2rem;
-    padding:
-      max(1rem, var(--safe-top))
-      clamp(1.25rem, 3vw, 2rem)
-      1rem
-      clamp(1.25rem, 3vw, 2rem);
-  }
-
-  .craft-space__logo {
-    width: min(22vw, 11rem);
-  }
-
-  .craft-space__header.is-sheet-open .craft-space__logo {
-    width: min(20vw, 9.5rem);
-  }
-
-  .craft-space__actions {
-    gap: 1.15rem;
+    --craft-header-logo-w: min(130px, 36vw);
+    --craft-header-logo-h: 44px;
   }
 }
