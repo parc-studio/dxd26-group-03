@@ -447,10 +447,7 @@ export function CraftSpace() {
 
   return (
     <div className="craft-space" ref={spaceRef}>
-      <header
-        ref={brandRef}
-        className={`craft-space__header${sheet ? ' is-sheet-open' : ''}`}
-      >
+      <header ref={brandRef} className="craft-space__header">
         <h1 className="craft-space__title">
           <button
             type="button"
@@ -462,49 +459,42 @@ export function CraftSpace() {
               className="craft-space__logo"
               src="/celestial-logo-new.png"
               alt="celestial Switzerland"
-              width={375}
-              height={145}
+              width={130}
+              height={51}
               draggable={false}
             />
           </button>
         </h1>
+        <div className="craft-space__spacer" aria-hidden="true" />
         <button
           type="button"
-          className="craft-space__icon-btn craft-space__icon-btn--bag"
+          className="craft-space__cart"
           aria-label="Shopping bag"
         >
           <svg
-            className="craft-space__icon"
-            viewBox="0 0 24 24"
+            className="craft-space__cart-icon"
+            viewBox="0 0 19 24"
+            width={19}
+            height={24}
             aria-hidden="true"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1.4"
+            strokeWidth="1.25"
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <path d="M6.5 8.5h11l-.7 11.2a1.5 1.5 0 0 1-1.5 1.4H8.7a1.5 1.5 0 0 1-1.5-1.4L6.5 8.5Z" />
-            <path d="M9 8.5V7a3 3 0 0 1 6 0v1.5" />
+            <path d="M1.5 7.25h16v14.25a1 1 0 0 1-1 1H2.5a1 1 0 0 1-1-1V7.25Z" />
+            <path d="M6 7.25V5a3.5 3.5 0 0 1 7 0v2.25" />
           </svg>
         </button>
         <button
           type="button"
-          className="craft-space__icon-btn craft-space__icon-btn--menu"
+          className="craft-space__burger"
           aria-label="Menu"
         >
-          <svg
-            className="craft-space__icon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-          >
-            <path d="M4 7h16" />
-            <path d="M4 12h16" />
-            <path d="M4 17h16" />
-          </svg>
+          <span className="craft-space__burger-bun" aria-hidden="true" />
+          <span className="craft-space__burger-meat" aria-hidden="true" />
+          <span className="craft-space__burger-bun" aria-hidden="true" />
         </button>
       </header>
 

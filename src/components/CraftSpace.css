@@ -15,24 +15,20 @@
 }
 
 .craft-space__header {
-  /* Tune bag + hamburger glyph size here (Fotini). */
-  --craft-header-icon-size: 1.375rem;
-  /* Celestial site header metrics (box-model.png): 248 | 34 | 56 */
-  --craft-header-logo-col: 248px;
-  --craft-header-bag-col: 34px;
-  --craft-header-menu-col: 56px;
-  --craft-header-row: 51px;
+  /* Celestial mobile header tokens */
+  --background-color: rgb(255, 255, 255);
+  /* Site --v72ca93ba: icon hit area */
+  --v72ca93ba: 32px;
+  --craft-header-logo-w: 130px;
+  --craft-header-logo-h: 51px;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   z-index: 45;
   display: grid;
-  grid-template-columns:
-    minmax(0, var(--craft-header-logo-col))
-    var(--craft-header-bag-col)
-    var(--craft-header-menu-col);
-  grid-template-rows: var(--craft-header-row);
+  /* logo | spacer | cart | hamburger */
+  grid-template-columns: min-content auto repeat(2, min-content);
   align-items: center;
   column-gap: 0;
   width: 100%;
@@ -41,24 +37,20 @@
   padding: 24px 16px;
   padding-top: calc(24px + var(--safe-top));
   border: 0;
-  background: #fff;
+  background: var(--background-color);
   box-shadow: none;
   pointer-events: none;
+  color: var(--color-brand);
 }
 
 .craft-space__title {
-  grid-column: 1;
   margin: 0;
   min-width: 0;
   line-height: 0;
 }
 
 .craft-space__logo-btn {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  height: var(--craft-header-row);
+  display: block;
   margin: 0;
   padding: 0;
   border: none;
@@ -75,85 +67,84 @@
 
 .craft-space__logo {
   display: block;
-  width: auto;
-  max-width: 100%;
-  height: auto;
-  max-height: var(--craft-header-row);
+  width: var(--craft-header-logo-w);
+  height: var(--craft-header-logo-h);
+  max-width: min(var(--craft-header-logo-w), 42vw);
   object-fit: contain;
   object-position: left center;
-  /* Dark mark on cream canvas — no invert */
   filter: none;
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: none;
 }
 
-.craft-space__icon-btn {
+.craft-space__spacer {
+  min-width: 0;
+  pointer-events: none;
+}
+
+.craft-space__cart {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: var(--craft-header-row);
+  width: var(--v72ca93ba);
+  height: var(--v72ca93ba);
   margin: 0;
   padding: 0;
   border: none;
-  border-radius: 0;
   background: transparent;
-  box-shadow: none;
-  color: var(--color-brand);
+  color: inherit;
   cursor: pointer;
   pointer-events: auto;
 }
 
-.craft-space__icon-btn--bag {
-  grid-column: 2;
-}
-
-.craft-space__icon-btn--menu {
-  grid-column: 3;
-}
-
-.craft-space__icon-btn:focus-visible {
+.craft-space__cart:focus-visible {
   outline: 1px solid var(--color-brand);
   outline-offset: 3px;
 }
 
-.craft-space__icon {
+.craft-space__cart-icon {
   display: block;
-  width: var(--craft-header-icon-size);
-  height: var(--craft-header-icon-size);
+  width: 19px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
-/* Narrow phones: keep column pattern, shrink logo track proportionally */
+.craft-space__burger {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 5px;
+  width: var(--v72ca93ba);
+  height: var(--v72ca93ba);
+  margin: 0;
+  padding: 8px 6px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+.craft-space__burger:focus-visible {
+  outline: 1px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.craft-space__burger-bun,
+.craft-space__burger-meat {
+  display: block;
+  width: 100%;
+  height: 1.5px;
+  background: currentColor;
+  border-radius: 1px;
+}
+
 @media (max-width: 360px) {
   .craft-space__header {
-    --craft-header-logo-col: min(248px, 58vw);
-    --craft-header-bag-col: 32px;
-    --craft-header-menu-col: 48px;
-  }
-}
-
-/* Wider viewports: same padding + column sizes, flex spacer before icons */
-@media (min-width: 400px) {
-  .craft-space__header {
-    grid-template-columns:
-      var(--craft-header-logo-col)
-      minmax(0, 1fr)
-      var(--craft-header-bag-col)
-      var(--craft-header-menu-col);
-  }
-
-  .craft-space__icon-btn--bag {
-    grid-column: 3;
-  }
-
-  .craft-space__icon-btn--menu {
-    grid-column: 4;
-  }
-}
-
-@media (min-width: 768px) {
-  .craft-space__header {
-    --craft-header-icon-size: 1.5rem;
+    --craft-header-logo-w: min(130px, 36vw);
+    --craft-header-logo-h: 44px;
   }
 }
