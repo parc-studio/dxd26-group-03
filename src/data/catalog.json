@@ -133,11 +133,11 @@
       "category": "jewellery",
       "shape": "ring",
       "kind": "jewellery",
-      "description": "A fine gold chain with one peridot drop — a warm and inviting stone.",
-      "ingredients": ["chain_gold", "peridot", "apatite"],
+      "description": "A fine silver chain with peridot and blue apatite — sun on shallow and deep water.",
+      "ingredients": ["chain_silver", "peridot", "apatite"],
       "price": 168,
       "displayName": "Collier 'Peridot Apatite'",
-      "materialsLine": "Or & peridot",
+      "materialsLine": "Argent, peridot & apatite",
       "image": "/textures/necklase_peridot.png",
       "imageSize": "contain"
     }
