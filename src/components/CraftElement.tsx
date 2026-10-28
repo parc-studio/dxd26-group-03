@@ -1,4 +1,10 @@
-import { useCallback, type CSSProperties, type RefObject } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type CSSProperties,
+  type RefObject,
+} from 'react'
 import type { CraftInstance, ParentMergePhase } from '../types'
 import { usePointerDrag } from '../hooks/usePointerDrag'
 import type { PlayfieldBounds } from '../lib/craftPhysics'
@@ -8,6 +14,56 @@ import {
   MERGE_REVEAL_MS,
 } from '../lib/mergeTiming'
 import './CraftElement.css'
+
+/** Wait until the texture is decoded so WebKit won’t paint a plate under drop-shadow. */
+function useTexturePaintReady(src: string | undefined): boolean {
+  const [ready, setReady] = useState(() => !src)
+
+  useEffect(() => {
+    if (!src) {
+      setReady(true)
+      return
+    }
+
+    let cancelled = false
+    setReady(false)
+
+    const markReady = () => {
+      if (cancelled) return
+      // Two frames: decode → first transparent paint → then enable filter.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (!cancelled) setReady(true)
+        })
+      })
+    }
+
+    const img = new Image()
+    img.decoding = 'async'
+    img.onload = () => {
+      if (typeof img.decode === 'function') {
+        img.decode().then(markReady).catch(markReady)
+      } else {
+        markReady()
+      }
+    }
+    img.onerror = markReady
+    img.src = src
+    if (img.complete) {
+      if (typeof img.decode === 'function') {
+        img.decode().then(markReady).catch(markReady)
+      } else {
+        markReady()
+      }
+    }
+
+    return () => {
+      cancelled = true
+    }
+  }, [src])
+
+  return ready
+}
 
 interface CraftElementProps {
   data: CraftInstance
@@ -84,13 +140,15 @@ export function CraftElement({
 
   const isRing = data.shape === 'ring'
   const hasPhoto = Boolean(data.image)
+  const paintReady = useTexturePaintReady(data.image)
   // Prefer contain so transparent product cutouts aren't cropped into a hard frame.
   const bgSize = data.imageSize ?? (isRing || hasPhoto ? 'contain' : 'cover')
 
   const shapeStyle: CSSProperties = {
-    backgroundImage: `url(${data.image})`,
+    backgroundImage: data.image ? `url(${data.image})` : undefined,
     backgroundPosition: data.imagePosition ?? 'center',
     backgroundSize: bgSize,
+    backgroundColor: 'transparent',
   }
 
   const [insetLeft, insetTop] = (data.insetPosition ?? '50% 40%').split(/\s+/)
@@ -123,11 +181,12 @@ export function CraftElement({
   return (
     <button
       type="button"
-      className={`craft-el craft-el--${data.category} craft-el--${data.shape}${kindClass}${hasPhoto ? ' craft-el--photo' : ''}${dragging ? ' is-dragging' : ''}${phaseClass}${revealing ? ' is-under-flash' : ''}${revealAnim ? ' is-merge-reveal' : ''}`}
+      className={`craft-el craft-el--${data.category} craft-el--${data.shape}${kindClass}${hasPhoto ? ' craft-el--photo' : ''}${paintReady ? ' is-paint-ready' : ''}${dragging ? ' is-dragging' : ''}${phaseClass}${revealing ? ' is-under-flash' : ''}${revealAnim ? ' is-merge-reveal' : ''}`}
       style={{
         left: `${data.x}%`,
         top: `${data.y}%`,
         zIndex: dragging || mergePhase ? 1100 : revealing || revealAnim ? 1150 : zIndex,
+        backgroundColor: 'transparent',
         ['--merge-converge-ms' as string]: `${MERGE_CONVERGE_MS}ms`,
         ['--merge-punch-ms' as string]: `${MERGE_PUNCH_MS}ms`,
         ['--merge-reveal-ms' as string]: `${MERGE_REVEAL_MS}ms`,

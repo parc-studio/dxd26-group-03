@@ -1,6 +1,7 @@
 .craft-el {
   position: absolute;
-  transform: translate(-50%, -50%);
+  /* 3d translate promotes a compositor layer on first paint (iOS WebKit). */
+  transform: translate3d(-50%, -50%, 0);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -11,7 +12,13 @@
   margin: 0;
   padding: 0.35rem 0.4rem;
   border: none;
+  /* iOS Chrome paints a default button plate unless appearance is cleared. */
+  -webkit-appearance: none;
+  appearance: none;
   background: transparent;
+  background-color: transparent;
+  background-image: none;
+  box-shadow: none;
   cursor: grab;
   touch-action: none;
   -webkit-touch-callout: none;
@@ -20,8 +27,10 @@
   color: var(--ink-soft);
   font: inherit;
   animation: craft-float 5.5s ease-in-out infinite;
-  will-change: transform, left, top;
+  /* Avoid idle will-change: left/top — it can box transparent PNG filters on first paint. */
   -webkit-tap-highlight-color: transparent;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .craft-el:nth-child(3n) {
@@ -42,7 +51,7 @@
 .craft-el.is-dragging {
   cursor: grabbing;
   animation: none;
-  transform: translate(-50%, -50%) scale(1.08);
+  transform: translate3d(-50%, -50%, 0) scale(1.08);
   /* Soft lift only — no rectangular border/frame */
   filter: drop-shadow(0 14px 22px rgba(71, 43, 43, 0.28));
   outline: none;
@@ -57,7 +66,7 @@
     left var(--merge-converge-ms, 320ms) ease-out,
     top var(--merge-converge-ms, 320ms) ease-out,
     transform var(--merge-converge-ms, 320ms) ease-out;
-  transform: translate(-50%, -50%) scale(1.42);
+  transform: translate3d(-50%, -50%, 0) scale(1.42);
   filter: drop-shadow(0 10px 20px rgba(71, 43, 43, 0.22));
 }
 
@@ -65,7 +74,7 @@
   pointer-events: none;
   animation: none;
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.12);
+  transform: translate3d(-50%, -50%, 0) scale(0.12);
   transition:
     opacity 140ms ease-in,
     transform 180ms ease-in;
@@ -77,7 +86,7 @@
   animation: none;
   /* Position driven every frame by explode physics — no CSS teleport. */
   transition: none;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate3d(-50%, -50%, 0) scale(1);
   filter: drop-shadow(0 8px 16px rgba(71, 43, 43, 0.18));
   z-index: 1100;
 }
@@ -85,7 +94,7 @@
 .craft-el.is-under-flash {
   pointer-events: none;
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.55);
+  transform: translate3d(-50%, -50%, 0) scale(0.55);
   animation: none;
 }
 
@@ -102,9 +111,17 @@
   background-color: transparent;
   background-repeat: no-repeat;
   box-shadow: none;
-  filter: drop-shadow(0 6px 14px rgba(71, 43, 43, 0.16));
+  /* No filter until texture alpha is ready — avoids WebKit plate on first paint. */
+  filter: none;
   transition: filter 160ms ease, transform 160ms ease;
   pointer-events: none;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.craft-el.is-paint-ready .craft-el__shape {
+  filter: drop-shadow(0 6px 14px rgba(71, 43, 43, 0.16));
 }
 
 /* Photo cuts: no card frame — shadow follows alpha via drop-shadow */
@@ -243,8 +260,12 @@
   border-radius: 0.55rem;
   background-color: transparent;
   overflow: visible;
-  filter: drop-shadow(0 6px 12px rgba(71, 43, 43, 0.18));
+  filter: none;
   box-shadow: none;
+}
+
+.craft-el.is-paint-ready.craft-el--ring .craft-el__shape {
+  filter: drop-shadow(0 6px 12px rgba(71, 43, 43, 0.18));
 }
 
 .craft-el--jewellery .craft-el__label,
@@ -255,6 +276,10 @@
 
 .craft-el--mid .craft-el__shape {
   box-shadow: none;
+  filter: none;
+}
+
+.craft-el.is-paint-ready.craft-el--mid .craft-el__shape {
   filter: drop-shadow(0 8px 16px rgba(71, 43, 43, 0.16));
 }
 
@@ -274,15 +299,15 @@
   --jewellery-shadow-opacity: 0.12;
 }
 
-/* Soft light pool under the piece */
-.craft-el--jewellery-piece::before {
+/* Soft light pool under the piece — only after texture paint is ready */
+.craft-el--jewellery-piece.is-paint-ready::before {
   content: '';
   position: absolute;
   left: 50%;
   top: calc(50% + 1.35rem);
   width: var(--jewellery-glow-size);
   height: calc(var(--jewellery-glow-size) * 0.42);
-  transform: translate(-50%, -50%);
+  transform: translate3d(-50%, -50%, 0);
   border-radius: 50%;
   z-index: 0;
   pointer-events: none;
@@ -299,14 +324,14 @@
 }
 
 /* Contact shadow oval — soft, wide, grounded under the piece */
-.craft-el--jewellery-piece::after {
+.craft-el--jewellery-piece.is-paint-ready::after {
   content: '';
   position: absolute;
   left: 50%;
   top: calc(50% + 2.15rem);
   width: var(--jewellery-shadow-width);
   height: var(--jewellery-shadow-height);
-  transform: translate(-50%, -50%);
+  transform: translate3d(-50%, -50%, 0);
   border-radius: 50%;
   z-index: 0;
   pointer-events: none;
@@ -325,15 +350,19 @@
 .craft-el--jewellery-piece .craft-el__shape {
   position: relative;
   z-index: 1;
-  filter: drop-shadow(0 10px 18px rgba(71, 43, 43, 0.12));
+  filter: none;
   box-shadow: none;
+}
+
+.craft-el.is-paint-ready.craft-el--jewellery-piece .craft-el__shape,
+.craft-el.is-paint-ready.craft-el--jewellery-piece.craft-el--ring .craft-el__shape {
+  filter: drop-shadow(0 10px 18px rgba(71, 43, 43, 0.12));
 }
 
 .craft-el--jewellery-piece.craft-el--ring .craft-el__shape {
   /* Finished necklaces read larger than material rings on the board. */
   width: 6.35rem;
   height: 6.35rem;
-  filter: drop-shadow(0 10px 18px rgba(71, 43, 43, 0.12));
   box-shadow: none;
 }
 
@@ -378,25 +407,25 @@
 @keyframes craft-float {
   0%,
   100% {
-    translate: 0 0;
+    transform: translate3d(-50%, -50%, 0);
   }
   50% {
-    translate: 0 -3px;
+    transform: translate3d(-50%, calc(-50% - 3px), 0);
   }
 }
 
 @keyframes jewellery-reveal {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.62);
+    transform: translate3d(-50%, -50%, 0) scale(0.62);
   }
   55% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.06);
+    transform: translate3d(-50%, -50%, 0) scale(1.06);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate3d(-50%, -50%, 0) scale(1);
   }
 }
 
