@@ -27,8 +27,8 @@ const SHOWCASE = {
     silver: { id: 'chain_silver', label: 'Silver chain' },
   },
   gems: [
-    { id: 'gem_green', label: 'Peridot gem' },
-    { id: 'gem_light_blue', label: 'Apatite gem' },
+    { id: 'gem_rect_light_green', label: 'Peridot gem' },
+    { id: 'gem_rect_light_blue', label: 'Apatite gem' },
   ],
 }
 

@@ -37,17 +37,17 @@
       "imageSize": "contain"
     },
     {
-      "id": "gem_green",
-      "label": "Green gem",
+      "id": "green_amethyst",
+      "label": "Green Amethyst",
       "category": "stones",
       "shape": "circle",
       "kind": "material",
-      "image": "/textures/gem_green.png",
+      "image": "/textures/green_amethyst.png",
       "imageSize": "contain"
     },
     {
-      "id": "gem_violet",
-      "label": "Violet gem",
+      "id": "amethyst",
+      "label": "Amethyst",
       "category": "stones",
       "shape": "circle",
       "kind": "material",
@@ -64,8 +64,17 @@
       "imageSize": "contain"
     },
     {
+      "id": "labradorite",
+      "label": "Labradorite",
+      "category": "stones",
+      "shape": "circle",
+      "kind": "material",
+      "image": "/textures/labradorite.png",
+      "imageSize": "contain"
+    },
+    {
       "id": "gem_rect_light_blue",
-      "label": "Light blue rectangular gem",
+      "label": "Apatite",
       "category": "stones",
       "shape": "rect",
       "kind": "material",
@@ -74,7 +83,7 @@
     },
     {
       "id": "gem_rect_light_green",
-      "label": "Light green rectangular gem",
+      "label": "Peridot",
       "category": "stones",
       "shape": "rect",
       "kind": "material",
@@ -99,7 +108,7 @@
     },
     {
       "id": "ring_thin_gold",
-      "label": "Thin gold ring",
+      "label": "Gold braided ring",
       "category": "gold",
       "shape": "ring",
       "kind": "material",
@@ -107,7 +116,7 @@
     },
     {
       "id": "ring_thin_silver",
-      "label": "Thin silver ring",
+      "label": "Silver braided ring",
       "category": "silver",
       "shape": "ring",
       "kind": "material",
@@ -193,8 +202,9 @@
     { "catalogId": "ring_thin_silver", "x": 52, "y": 50 },
     { "catalogId": "gem_blue", "x": 76, "y": 54 },
     { "catalogId": "gem_light_blue", "x": 18, "y": 68 },
-    { "catalogId": "gem_green", "x": 40, "y": 70 },
-    { "catalogId": "gem_violet", "x": 62, "y": 72 },
+    { "catalogId": "green_amethyst", "x": 40, "y": 70 },
+    { "catalogId": "amethyst", "x": 62, "y": 72 },
+    { "catalogId": "labradorite", "x": 50, "y": 62 },
     { "catalogId": "gem_yellow", "x": 84, "y": 74 },
     { "catalogId": "gem_rect_light_blue", "x": 28, "y": 84 },
     { "catalogId": "gem_rect_light_green", "x": 72, "y": 86 }
@@ -202,10 +212,19 @@
   "appointmentPairs": [
     { "a": "ring_thin_silver", "b": "gem_blue" },
     { "a": "ring_thin_silver", "b": "gem_light_blue" },
-    { "a": "ring_thin_silver", "b": "gem_green" },
-    { "a": "ring_thin_silver", "b": "gem_violet" },
+    { "a": "ring_thin_silver", "b": "green_amethyst" },
+    { "a": "ring_thin_silver", "b": "amethyst" },
     { "a": "ring_thin_silver", "b": "gem_yellow" },
+    { "a": "ring_thin_silver", "b": "labradorite" },
     { "a": "ring_thin_silver", "b": "gem_rect_light_blue" },
-    { "a": "ring_thin_silver", "b": "gem_rect_light_green" }
+    { "a": "ring_thin_silver", "b": "gem_rect_light_green" },
+    { "a": "ring_thin_gold", "b": "gem_blue" },
+    { "a": "ring_thin_gold", "b": "gem_light_blue" },
+    { "a": "ring_thin_gold", "b": "green_amethyst" },
+    { "a": "ring_thin_gold", "b": "amethyst" },
+    { "a": "ring_thin_gold", "b": "gem_yellow" },
+    { "a": "ring_thin_gold", "b": "labradorite" },
+    { "a": "ring_thin_gold", "b": "gem_rect_light_blue" },
+    { "a": "ring_thin_gold", "b": "gem_rect_light_green" }
   ]
 }
