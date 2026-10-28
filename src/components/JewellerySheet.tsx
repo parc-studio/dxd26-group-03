@@ -180,7 +180,12 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
           onPointerUp={onBodyPointerUp}
           onPointerCancel={onBodyPointerUp}
         >
-          <div className="jewellery-sheet__hero" aria-hidden="true">
+          <div
+            className="jewellery-sheet__hero"
+            aria-hidden="true"
+            // Orbiting the camera must not start the sheet's drag-to-dismiss.
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             <Suspense fallback={null}>
               <HeroModel
                 className="jewellery-sheet__hero-model"

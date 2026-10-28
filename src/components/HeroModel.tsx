@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { HDRLoader } from 'three/addons/loaders/HDRLoader.js'
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
@@ -11,16 +12,16 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
 const ENVIRONMENT_URL = `${import.meta.env.BASE_URL}hdri/studio_small_09_1k.hdr`
 
 // largeur visible, en multiples de la largeur du pendentif
-const FRAME_WIDTH = 2.6
-// inclinaison maximale (radians) quand le pointeur est au bord
-const MAX_TILT = 0.18
-// hauteur du point d'accroche au-dessus du pendentif, en largeurs de pendentif
-const HANG = 1.5
-// élan donné par un glissé sur les gemmes, et ressort qui le ramène
-const PUSH = 6
-const MAX_SPIN = 3
-const STIFFNESS = 30
-const DAMPING = 2.5
+const FRAME_WIDTH = 3
+// sol invisible sous les gemmes, en hauteurs de pendentif
+const FLOOR_GAP = 0.35
+// orbite : légèrement au-dessus au départ, jamais sous l'horizon
+const START_POLAR = THREE.MathUtils.degToRad(75)
+const MIN_POLAR = THREE.MathUtils.degToRad(10)
+const MAX_POLAR = THREE.MathUtils.degToRad(88)
+// va-et-vient avant le premier contact : amplitude et vitesse (2 = 30 s par tour)
+const IDLE_SWEEP = THREE.MathUtils.degToRad(30)
+const IDLE_SPEED = 0.5
 
 // Retouche les matériaux PBR exportés par Blender pour un rendu « bijou ».
 function tuneMaterial(material: THREE.Material): THREE.Material {
@@ -68,6 +69,8 @@ export default function HeroModel({ src, className }: HeroModelProps) {
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 0.8
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFShadowMap
     renderer.domElement.style.display = 'block'
     host.appendChild(renderer.domElement)
 
@@ -79,10 +82,21 @@ export default function HeroModel({ src, className }: HeroModelProps) {
     let envMap: THREE.Texture | null = null
     scene.environmentIntensity = 0.9
 
-    // une lumière forte crée des étincelles sur les arêtes
+    // lumière de face, en hauteur : étincelles sur les arêtes et ombre au sol
     const key = new THREE.DirectionalLight(0xffffff, 1.2)
-    key.position.set(2, 3, 4)
-    scene.add(key)
+    key.castShadow = true
+    key.shadow.mapSize.set(1024, 1024)
+    key.shadow.radius = 6
+    key.shadow.bias = -0.0005
+    scene.add(key, key.target)
+
+    // sol invisible qui ne reçoit que l'ombre, juste sous les gemmes
+    const floorMaterial = new THREE.ShadowMaterial({ opacity: 0.3 })
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), floorMaterial)
+    floor.rotation.x = -Math.PI / 2
+    floor.receiveShadow = true
+    floor.visible = false
+    scene.add(floor)
 
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 1000)
 
@@ -93,23 +107,22 @@ export default function HeroModel({ src, className }: HeroModelProps) {
     composer.addPass(bloom)
     composer.addPass(new OutputPass())
 
-    // le pendentif est accroché à ce pivot, que l'interaction incline
-    const pivot = new THREE.Group()
-    scene.add(pivot)
+    // la caméra fait le tour complet des gemmes et passe au-dessus,
+    // jamais sous le sol
+    const controls = new OrbitControls(camera, renderer.domElement)
+    controls.enableDamping = true
+    controls.enablePan = false
+    controls.zoomSpeed = 0.8
+    controls.minPolarAngle = MIN_POLAR
+    controls.maxPolarAngle = MAX_POLAR
 
-    // largeur du pendentif, pour cadrer la caméra dessus
-    let focusWidth = 0
-    const frame = () => {
-      if (!focusWidth) return
-      const halfFov = THREE.MathUtils.degToRad(camera.fov) / 2
-      const visibleWidth = focusWidth * FRAME_WIDTH
-      const dist = visibleWidth / 2 / Math.tan(halfFov) / camera.aspect
-      camera.position.set(0, 0, dist)
-      camera.near = dist / 100
-      camera.far = dist * 100
-      camera.lookAt(0, 0, 0)
-      camera.updateProjectionMatrix()
+    // avant le premier contact : lent va-et-vient gauche / droite
+    controls.autoRotate = true
+    controls.autoRotateSpeed = IDLE_SPEED
+    const stopIdle = () => {
+      controls.autoRotate = false
     }
+    controls.addEventListener('start', stopIdle)
 
     const resize = () => {
       const { clientWidth: w, clientHeight: h } = host
@@ -120,48 +133,11 @@ export default function HeroModel({ src, className }: HeroModelProps) {
       renderer.domElement.style.width = '100%'
       renderer.domElement.style.height = '100%'
       camera.aspect = w / h
-      frame()
+      camera.updateProjectionMatrix()
     }
     resize()
     const observer = new ResizeObserver(resize)
     observer.observe(host)
-
-    // angles du pivot (x, y, z) et leur vitesse : un ressort amorti
-    const angle = new THREE.Vector3()
-    const spin = new THREE.Vector3()
-    // position du pointeur relative au héros, dans [-1, 1]
-    const target = new THREE.Vector2()
-    const raycaster = new THREE.Raycaster()
-    const ndc = new THREE.Vector2()
-    let gems: THREE.Object3D[] = []
-    let last: { id: number; x: number; y: number } | null = null
-
-    const onPointerMove = (e: PointerEvent) => {
-      const rect = host.getBoundingClientRect()
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1
-      const y = ((e.clientY - rect.top) / rect.height) * 2 - 1
-      target.set(THREE.MathUtils.clamp(x, -1, 1), THREE.MathUtils.clamp(y, -1, 1))
-
-      // glisser sur les gemmes pousse le pendentif dans le sens du geste
-      const prev = last?.id === e.pointerId ? last : null
-      last = { id: e.pointerId, x: e.clientX, y: e.clientY }
-      if (!prev || !gems.length) return
-      ndc.set(x, -y)
-      raycaster.setFromCamera(ndc, camera)
-      if (!raycaster.intersectObjects(gems, false).length) return
-      const dx = (e.clientX - prev.x) / rect.width
-      const dy = (e.clientY - prev.y) / rect.height
-      spin.x += dy * PUSH * 0.6
-      spin.y += dx * PUSH * 0.5
-      spin.z += dx * PUSH
-      spin.clampLength(0, MAX_SPIN)
-    }
-    const onPointerLeave = () => {
-      target.set(0, 0)
-      last = null
-    }
-    window.addEventListener('pointermove', onPointerMove)
-    document.addEventListener('pointerleave', onPointerLeave)
 
     let disposed = false
     let model: THREE.Object3D | null = null
@@ -180,6 +156,7 @@ export default function HeroModel({ src, className }: HeroModelProps) {
       model = gltf.scene
       model.traverse((child) => {
         if (!(child instanceof THREE.Mesh)) return
+        child.castShadow = true
         child.material = Array.isArray(child.material)
           ? child.material.map(tuneMaterial)
           : tuneMaterial(child.material)
@@ -188,52 +165,51 @@ export default function HeroModel({ src, className }: HeroModelProps) {
       const cube = model.getObjectByName('Cube')
       if (cube) cube.visible = false
       // le collier est modélisé à plat (le fermoir vers -Z) : on le redresse
-      // pour qu'il pende face à la caméra, pendentif en bas
+      // pour que les gemmes pendent et que la chaîne remonte à gauche et à droite
       model.rotation.x = Math.PI / 2
       model.updateMatrixWorld(true)
 
-      // centrer sur le pendentif ; le reste de la chaîne sort du cadre
+      // les gemmes à l'origine
       const pendant = model.getObjectByName('Setting') ?? model
       const box = new THREE.Box3().setFromObject(pendant)
       model.position.sub(box.getCenter(new THREE.Vector3()))
-      focusWidth = box.getSize(new THREE.Vector3()).x
+      scene.add(model)
+      const size = box.getSize(new THREE.Vector3())
 
-      // accroché au-dessus du cadre : il se balance au lieu de tourner sur place
-      const hang = focusWidth * HANG
-      pivot.position.y = hang
-      model.position.y -= hang
-      pivot.add(model)
+      floor.position.y = -size.y * (0.5 + FLOOR_GAP)
+      floor.scale.setScalar(size.x * 40)
+      floor.visible = true
 
-      gems = ['Gem_Sapphire', 'Gem_BlueTopaz', 'Setting']
-        .map((name) => model?.getObjectByName(name))
-        .filter((o): o is THREE.Object3D => !!o)
-      frame()
+      // cadrage : assez large pour voir la chaîne monter vers les coins
+      const halfFov = THREE.MathUtils.degToRad(camera.fov) / 2
+      const dist = (size.x * FRAME_WIDTH) / 2 / Math.tan(halfFov) / Math.min(camera.aspect, 1.6)
+      camera.near = dist / 100
+      camera.far = dist * 100
+      camera.updateProjectionMatrix()
+      camera.position.setFromSphericalCoords(dist, START_POLAR, 0)
+      controls.target.set(0, 0, 0)
+      controls.minDistance = dist * 0.4
+      controls.maxDistance = dist * 2.5
+      controls.update()
+
+      // ombre portée : caméra d'ombre serrée autour du pendentif
+      key.position.set(size.x * 2, size.x * 8, size.x * 4)
+      const s = size.x * 3
+      Object.assign(key.shadow.camera, { left: -s, right: s, top: s, bottom: -s })
+      key.shadow.camera.near = 0.1
+      key.shadow.camera.far = size.x * 20
+      key.shadow.camera.updateProjectionMatrix()
     }
     load().catch((err) => console.error('HeroModel: failed to load', src, err))
 
-    const timer = new THREE.Timer()
-    const rest = new THREE.Vector3()
-    const accel = new THREE.Vector3()
-    renderer.setAnimationLoop((time) => {
-      timer.update(time)
-      const t = timer.getElapsed()
-      // évite une explosion du ressort après un onglet en arrière-plan
-      const dt = Math.min(timer.getDelta(), 1 / 30)
-
-      // position de repos : suit le pointeur, plus un léger balancement
-      rest.set(
-        target.y * MAX_TILT * 0.6 + Math.sin(t * 0.9) * 0.01,
-        target.x * MAX_TILT + Math.sin(t * 0.7) * 0.02,
-        Math.sin(t * 0.5) * 0.015,
-      )
-      accel
-        .subVectors(rest, angle)
-        .multiplyScalar(STIFFNESS)
-        .addScaledVector(spin, -DAMPING)
-      spin.addScaledVector(accel, dt)
-      angle.addScaledVector(spin, dt)
-      pivot.rotation.set(angle.x, angle.y, angle.z)
-
+    renderer.setAnimationLoop(() => {
+      if (controls.autoRotate) {
+        // repart dans l'autre sens aux bords du balayage
+        const azimuth = controls.getAzimuthalAngle()
+        if (azimuth > IDLE_SWEEP) controls.autoRotateSpeed = IDLE_SPEED
+        else if (azimuth < -IDLE_SWEEP) controls.autoRotateSpeed = -IDLE_SPEED
+      }
+      controls.update()
       composer.render()
     })
 
@@ -241,9 +217,8 @@ export default function HeroModel({ src, className }: HeroModelProps) {
       disposed = true
       renderer.setAnimationLoop(null)
       observer.disconnect()
-      window.removeEventListener('pointermove', onPointerMove)
-      document.removeEventListener('pointerleave', onPointerLeave)
-      timer.dispose()
+      controls.removeEventListener('start', stopIdle)
+      controls.dispose()
       model?.traverse((obj) => {
         if (!(obj instanceof THREE.Mesh)) return
         obj.geometry.dispose()
@@ -256,6 +231,8 @@ export default function HeroModel({ src, className }: HeroModelProps) {
         }
       })
       envMap?.dispose()
+      floor.geometry.dispose()
+      floorMaterial.dispose()
       bloom.dispose()
       composer.dispose()
       renderer.dispose()
