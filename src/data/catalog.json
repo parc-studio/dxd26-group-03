@@ -133,17 +133,12 @@
     },
     {
       "id": "necklace_partial_blue",
-      "label": "Gold chain + blue diamond",
+      "label": "Gold chain + blue gem",
       "category": "chains",
-      "shape": "link",
+      "shape": "ring",
       "kind": "mid",
-      "image": "/textures/chain_gold.png",
-      "imageSize": "contain",
-      "inset": "/textures/diamond_blue.png",
-      "insetPosition": "72% 68%",
-      "insetSize": "38%",
-      "insetImagePosition": "center",
-      "insetImageSize": "contain"
+      "image": "/textures/necklase_single_gem_blue.png",
+      "imageSize": "contain"
     },
     {
       "id": "pendant_duo_blue",
@@ -167,10 +162,10 @@
       "kind": "jewellery",
       "image": "/textures/necklase_single_gem_light_blue.png",
       "description": "A fine gold chain with one light-blue drop — quiet sparkle on a short path.",
-      "ingredients": ["chain_gold", "diamond_light_blue"],
+      "ingredients": ["chain_gold", "gem_light_blue"],
       "price": 168,
       "displayName": "Collier 'Clair'",
-      "materialsLine": "Or & diamant bleu clair"
+      "materialsLine": "Or & gemme bleu clair"
     },
     {
       "id": "necklace_single_blue",
@@ -178,7 +173,7 @@
       "category": "jewellery",
       "shape": "ring",
       "kind": "jewellery",
-      "image": "/textures/necklace_single_blue.png",
+      "image": "/textures/necklase_single_gem_blue.png",
       "description": "The same slender gold chain, finished with a deeper blue gem — a cooler night sky.",
       "ingredients": ["chain_gold", "gem_blue"],
       "price": 178,
@@ -202,23 +197,18 @@
   "recipes": [
     {
       "a": "chain_gold",
-      "b": "diamond_light_blue",
+      "b": "gem_light_blue",
       "result": "necklace_single"
     },
     {
       "a": "chain_gold",
       "b": "gem_blue",
-      "result": "necklace_single_blue"
+      "result": "necklace_partial_blue"
     },
     {
       "a": "necklace_single",
       "b": "diamond_blue",
       "result": "necklace_heart"
-    },
-    {
-      "a": "chain_gold",
-      "b": "diamond_blue",
-      "result": "necklace_partial_blue"
     },
     {
       "a": "necklace_partial_blue",
@@ -237,16 +227,20 @@
     }
   ],
   "starters": [
-    { "catalogId": "chain_gold", "x": 22, "y": 36 },
-    { "catalogId": "chain_gold", "x": 78, "y": 38 },
-    { "catalogId": "chain_silver", "x": 50, "y": 34 },
-    { "catalogId": "diamond_light_blue", "x": 18, "y": 58 },
-    { "catalogId": "diamond_blue", "x": 42, "y": 56 },
-    { "catalogId": "gem_blue", "x": 66, "y": 58 },
-    { "catalogId": "gem_light_blue", "x": 84, "y": 62 },
-    { "catalogId": "diamond_dark_green", "x": 28, "y": 76 },
-    { "catalogId": "gem_cyan", "x": 52, "y": 78 },
-    { "catalogId": "ring_gold", "x": 74, "y": 80 },
-    { "catalogId": "ring_thin_gold", "x": 38, "y": 88 }
+    { "catalogId": "chain_gold", "x": 18, "y": 34 },
+    { "catalogId": "chain_silver", "x": 38, "y": 32 },
+    { "catalogId": "ring_gold", "x": 58, "y": 34 },
+    { "catalogId": "ring_silver", "x": 78, "y": 36 },
+    { "catalogId": "ring_thin_gold", "x": 28, "y": 48 },
+    { "catalogId": "ring_thin_silver", "x": 50, "y": 46 },
+    { "catalogId": "diamond_light_blue", "x": 70, "y": 48 },
+    { "catalogId": "diamond_blue", "x": 88, "y": 50 },
+    { "catalogId": "diamond_dark_green", "x": 16, "y": 62 },
+    { "catalogId": "gem_blue", "x": 36, "y": 64 },
+    { "catalogId": "gem_light_blue", "x": 56, "y": 62 },
+    { "catalogId": "gem_cyan", "x": 76, "y": 66 },
+    { "catalogId": "gem_green", "x": 24, "y": 80 },
+    { "catalogId": "gem_violet", "x": 46, "y": 82 },
+    { "catalogId": "gem_yellow", "x": 68, "y": 84 }
   ]
 }
