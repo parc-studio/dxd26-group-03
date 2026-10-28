@@ -32,6 +32,34 @@ const PRODUCTS = [
     price: 'CHF25.00',
     category: 'Rings',
   },
+  {
+    id: 'theia-opalite-silver',
+    image: '/products/theia-opalite-silver.png',
+    name: '"Theia" ring - Opalite & silver',
+    price: 'CHF25.00',
+    category: 'Rings',
+  },
+  {
+    id: 'athena-amethyst-gold',
+    image: '/products/athena-amethyst-gold.png',
+    name: '"Athena" ring - Amethyst & gold',
+    price: 'CHF25.00',
+    category: 'Rings',
+  },
+  {
+    id: 'athena-amethyst-silver',
+    image: '/products/athena-amethyst-silver.png',
+    name: '"Athena" ring - Amethyst & silver',
+    price: 'CHF25.00',
+    category: 'Rings',
+  },
+  {
+    id: 'apollon-amazonite-silver',
+    image: '/products/apollon-amazonite-silver.png',
+    name: '"Apollon" ring - Amazonite & silver',
+    price: 'CHF25.00',
+    category: 'Rings',
+  },
 ] as const
 
 const CATEGORIES = ['All products', 'Rings'] as const
