@@ -75,6 +75,7 @@ export function JewelleryReveal({
             className="jewellery-reveal__model"
             src={heroModelUrl(metal)}
             metal={metal}
+            transparentBackground
           />
         </Suspense>
       </div>

@@ -91,9 +91,16 @@ interface HeroModelProps {
   src: string
   metal: Metal
   className?: string
+  /** Clear WebGL clear-color so the craft/veil shows through (reveal overlay). */
+  transparentBackground?: boolean
 }
 
-export default function HeroModel({ src, metal, className }: HeroModelProps) {
+export default function HeroModel({
+  src,
+  metal,
+  className,
+  transparentBackground = false,
+}: HeroModelProps) {
   const hostRef = useRef<HTMLDivElement>(null)
   const metalRef = useRef(metal)
   const applyMetalRef = useRef<((metal: Metal) => void) | null>(null)
@@ -117,13 +124,18 @@ export default function HeroModel({ src, metal, className }: HeroModelProps) {
     renderer.toneMappingExposure = 0.85
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFShadowMap
+    renderer.setClearColor(0x000000, transparentBackground ? 0 : 1)
     renderer.domElement.style.display = 'block'
     host.appendChild(renderer.domElement)
 
     const scene = new THREE.Scene()
-    // fond opaque : les gemmes transmissives réfractent ce qui est derrière
-    const background = getComputedStyle(host).getPropertyValue('--color-brand').trim()
-    scene.background = new THREE.Color(background || '#472b2b')
+    if (transparentBackground) {
+      scene.background = null
+    } else {
+      // fond opaque : les gemmes transmissives réfractent ce qui est derrière
+      const background = getComputedStyle(host).getPropertyValue('--color-brand').trim()
+      scene.background = new THREE.Color(background || '#472b2b')
+    }
     // les métaux et les gemmes ont besoin d'un environnement à refléter
     let envMap: THREE.Texture | null = null
     scene.environmentIntensity = 0.9
@@ -151,12 +163,19 @@ export default function HeroModel({ src, metal, className }: HeroModelProps) {
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 1000)
 
     // bloom discret : seuls les reflets les plus forts brillent
-    const composer = new EffectComposer(renderer)
-    composer.addPass(new RenderPass(scene, camera))
-    // rayon serré : les reflets des maillons deviennent de petites étincelles
-    const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.2, 0.15, 0.95)
-    composer.addPass(bloom)
-    composer.addPass(new OutputPass())
+    // (skipped for transparent reveal — EffectComposer flattens alpha)
+    const composer = transparentBackground
+      ? null
+      : new EffectComposer(renderer)
+    const bloom = transparentBackground
+      ? null
+      : new UnrealBloomPass(new THREE.Vector2(1, 1), 0.2, 0.15, 0.95)
+    if (composer && bloom) {
+      composer.addPass(new RenderPass(scene, camera))
+      // rayon serré : les reflets des maillons deviennent de petites étincelles
+      composer.addPass(bloom)
+      composer.addPass(new OutputPass())
+    }
 
     // la caméra fait le tour complet des gemmes et passe au-dessus,
     // jamais sous le sol
@@ -194,8 +213,10 @@ export default function HeroModel({ src, metal, className }: HeroModelProps) {
       const { clientWidth: w, clientHeight: h } = host
       if (!w || !h) return
       renderer.setSize(w, h, false)
-      composer.setPixelRatio(renderer.getPixelRatio())
-      composer.setSize(w, h)
+      if (composer) {
+        composer.setPixelRatio(renderer.getPixelRatio())
+        composer.setSize(w, h)
+      }
       renderer.domElement.style.width = '100%'
       renderer.domElement.style.height = '100%'
       camera.aspect = w / h
@@ -261,7 +282,8 @@ export default function HeroModel({ src, metal, className }: HeroModelProps) {
 
       floor.position.y = -size.y * (0.5 + FLOOR_GAP)
       floor.scale.setScalar(size.x * 40)
-      floor.visible = true
+      // shadow plane only when the canvas has an opaque backdrop
+      floor.visible = !transparentBackground
 
       // cadrage : le collier entier (sans les objets masqués), sous tous les
       // angles de l'orbite, grâce à sa sphère englobante
@@ -309,7 +331,8 @@ export default function HeroModel({ src, metal, className }: HeroModelProps) {
         else if (azimuth < -IDLE_SWEEP) controls.autoRotateSpeed = -IDLE_SPEED
       }
       controls.update()
-      composer.render()
+      if (composer) composer.render()
+      else renderer.render(scene, camera)
     })
 
     return () => {
@@ -336,12 +359,12 @@ export default function HeroModel({ src, metal, className }: HeroModelProps) {
       envMap?.dispose()
       floor.geometry.dispose()
       floorMaterial.dispose()
-      bloom.dispose()
-      composer.dispose()
+      bloom?.dispose()
+      composer?.dispose()
       renderer.dispose()
       renderer.domElement.remove()
     }
-  }, [src])
+  }, [src, transparentBackground])
 
   return <div ref={hostRef} className={className} />
 }
