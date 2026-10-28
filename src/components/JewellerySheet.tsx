@@ -159,7 +159,6 @@ export function JewellerySheet({
 }: JewellerySheetProps) {
   const piece = { ...SHOWCASE, metals: METALS, ...PIECES[detail.id] };
   const metalOptions = METAL_OPTIONS.filter((o) => piece.metals.includes(o.value));
-  const [qty, setQty] = useState(1);
   const [metal, setMetal] = useState<Metal>(() =>
     piece.metals.includes("silver") ? "silver" : piece.metals[0],
   );
@@ -264,6 +263,7 @@ export function JewellerySheet({
                   className="jewellery-sheet__hero-model"
                   src={jewelleryHeroModelUrl(detail.id, metal)}
                   metal={metal}
+                  freeOrbit={false}
                 />
               </Suspense>
             </div>
@@ -363,46 +363,16 @@ export function JewellerySheet({
         </div>
 
         <footer className="jewellery-sheet__footer">
-          <div className="jewellery-sheet__stock-row">
-            <p className="jewellery-sheet__price">{priceLabel}</p>
-            <div
-              className="jewellery-sheet__qty"
-              role="group"
-              aria-label="Quantity"
-            >
-              <button
-                type="button"
-                className="jewellery-sheet__qty-btn"
-                aria-label="Decrease quantity"
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-              >
-                -
-              </button>
-              <span className="jewellery-sheet__qty-value" aria-live="polite">
-                {qty}
-              </span>
-              <button
-                type="button"
-                className="jewellery-sheet__qty-btn"
-                aria-label="Increase quantity"
-                disabled={qty >= piece.stock}
-                onClick={() => setQty((q) => Math.min(piece.stock, q + 1))}
-              >
-                +
-              </button>
-            </div>
-            <p className="jewellery-sheet__stock">{piece.stock} in stock</p>
-          </div>
-
           <button
             type="button"
             className="jewellery-sheet__cart"
             onClick={() => {
               if (closing || flying !== null) return;
-              setFlying(qty);
+              setFlying(1);
             }}
           >
-            Add to cart
+            <span className="jewellery-sheet__price">{priceLabel}</span>
+            <span>Add to cart</span>
           </button>
         </footer>
       </div>

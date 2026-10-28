@@ -77,11 +77,21 @@
   z-index: 1;
   width: 100%;
   margin: 0;
-  aspect-ratio: 4 / 3;
-  max-height: 17rem;
+  height: 50vh;
+  height: 50dvh;
   border-radius: 0;
   background: var(--color-hero-bg);
   overflow: hidden;
+}
+
+/* no browser tap highlight or focus ring on taps in the 3D area */
+.jewellery-sheet__hero,
+.jewellery-sheet__hero * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.jewellery-sheet__hero :focus:not(:focus-visible) {
+  outline: none;
 }
 
 .jewellery-sheet__hero-model {
@@ -94,16 +104,25 @@
 .jewellery-sheet__body {
   position: relative;
   z-index: 2;
-  padding: var(--space-4) var(--space-5) var(--space-3);
+  /* photos run to the bottom edge, under the floating cart button */
+  padding: var(--space-4) var(--space-5) 0;
   background: var(--color-surface);
 }
 
-/* Price, quantity and cart stay pinned below the scrolling content */
+/* The cart button, with the price, floats over the bottom of the content
+   (same bar and button as the home page's floating button) */
 .jewellery-sheet__footer {
-  flex-shrink: 0;
-  padding: var(--space-3) var(--space-5) calc(var(--space-3) + var(--safe-bottom));
-  border-top: 1px solid color-mix(in srgb, var(--color-brand-soft) 28%, white);
-  background: var(--color-surface);
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  padding: 0 1.35rem calc(1rem + var(--safe-bottom));
+  pointer-events: none;
+}
+
+.jewellery-sheet__footer > * {
+  pointer-events: auto;
 }
 
 .jewellery-sheet__name {
@@ -226,86 +245,44 @@
 }
 
 .jewellery-sheet__price {
-  margin: 0;
   white-space: nowrap;
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  color: var(--color-ink);
 }
 
-/* Price, quantity picker and stock on one line */
-.jewellery-sheet__stock-row {
+/* Price on the left, "Add to cart" on the right */
+.jewellery-sheet__cart {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
-/* Quantity picker as on the shop: three joined squares */
-.jewellery-sheet__qty {
-  --qty-size: 2.75rem;
-  --qty-border: 1px solid #e3e3e6;
-  display: inline-flex;
-}
-
-.jewellery-sheet__qty-btn,
-.jewellery-sheet__qty-value {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--qty-size);
-  height: var(--qty-size);
-  margin: 0;
-  padding: 0;
-  border: var(--qty-border);
-  background: var(--color-surface);
-  color: var(--color-ink-body);
-  font-family: system-ui, sans-serif;
-  font-size: var(--text-md);
-  line-height: 1;
-}
-
-.jewellery-sheet__qty-value {
-  border-inline: none;
-}
-
-.jewellery-sheet__qty-btn {
-  cursor: pointer;
-}
-
-.jewellery-sheet__qty-btn:disabled {
-  background: #dadbe0;
-  cursor: default;
-}
-
-.jewellery-sheet__qty-btn:focus-visible {
-  position: relative;
-  outline: 1px solid var(--color-brand);
-}
-
-.jewellery-sheet__stock {
-  margin: 0;
-  white-space: nowrap;
-  font-family: var(--font-ui);
-  font-size: var(--text-md);
-  color: var(--color-ink);
-}
-
-.jewellery-sheet__cart {
-  display: block;
+  box-sizing: border-box;
   width: 100%;
-  min-height: 3.25rem;
-  margin: 0;
-  padding: 0.85rem 1.5rem;
+  max-width: 22rem;
+  min-height: 2.85rem;
+  margin: 0 auto;
+  padding: 0.75rem 1.25rem;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 0.4rem;
   background: var(--color-brand);
+  box-shadow:
+    0 10px 28px rgba(71, 43, 43, 0.28),
+    0 2px 8px rgba(71, 43, 43, 0.16);
   color: var(--color-on-brand);
   font-family: var(--font-display);
-  font-size: var(--text-md);
-  line-height: 1.2;
+  font-size: 0.9375rem;
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  letter-spacing: 0.01em;
   cursor: pointer;
+}
+
+.jewellery-sheet__cart:active {
+  transform: translateY(1px);
+}
+
+@media (min-width: 768px) {
+  .jewellery-sheet__cart {
+    max-width: 20rem;
+  }
 }
 
 .jewellery-sheet__cart:focus-visible {
@@ -347,10 +324,6 @@
 }
 
 @media (min-width: 768px) {
-  .jewellery-sheet__hero {
-    max-height: 19rem;
-  }
-
   .jewellery-sheet__name {
     font-size: var(--text-2xl);
   }
@@ -393,7 +366,6 @@
 .jewellery-sheet__gallery {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
   /* bleed past the body padding to the screen edges */
   margin-inline: calc(-1 * var(--space-5));
 }

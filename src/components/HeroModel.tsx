@@ -128,6 +128,8 @@ interface HeroModelProps {
   className?: string;
   /** Clear WebGL clear-color so the craft/veil shows through (reveal overlay). */
   transparentBackground?: boolean;
+  /** false: only turn left/right and zoom; no tilt up/down, no pan. */
+  freeOrbit?: boolean;
 }
 
 export default function HeroModel({
@@ -135,6 +137,7 @@ export default function HeroModel({
   metal,
   className,
   transparentBackground = false,
+  freeOrbit = true,
 }: HeroModelProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const metalRef = useRef(metal);
@@ -223,12 +226,15 @@ export default function HeroModel({
     controls.enableDamping = true;
     // deux doigts : pincer pour zoomer et glisser pour déplacer la scène
     // (souris : clic droit ou Maj + glisser)
-    controls.enablePan = true;
+    controls.enablePan = freeOrbit;
     controls.screenSpacePanning = true;
     controls.touches.TWO = THREE.TOUCH.DOLLY_PAN;
     controls.zoomSpeed = 0.8;
-    controls.minPolarAngle = MIN_POLAR;
-    controls.maxPolarAngle = MAX_POLAR;
+    // sans orbite libre, la hauteur de vue reste celle du départ
+    controls.minPolarAngle = freeOrbit ? MIN_POLAR : START_POLAR;
+    controls.maxPolarAngle = freeOrbit ? MAX_POLAR : START_POLAR;
+    // glisser vers le haut / bas fait défiler la page au lieu du modèle
+    if (!freeOrbit) renderer.domElement.style.touchAction = "pan-y";
 
     // avant le premier contact : lent va-et-vient gauche / droite
     controls.autoRotate = true;
@@ -422,7 +428,7 @@ export default function HeroModel({
       renderer.dispose();
       renderer.domElement.remove();
     };
-  }, [src, transparentBackground]);
+  }, [src, transparentBackground, freeOrbit]);
 
   return <div ref={hostRef} className={className} />;
 }

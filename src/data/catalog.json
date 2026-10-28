@@ -135,7 +135,7 @@
       "kind": "jewellery",
       "description": "A fine gold chain with one peridot drop — a warm and inviting stone.",
       "ingredients": ["chain_gold", "peridot", "apatite"],
-      "price": 168,
+      "price": 89,
       "displayName": "Collier 'Peridot Apatite'",
       "materialsLine": "Or & peridot",
       "image": "/textures/necklase_peridot.png",
