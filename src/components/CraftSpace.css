@@ -21,19 +21,22 @@
   --v72ca93ba: 32px;
   --craft-header-logo-w: 130px;
   --craft-header-logo-h: 51px;
+  --craft-header-burger-w: 18px;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   z-index: 45;
   display: grid;
-  /* logo | spacer | cart | hamburger */
-  grid-template-columns: min-content auto repeat(2, min-content);
+  /* logo | spacer | cart | hamburger — spacer absorbs free width */
+  grid-template-columns: min-content 1fr auto auto;
   align-items: center;
+  justify-items: stretch;
   column-gap: 0;
   width: 100%;
   box-sizing: border-box;
   margin: 0;
+  /* Exact audited edges — left/right visual inset matches */
   padding: 24px 16px;
   padding-top: calc(24px + var(--safe-top));
   border: 0;
@@ -47,6 +50,7 @@
   margin: 0;
   min-width: 0;
   line-height: 0;
+  justify-self: start;
 }
 
 .craft-space__logo-btn {
@@ -87,6 +91,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  justify-self: end;
   width: var(--v72ca93ba);
   height: var(--v72ca93ba);
   margin: 0;
@@ -110,22 +115,27 @@
   flex-shrink: 0;
 }
 
+/* Burger glyph flush to the right content edge (matches logo’s 16px left). */
 .craft-space__burger {
   display: inline-flex;
   flex-direction: column;
   align-items: stretch;
   justify-content: center;
+  justify-self: end;
   gap: 5px;
-  width: var(--v72ca93ba);
+  box-sizing: border-box;
+  width: var(--craft-header-burger-w);
   height: var(--v72ca93ba);
+  /* Expand hit target leftward without shifting visual right edge */
+  padding: 0;
+  padding-left: calc(var(--v72ca93ba) - var(--craft-header-burger-w));
   margin: 0;
-  padding: 8px 6px;
+  margin-left: calc((var(--v72ca93ba) - var(--craft-header-burger-w)) * -1);
   border: none;
   background: transparent;
   color: inherit;
   cursor: pointer;
   pointer-events: auto;
-  box-sizing: border-box;
 }
 
 .craft-space__burger:focus-visible {
@@ -136,8 +146,9 @@
 .craft-space__burger-bun,
 .craft-space__burger-meat {
   display: block;
-  width: 100%;
+  width: var(--craft-header-burger-w);
   height: 1.5px;
+  margin-left: auto;
   background: currentColor;
   border-radius: 1px;
 }
