@@ -206,6 +206,15 @@
   border-radius: 0.35rem;
 }
 
+/* Rect gem photos: no short card frame — square-ish cutout footprint. */
+.craft-el--stones.craft-el--rect.craft-el--photo .craft-el__shape {
+  width: 3.7rem;
+  height: 3.3rem;
+  border-radius: 0.4rem;
+  background-color: transparent;
+  overflow: visible;
+}
+
 .craft-el--diamond .craft-el__shape {
   width: 2.35rem;
   height: 2.35rem;
@@ -254,15 +263,15 @@
  * Tweak: --jewellery-glow-*, --jewellery-shadow-*
  */
 .craft-el--jewellery-piece {
+  /* Keep under-plate subtle on white so only the jewellery cutout reads. */
   --jewellery-glow-size: 7rem;
-  --jewellery-glow-cream: color-mix(in srgb, var(--color-cream) 58%, white);
-  --jewellery-glow-soft: color-mix(in srgb, var(--color-cream) 30%, transparent);
-  --jewellery-glow-blur: 20px;
-  --jewellery-glow-opacity: 0.82;
-  /* Soft oval ground shadow (CodePen-style under-object halo) */
+  --jewellery-glow-cream: color-mix(in srgb, var(--color-cream) 28%, transparent);
+  --jewellery-glow-soft: color-mix(in srgb, var(--color-cream) 12%, transparent);
+  --jewellery-glow-blur: 22px;
+  --jewellery-glow-opacity: 0.35;
   --jewellery-shadow-width: 6.2rem;
   --jewellery-shadow-height: 0.85rem;
-  --jewellery-shadow-opacity: 0.28;
+  --jewellery-shadow-opacity: 0.12;
 }
 
 /* Soft light pool under the piece */
@@ -441,6 +450,11 @@
   .craft-el--rect .craft-el__shape {
     width: 2.95rem;
     height: 1.65rem;
+  }
+
+  .craft-el--stones.craft-el--rect.craft-el--photo .craft-el__shape {
+    width: 3.5rem;
+    height: 3.1rem;
   }
 
   .craft-el--diamond .craft-el__shape {
