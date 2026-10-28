@@ -207,22 +207,12 @@
     },
     {
       "a": "necklace_single",
-      "b": "diamond_blue",
+      "b": "gem_blue",
       "result": "necklace_heart"
     },
     {
       "a": "necklace_partial_blue",
-      "b": "diamond_light_blue",
-      "result": "necklace_heart"
-    },
-    {
-      "a": "diamond_light_blue",
-      "b": "diamond_blue",
-      "result": "pendant_duo_blue"
-    },
-    {
-      "a": "pendant_duo_blue",
-      "b": "chain_gold",
+      "b": "gem_light_blue",
       "result": "necklace_heart"
     }
   ],
