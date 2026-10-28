@@ -30,12 +30,15 @@ import type {
   ParentMergePhase,
 } from '../types'
 import { AppointmentToast } from './AppointmentToast'
+import { CelestialHeader } from './CelestialHeader'
 import { CraftElement } from './CraftElement'
 import { JewellerySheet } from './JewellerySheet'
 import { MergeBurst } from './MergeBurst'
 import './CraftSpace.css'
 
 const APPOINTMENT_TOAST_MS = 6000
+/** Hold overlap this long before showing the appointment toast. */
+const APPOINTMENT_HOLD_MS = 400
 
 export function CraftSpace() {
   const spaceRef = useRef<HTMLDivElement>(null)
@@ -66,19 +69,28 @@ export function CraftSpace() {
   >('off')
   const appointmentToastVisibleRef = useRef(false)
   const appointmentToastTimerRef = useRef<number | null>(null)
+  const appointmentHoldTimerRef = useRef<number | null>(null)
 
   const commitElements = useCallback((next: CraftInstance[]) => {
     elementsRef.current = next
     setElements(next)
   }, [])
 
+  const clearAppointmentHold = useCallback(() => {
+    if (appointmentHoldTimerRef.current !== null) {
+      window.clearTimeout(appointmentHoldTimerRef.current)
+      appointmentHoldTimerRef.current = null
+    }
+  }, [])
+
   const beginAppointmentToastLeave = useCallback(() => {
+    clearAppointmentHold()
     if (appointmentToastTimerRef.current !== null) {
       window.clearTimeout(appointmentToastTimerRef.current)
       appointmentToastTimerRef.current = null
     }
     setAppointmentToast((phase) => (phase === 'on' ? 'leaving' : phase))
-  }, [])
+  }, [clearAppointmentHold])
 
   const finishAppointmentToastLeave = useCallback(() => {
     appointmentToastVisibleRef.current = false
@@ -98,16 +110,24 @@ export function CraftSpace() {
     }, APPOINTMENT_TOAST_MS)
   }, [])
 
+  const armAppointmentHold = useCallback(() => {
+    if (appointmentToastVisibleRef.current) return
+    if (appointmentHoldTimerRef.current !== null) return
+    appointmentHoldTimerRef.current = window.setTimeout(() => {
+      appointmentHoldTimerRef.current = null
+      showAppointmentToast()
+    }, APPOINTMENT_HOLD_MS)
+  }, [showAppointmentToast])
+
   useEffect(() => {
     return () => {
       if (appointmentToastTimerRef.current !== null) {
         window.clearTimeout(appointmentToastTimerRef.current)
       }
+      if (appointmentHoldTimerRef.current !== null) {
+        window.clearTimeout(appointmentHoldTimerRef.current)
+      }
     }
-  }, [])
-
-  const reloadPage = useCallback(() => {
-    window.location.reload()
   }, [])
 
   const refreshPlayfield = useCallback(() => {
@@ -276,10 +296,18 @@ export function CraftSpace() {
         target &&
         isAppointmentPair(draggedNow.catalogId, target.catalogId)
       ) {
-        showAppointmentToast()
+        armAppointmentHold()
+      } else {
+        clearAppointmentHold()
       }
     },
-    [commitElements, refreshPlayfield, showAppointmentToast, spaceSize],
+    [
+      armAppointmentHold,
+      clearAppointmentHold,
+      commitElements,
+      refreshPlayfield,
+      spaceSize,
+    ],
   )
 
   const bringFront = useCallback((instanceId: string) => {
@@ -304,6 +332,7 @@ export function CraftSpace() {
   const handleDrop = useCallback(
     (instanceId: string, pos: { x: number; y: number }) => {
       if (busyRef.current) return
+      clearAppointmentHold()
 
       const bounds = refreshPlayfield()
       const clamped = clampToPlayfield(pos.x, pos.y, bounds)
@@ -442,61 +471,18 @@ export function CraftSpace() {
         }, MERGE_PUNCH_MS)
       }, MERGE_CONVERGE_MS)
     },
-    [commitElements, refreshPlayfield, spaceSize, startParentExplode],
+    [
+      clearAppointmentHold,
+      commitElements,
+      refreshPlayfield,
+      spaceSize,
+      startParentExplode,
+    ],
   )
 
   return (
     <div className="craft-space" ref={spaceRef}>
-      <header ref={brandRef} className="craft-space__header">
-        <h1 className="craft-space__title">
-          <button
-            type="button"
-            className="craft-space__logo-btn"
-            aria-label="Reload celestial craft space"
-            onClick={reloadPage}
-          >
-            <img
-              className="craft-space__logo"
-              src="/celestial-logo-new.png"
-              alt="celestial Switzerland"
-              width={130}
-              height={51}
-              draggable={false}
-            />
-          </button>
-        </h1>
-        <div className="craft-space__spacer" aria-hidden="true" />
-        <button
-          type="button"
-          className="craft-space__cart"
-          aria-label="Shopping bag"
-        >
-          <svg
-            className="craft-space__cart-icon"
-            viewBox="0 0 19 24"
-            width={19}
-            height={24}
-            aria-hidden="true"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.25"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M1.5 7.25h16v14.25a1 1 0 0 1-1 1H2.5a1 1 0 0 1-1-1V7.25Z" />
-            <path d="M6 7.25V5a3.5 3.5 0 0 1 7 0v2.25" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          className="craft-space__burger"
-          aria-label="Menu"
-        >
-          <span className="craft-space__burger-bun" aria-hidden="true" />
-          <span className="craft-space__burger-meat" aria-hidden="true" />
-          <span className="craft-space__burger-bun" aria-hidden="true" />
-        </button>
-      </header>
+      <CelestialHeader ref={brandRef} />
 
       {elements.map((el) => (
         <CraftElement

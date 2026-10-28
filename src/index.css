@@ -27,13 +27,14 @@ body {
   font-size: var(--text-md);
   line-height: var(--leading-normal);
   letter-spacing: var(--tracking-normal);
-  background: var(--color-surface-muted);
+  background: #fff;
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   position: fixed;
   inset: 0;
-  touch-action: none;
+  /* CraftSpace sets touch-action: none on its root; landing needs pan-y. */
+  touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
 }

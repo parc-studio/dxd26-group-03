@@ -1,0 +1,139 @@
+.celestial-header {
+  --background-color: rgb(255, 255, 255);
+  --v72ca93ba: 32px;
+  --celestial-header-logo-w: 130px;
+  --celestial-header-logo-h: 51px;
+  --celestial-header-burger-w: 18px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  display: grid;
+  grid-template-columns: min-content 1fr auto auto;
+  align-items: center;
+  justify-items: stretch;
+  column-gap: 0;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 24px 16px;
+  padding-top: calc(24px + var(--safe-top));
+  border: 0;
+  background: var(--background-color);
+  box-shadow: none;
+  pointer-events: none;
+  color: var(--color-brand);
+}
+
+.celestial-header__title {
+  margin: 0;
+  min-width: 0;
+  line-height: 0;
+  justify-self: start;
+}
+
+.celestial-header__logo-btn {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  line-height: 0;
+}
+
+.celestial-header__logo-btn:focus-visible {
+  outline: 1px solid var(--color-brand);
+  outline-offset: 4px;
+}
+
+.celestial-header__logo {
+  display: block;
+  width: var(--celestial-header-logo-w);
+  height: var(--celestial-header-logo-h);
+  max-width: min(var(--celestial-header-logo-w), 42vw);
+  object-fit: contain;
+  object-position: left center;
+  filter: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.celestial-header__spacer {
+  min-width: 0;
+  pointer-events: none;
+}
+
+.celestial-header__cart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  width: var(--v72ca93ba);
+  height: var(--v72ca93ba);
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.celestial-header__cart:focus-visible {
+  outline: 1px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.celestial-header__cart-icon {
+  display: block;
+  width: 19px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.celestial-header__burger {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  justify-self: end;
+  gap: 5px;
+  box-sizing: border-box;
+  width: var(--celestial-header-burger-w);
+  height: var(--v72ca93ba);
+  padding: 0;
+  padding-left: calc(var(--v72ca93ba) - var(--celestial-header-burger-w));
+  margin: 0;
+  margin-left: calc((var(--v72ca93ba) - var(--celestial-header-burger-w)) * -1);
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.celestial-header__burger:focus-visible {
+  outline: 1px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.celestial-header__burger-bun,
+.celestial-header__burger-meat {
+  display: block;
+  width: var(--celestial-header-burger-w);
+  height: 1.5px;
+  margin-left: auto;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+@media (max-width: 360px) {
+  .celestial-header {
+    --celestial-header-logo-w: min(130px, 36vw);
+    --celestial-header-logo-h: 44px;
+  }
+}
