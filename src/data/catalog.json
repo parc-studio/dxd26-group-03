@@ -19,37 +19,10 @@
       "imageSize": "contain"
     },
     {
-      "id": "diamond_light_blue",
-      "label": "Light blue diamond",
-      "category": "stones",
-      "shape": "circle",
-      "kind": "material",
-      "image": "/textures/diamond_light_blue.png",
-      "imageSize": "contain"
-    },
-    {
-      "id": "diamond_blue",
-      "label": "Blue diamond",
-      "category": "stones",
-      "shape": "circle",
-      "kind": "material",
-      "image": "/textures/diamond_blue.png",
-      "imageSize": "contain"
-    },
-    {
-      "id": "diamond_dark_green",
-      "label": "Dark green diamond",
-      "category": "stones",
-      "shape": "circle",
-      "kind": "material",
-      "image": "/textures/diamond_dark_green.png",
-      "imageSize": "contain"
-    },
-    {
       "id": "gem_blue",
       "label": "Blue gem",
       "category": "stones",
-      "shape": "oval",
+      "shape": "circle",
       "kind": "material",
       "image": "/textures/gem_blue.png",
       "imageSize": "contain"
@@ -58,18 +31,9 @@
       "id": "gem_light_blue",
       "label": "Light blue gem",
       "category": "stones",
-      "shape": "oval",
+      "shape": "circle",
       "kind": "material",
       "image": "/textures/gem_light_blue.png",
-      "imageSize": "contain"
-    },
-    {
-      "id": "gem_cyan",
-      "label": "Cyan gem",
-      "category": "stones",
-      "shape": "oval",
-      "kind": "material",
-      "image": "/textures/gem_cyan.png",
       "imageSize": "contain"
     },
     {
@@ -85,7 +49,7 @@
       "id": "gem_violet",
       "label": "Violet gem",
       "category": "stones",
-      "shape": "oval",
+      "shape": "circle",
       "kind": "material",
       "image": "/textures/gem_violet.png",
       "imageSize": "contain"
@@ -141,20 +105,6 @@
       "imageSize": "contain"
     },
     {
-      "id": "pendant_duo_blue",
-      "label": "Blue diamond pair",
-      "category": "stones",
-      "shape": "circle",
-      "kind": "mid",
-      "image": "/textures/diamond_light_blue.png",
-      "imageSize": "contain",
-      "inset": "/textures/diamond_blue.png",
-      "insetPosition": "78% 72%",
-      "insetSize": "48%",
-      "insetImagePosition": "center",
-      "insetImageSize": "contain"
-    },
-    {
       "id": "necklace_single",
       "label": "Single light-blue necklace",
       "category": "jewellery",
@@ -188,10 +138,10 @@
       "kind": "jewellery",
       "image": "/textures/necklase_heart_blue_light_blue.png",
       "description": "Two blues meeting on a gold chain — light and deep, set as a small heart of light.",
-      "ingredients": ["chain_gold", "diamond_light_blue", "diamond_blue"],
+      "ingredients": ["chain_gold", "gem_light_blue", "gem_blue"],
       "price": 248,
       "displayName": "Collier 'Cœur'",
-      "materialsLine": "Or, diamant bleu & bleu clair"
+      "materialsLine": "Or, gemme bleue & bleu clair"
     }
   ],
   "recipes": [
@@ -218,19 +168,15 @@
   ],
   "starters": [
     { "catalogId": "chain_gold", "x": 18, "y": 34 },
-    { "catalogId": "chain_silver", "x": 38, "y": 32 },
-    { "catalogId": "ring_gold", "x": 58, "y": 34 },
-    { "catalogId": "ring_silver", "x": 78, "y": 36 },
-    { "catalogId": "ring_thin_gold", "x": 28, "y": 48 },
-    { "catalogId": "ring_thin_silver", "x": 50, "y": 46 },
-    { "catalogId": "diamond_light_blue", "x": 70, "y": 48 },
-    { "catalogId": "diamond_blue", "x": 88, "y": 50 },
-    { "catalogId": "diamond_dark_green", "x": 16, "y": 62 },
-    { "catalogId": "gem_blue", "x": 36, "y": 64 },
-    { "catalogId": "gem_light_blue", "x": 56, "y": 62 },
-    { "catalogId": "gem_cyan", "x": 76, "y": 66 },
-    { "catalogId": "gem_green", "x": 24, "y": 80 },
-    { "catalogId": "gem_violet", "x": 46, "y": 82 },
-    { "catalogId": "gem_yellow", "x": 68, "y": 84 }
+    { "catalogId": "chain_silver", "x": 42, "y": 32 },
+    { "catalogId": "ring_gold", "x": 66, "y": 34 },
+    { "catalogId": "ring_silver", "x": 86, "y": 38 },
+    { "catalogId": "ring_thin_gold", "x": 28, "y": 52 },
+    { "catalogId": "ring_thin_silver", "x": 52, "y": 50 },
+    { "catalogId": "gem_blue", "x": 76, "y": 54 },
+    { "catalogId": "gem_light_blue", "x": 18, "y": 68 },
+    { "catalogId": "gem_green", "x": 40, "y": 70 },
+    { "catalogId": "gem_violet", "x": 62, "y": 72 },
+    { "catalogId": "gem_yellow", "x": 84, "y": 74 }
   ]
 }

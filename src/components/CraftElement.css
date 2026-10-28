@@ -187,6 +187,13 @@
   border-radius: 50%;
 }
 
+/* All stone gems share one visual footprint (blue/light-blue matched to green/yellow). */
+.craft-el--stones.craft-el--photo .craft-el__shape {
+  width: 3.45rem;
+  height: 3.45rem;
+  border-radius: 50%;
+}
+
 .craft-el--oval .craft-el__shape {
   width: 3.6rem;
   height: 2.35rem;
@@ -351,6 +358,11 @@
   .craft-el--circle .craft-el__shape {
     width: 2.85rem;
     height: 2.85rem;
+  }
+
+  .craft-el--stones.craft-el--photo .craft-el__shape {
+    width: 3.35rem;
+    height: 3.35rem;
   }
 
   .craft-el--oval .craft-el__shape {
