@@ -1,4 +1,7 @@
 .landing {
+  --landing-pad-x: 16px;
+  --landing-card: 173px;
+  --landing-gap: 24px;
   position: fixed;
   inset: 0;
   display: flex;
@@ -8,105 +11,211 @@
   height: 100%;
   height: 100dvh;
   overflow: hidden;
-  overflow-x: hidden;
   box-sizing: border-box;
   background: #fff;
   color: var(--color-brand);
   touch-action: manipulation;
-  user-select: none;
-  -webkit-user-select: none;
+}
+
+.landing__header-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  flex-shrink: 0;
+  width: 100%;
+  background: #fff;
 }
 
 .landing .celestial-header {
   position: relative;
-  flex-shrink: 0;
+  top: auto;
+  left: auto;
+  right: auto;
   width: 100%;
   max-width: 100%;
 }
 
-.landing__split {
-  --landing-pad-x: 16px;
-  position: relative;
+.landing__main {
   flex: 1;
-  min-width: 0;
   min-height: 0;
-  display: grid;
-  /* True half/half; stacks only on very short+narrow if needed via media below */
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  padding: 0 var(--landing-pad-x);
-  overflow: hidden;
-  overflow-x: hidden;
-}
-
-.landing__pane {
-  position: relative;
-  min-width: 0;
-  min-height: 0;
-  max-width: 100%;
-  overflow: hidden;
-  background: #fff;
-}
-
-.landing__pane--boutique {
-  container-type: inline-size;
-  container-name: boutique;
-  border-right: 1px solid color-mix(in srgb, var(--color-brand) 10%, transparent);
-}
-
-.landing__pane-body {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  max-width: 100%;
-}
-
-.landing__products {
-  /* Fluid boutique grid — cards shrink when half-width is tight */
-  --landing-card: min(173px, 100%);
-  --landing-gap: clamp(12px, 3.5cqi, 24px);
-  box-sizing: border-box;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  column-gap: var(--landing-gap);
-  row-gap: var(--landing-gap);
-  width: 100%;
-  max-width: 100%;
-  height: 100%;
   margin: 0;
-  padding: 0 0 5.5rem;
+  padding: 8px var(--landing-pad-x) 2.5rem;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+  background: #fff;
 }
 
-/* 2 columns when boutique pane can fit ~2×173 + gap */
-@container boutique (min-width: 360px) {
-  .landing__products {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+/* --- Search --- */
+
+.landing__search {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 0 0 1rem;
+}
+
+.landing__search-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  display: flex;
+  color: var(--color-brand);
+  opacity: 0.72;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.landing__search-input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0.7rem 1rem 0.7rem 2.55rem;
+  border: 1px solid color-mix(in srgb, var(--color-brand) 22%, #d8d0c8);
+  border-radius: 0.65rem;
+  background: #fff;
+  color: var(--color-brand);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: var(--weight-regular);
+  line-height: 1.3;
+  outline: none;
+  appearance: none;
+}
+
+.landing__search-input::placeholder {
+  color: color-mix(in srgb, var(--color-brand) 55%, #9a8f88);
+  opacity: 1;
+}
+
+.landing__search-input:focus {
+  border-color: color-mix(in srgb, var(--color-brand) 55%, #d8d0c8);
+}
+
+.landing__search-input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/* --- Browse by --- */
+
+.landing__browse {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 0 0.85rem;
+}
+
+.landing__browse-label {
+  flex-shrink: 0;
+  color: var(--color-brand);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.landing__browse-select-wrap {
+  position: relative;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.landing__browse-select {
+  display: block;
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 8.5rem;
+  max-width: 100%;
+  min-height: 2.35rem;
+  margin: 0;
+  padding: 0.45rem 2rem 0.45rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--color-brand) 22%, #d8d0c8);
+  border-radius: 0.65rem;
+  background: #fff;
+  color: var(--color-brand);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: var(--weight-regular);
+  line-height: 1.2;
+  cursor: pointer;
+  appearance: none;
+  outline: none;
+}
+
+.landing__browse-select:focus {
+  border-color: color-mix(in srgb, var(--color-brand) 55%, #d8d0c8);
+}
+
+.landing__browse-chevron {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  display: flex;
+  color: var(--color-brand);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.landing__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 1.15rem;
+}
+
+.landing__craft-link {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-brand);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+}
+
+.landing__craft-link:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+/* --- Product grid (boutique mobile: 173 × 173 + 24 gap) --- */
+
+.landing__products {
+  display: grid;
+  grid-template-columns: 173px 173px;
+  column-gap: 24px;
+  row-gap: 24px;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  justify-content: center;
 }
 
 .landing__product {
+  width: 173px;
+  max-width: 100%;
+  min-width: 0;
   margin: 0;
   padding: 0;
-  width: 100%;
-  max-width: 173px;
-  min-width: 0;
-  justify-self: center;
 }
 
 .landing__product-media {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  height: auto;
   overflow: hidden;
   background: #f4f1ea;
 }
@@ -118,140 +227,61 @@
   object-fit: cover;
   object-position: center;
   pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .landing__product-name {
   margin: 0.85rem 0 0;
-  font-family: 'Lora', var(--font-display), 'Times New Roman', serif;
-  font-size: clamp(0.7rem, 2.8cqi, 0.8125rem);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
   font-weight: var(--weight-medium);
   line-height: 1.35;
   letter-spacing: 0.01em;
   color: var(--color-brand);
   overflow-wrap: anywhere;
-  word-break: break-word;
 }
 
 .landing__product-price {
   margin: 0.35rem 0 0;
-  font-family: 'Lora', var(--font-display), 'Times New Roman', serif;
-  font-size: clamp(0.7rem, 2.8cqi, 0.8125rem);
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
   font-weight: var(--weight-regular);
   line-height: 1.3;
   color: var(--color-brand);
 }
 
-.landing__pane--craft {
-  touch-action: none;
-}
-
-.landing__preview {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.landing__preview-piece {
-  position: absolute;
-  height: auto;
-  max-width: 34%;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 6px rgba(71, 43, 43, 0.08));
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-/* Soft frost over browse + craft previews; CTAs sit above.
-   Fotini: tune --landing-veil-opacity (was 42%, now 28%). */
-.landing__veil {
-  --landing-veil-opacity: 28%;
-  --landing-veil-blur: .5px;
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background: color-mix(in srgb, #fff var(--landing-veil-opacity), transparent);
-  backdrop-filter: blur(var(--landing-veil-blur)) saturate(1.05);
-  -webkit-backdrop-filter: blur(var(--landing-veil-blur)) saturate(1.05);
-}
-
-.landing__cta-wrap {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 5;
-  max-width: calc(100% - 12px);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-.landing__cta {
-  /* Fotini: widen pills via --landing-cta-min-width (and optional --landing-cta-pad-x). */
-  --landing-cta-min-width: 11.5rem;
-  --landing-cta-pad-x: 1.25rem;
-  pointer-events: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  width: max-content;
-  min-width: min(var(--landing-cta-min-width), 100%);
-  max-width: 100%;
-  min-height: 2.65rem;
-  padding: 0.7rem var(--landing-cta-pad-x);
-  border: none;
-  border-radius: var(--radius-pill);
-  background: var(--color-brand);
-  color: var(--color-on-brand);
-  font-family: var(--font-display);
-  font-size: clamp(0.78rem, 2.6vw, 0.95rem);
-  font-weight: var(--weight-medium);
-  letter-spacing: 0.01em;
-  line-height: 1;
+.landing__empty {
+  margin: 1.5rem 0 0;
   text-align: center;
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-  box-shadow: 0 8px 24px rgba(71, 43, 43, 0.18);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  color: color-mix(in srgb, var(--color-brand) 70%, #fff);
 }
 
-.landing__cta:focus-visible {
-  outline: 2px solid var(--color-brand);
-  outline-offset: 3px;
+/* Narrow phones: fluid 2-col when 173+173+24 + 32 pad won't fit */
+@media (max-width: 389px) {
+  .landing__products {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(12px, 4vw, 24px);
+    row-gap: clamp(12px, 4vw, 24px);
+  }
+
+  .landing__product {
+    width: 100%;
+  }
 }
 
-.landing__cta:active {
-  transform: translateY(1px);
-}
-
-/* Wider / landscape: keep side-by-side halves (already default) */
 @media (min-width: 768px) {
-  .landing__cta {
-    --landing-cta-min-width: 13rem;
-    --landing-cta-pad-x: 1.75rem;
-    min-height: 2.85rem;
-    font-size: 1rem;
-  }
-}
-
-/* Very short viewports: stack panes so content remains usable */
-@media (max-height: 480px) and (max-width: 700px) {
-  .landing__split {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  .landing__main {
+    padding-top: 12px;
+    padding-bottom: 3rem;
   }
 
-  .landing__pane--boutique {
-    border-right: none;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-brand) 10%, transparent);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .landing__veil {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: color-mix(in srgb, #fff 72%, transparent);
+  .landing__products {
+    margin-left: 0;
+    margin-right: 0;
+    justify-content: start;
   }
 }
