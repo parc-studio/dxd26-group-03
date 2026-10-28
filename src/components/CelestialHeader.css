@@ -10,11 +10,12 @@
   right: 0;
   z-index: 45;
   display: grid;
-  grid-template-columns: min-content 1fr auto auto;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr) auto auto;
   align-items: center;
   justify-items: stretch;
-  column-gap: 0;
+  column-gap: 8px;
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
   margin: 0;
   padding: 24px 16px;
@@ -24,17 +25,20 @@
   box-shadow: none;
   pointer-events: none;
   color: var(--color-brand);
+  overflow: hidden;
 }
 
 .celestial-header__title {
   margin: 0;
   min-width: 0;
+  max-width: 100%;
   line-height: 0;
   justify-self: start;
 }
 
 .celestial-header__logo-btn {
   display: block;
+  max-width: 100%;
   margin: 0;
   padding: 0;
   border: none;
@@ -51,9 +55,9 @@
 
 .celestial-header__logo {
   display: block;
-  width: var(--celestial-header-logo-w);
-  height: var(--celestial-header-logo-h);
-  max-width: min(var(--celestial-header-logo-w), 42vw);
+  width: min(var(--celestial-header-logo-w), 100%);
+  height: auto;
+  max-height: var(--celestial-header-logo-h);
   object-fit: contain;
   object-position: left center;
   filter: none;
@@ -72,6 +76,7 @@
   align-items: center;
   justify-content: center;
   justify-self: end;
+  flex-shrink: 0;
   width: var(--v72ca93ba);
   height: var(--v72ca93ba);
   margin: 0;
@@ -98,17 +103,16 @@
 .celestial-header__burger {
   display: inline-flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
   justify-self: end;
+  flex-shrink: 0;
   gap: 5px;
   box-sizing: border-box;
-  width: var(--celestial-header-burger-w);
+  width: var(--v72ca93ba);
   height: var(--v72ca93ba);
-  padding: 0;
-  padding-left: calc(var(--v72ca93ba) - var(--celestial-header-burger-w));
   margin: 0;
-  margin-left: calc((var(--v72ca93ba) - var(--celestial-header-burger-w)) * -1);
+  padding: 0;
   border: none;
   background: transparent;
   color: inherit;
@@ -126,14 +130,14 @@
   display: block;
   width: var(--celestial-header-burger-w);
   height: 1.5px;
-  margin-left: auto;
   background: currentColor;
   border-radius: 1px;
 }
 
-@media (max-width: 360px) {
+@media (max-width: 390px) {
   .celestial-header {
-    --celestial-header-logo-w: min(130px, 36vw);
+    --celestial-header-logo-w: min(130px, 34vw);
     --celestial-header-logo-h: 44px;
+    column-gap: 4px;
   }
 }

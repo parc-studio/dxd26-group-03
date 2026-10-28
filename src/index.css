@@ -6,20 +6,24 @@
   box-sizing: border-box;
 }
 
+html {
+  touch-action: manipulation;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 html,
 body,
 #root {
   margin: 0;
   width: 100%;
+  max-width: 100vw;
   height: 100%;
   overflow: hidden;
+  overflow-x: hidden;
   overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-}
-
-html {
-  touch-action: manipulation;
 }
 
 body {
@@ -48,8 +52,11 @@ html.is-dragging body {
 
 main {
   width: 100%;
+  max-width: 100vw;
   height: 100%;
   overflow: hidden;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 button {
