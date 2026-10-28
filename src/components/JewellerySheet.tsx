@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import type { JewelleryDetail } from '../data/catalog'
 import './JewellerySheet.css'
+
+// Loaded on demand to keep three.js out of the main bundle.
+const HeroModel = lazy(() => import('./HeroModel'))
 
 interface JewellerySheetProps {
   detail: JewelleryDetail
@@ -8,6 +11,7 @@ interface JewellerySheetProps {
 }
 
 const DISMISS_PX = 96
+const HERO_MODEL_URL = `${import.meta.env.BASE_URL}necklace2-1.obj`
 
 export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   const [qty, setQty] = useState(1)
@@ -176,21 +180,17 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
           onPointerUp={onBodyPointerUp}
           onPointerCancel={onBodyPointerUp}
         >
-          <div className="jewellery-sheet__hero" aria-hidden="true">
-            <div
-              className="jewellery-sheet__hero-img"
-              style={{ backgroundImage: `url(${detail.image})` }}
-            />
-            {detail.inset ? (
-              <span
-                className="jewellery-sheet__hero-inset"
-                style={{
-                  backgroundImage: `url(${detail.inset})`,
-                  backgroundPosition: detail.insetImagePosition ?? 'center',
-                  backgroundSize: detail.insetImageSize ?? 'cover',
-                }}
+          <div
+            className="jewellery-sheet__hero"
+            // Rotating the model must not start the sheet's drag-to-dismiss.
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            <Suspense fallback={null}>
+              <HeroModel
+                className="jewellery-sheet__hero-model"
+                src={HERO_MODEL_URL}
               />
-            ) : null}
+            </Suspense>
           </div>
 
           <div className="jewellery-sheet__body">
