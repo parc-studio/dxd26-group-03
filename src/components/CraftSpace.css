@@ -10,8 +10,8 @@
   -webkit-user-select: none;
   user-select: none;
   padding: 0;
-  /* Flat cream / off-white — no yellow spotlight */
-  background: var(--color-surface-muted);
+  /* Pure white craft surface (Celestial header/page) */
+  background: #fff;
 }
 
 .craft-space__header {
@@ -41,7 +41,7 @@
   padding: 24px 16px;
   padding-top: calc(24px + var(--safe-top));
   border: 0;
-  background: var(--color-surface-muted);
+  background: #fff;
   box-shadow: none;
   pointer-events: none;
 }
