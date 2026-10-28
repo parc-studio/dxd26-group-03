@@ -24,15 +24,17 @@ const MAX_POLAR = THREE.MathUtils.degToRad(88)
 // va-et-vient avant le premier contact : amplitude et vitesse (2 = 30 s par tour)
 const IDLE_SWEEP = THREE.MathUtils.degToRad(30)
 const IDLE_SPEED = 0.5
+// gemmes : plus la valeur est haute, plus la couleur est claire (en tailles de gemme)
+const GEM_CLARITY = 2
+// lueur propre des gemmes (0 = aucune)
+const GEM_GLOW = 0.15
 
-// Retouche les matériaux PBR exportés par Blender pour un rendu « bijou ».
-function tuneMaterial(material: THREE.Material): THREE.Material {
-  if (!(material instanceof THREE.MeshStandardMaterial)) return material
+export type Metal = 'gold' | 'silver'
 
+const METALS: Record<Metal, () => THREE.MeshPhysicalMaterial> = {
   // or poli : le clearcoat ajoute un second reflet très net par-dessus
-  if (/gold/i.test(material.name)) {
-    material.dispose()
-    return new THREE.MeshPhysicalMaterial({
+  gold: () =>
+    new THREE.MeshPhysicalMaterial({
       name: 'Gold',
       color: new THREE.Color().setRGB(1.0, 0.71, 0.29, THREE.LinearSRGBColorSpace),
       metalness: 1,
@@ -40,24 +42,22 @@ function tuneMaterial(material: THREE.Material): THREE.Material {
       clearcoat: 0.3,
       clearcoatRoughness: 0.05,
       envMapIntensity: 1.0,
-    })
-  }
-
+    }),
   // argent poli : presque blanc et très lisse, pour que chaque maillon
   // accroche un petit reflet net comme sur une photo de chaîne fine
-  if (/silver|steel/i.test(material.name)) {
-    material.dispose()
-    return new THREE.MeshPhysicalMaterial({
+  silver: () =>
+    new THREE.MeshPhysicalMaterial({
       name: 'Silver',
       color: new THREE.Color().setRGB(0.97, 0.96, 0.93, THREE.LinearSRGBColorSpace),
       metalness: 1,
       roughness: 0.08,
       envMapIntensity: 1.3,
-    })
-  }
+    }),
+}
 
-  if (isGem(material)) material.envMapIntensity = 1.2
-  return material
+// le métal de l'export Blender, remplacé par l'or ou l'argent choisi
+function isMetal(material: THREE.Material): boolean {
+  return /gold|silver|steel/i.test(material.name)
 }
 
 function isGem(material: THREE.Material | THREE.Material[]): material is THREE.MeshPhysicalMaterial {
@@ -72,18 +72,38 @@ function addGemVolume(gem: THREE.Mesh<THREE.BufferGeometry, THREE.MeshPhysicalMa
   const local = gem.geometry.boundingBox!.getSize(new THREE.Vector3())
   const world = new THREE.Box3().setFromObject(gem).getSize(new THREE.Vector3())
   // thickness est exprimé en unités locales, attenuationDistance en unités monde
-  gem.material.thickness = Math.max(local.x, local.y, local.z) * 0.5
+  gem.material.thickness = Math.max(local.x, local.y, local.z) * 0.35
   gem.material.attenuationColor.copy(gem.material.color)
-  gem.material.attenuationDistance = Math.max(world.x, world.y, world.z) * 0.6
+  gem.material.attenuationDistance = Math.max(world.x, world.y, world.z) * GEM_CLARITY
+}
+
+// Gemmes plus lumineuses : reflets du studio renforcés, légère dispersion
+// (« feu » coloré sur les facettes) et une lueur de leur propre couleur pour
+// qu'elles ne s'assombrissent pas devant le fond marron.
+function brightenGem(material: THREE.MeshPhysicalMaterial) {
+  material.envMapIntensity = 2
+  material.specularIntensity = 1
+  material.dispersion = 0.3
+  material.emissive.copy(material.color)
+  material.emissiveIntensity = GEM_GLOW
 }
 
 interface HeroModelProps {
   src: string
+  metal: Metal
   className?: string
 }
 
-export default function HeroModel({ src, className }: HeroModelProps) {
+export default function HeroModel({ src, metal, className }: HeroModelProps) {
   const hostRef = useRef<HTMLDivElement>(null)
+  const metalRef = useRef(metal)
+  const applyMetalRef = useRef<((metal: Metal) => void) | null>(null)
+
+  // changer de métal ne recharge pas le modèle : on échange le matériau
+  useEffect(() => {
+    metalRef.current = metal
+    applyMetalRef.current?.(metal)
+  }, [metal])
 
   useEffect(() => {
     const host = hostRef.current
@@ -169,6 +189,8 @@ export default function HeroModel({ src, className }: HeroModelProps) {
     const observer = new ResizeObserver(resize)
     observer.observe(host)
 
+    const metalMaterials = { gold: METALS.gold(), silver: METALS.silver() }
+
     let disposed = false
     let model: THREE.Object3D | null = null
     const load = async () => {
@@ -184,13 +206,20 @@ export default function HeroModel({ src, className }: HeroModelProps) {
       envMap = hdr
       scene.environment = hdr
       model = gltf.scene
+      const metalMeshes: THREE.Mesh[] = []
       model.traverse((child) => {
         if (!(child instanceof THREE.Mesh)) return
         child.castShadow = true
-        child.material = Array.isArray(child.material)
-          ? child.material.map(tuneMaterial)
-          : tuneMaterial(child.material)
+        if (isGem(child.material)) brightenGem(child.material)
+        else if (!Array.isArray(child.material) && isMetal(child.material)) {
+          child.material.dispose()
+          metalMeshes.push(child)
+        }
       })
+      applyMetalRef.current = (next) => {
+        for (const mesh of metalMeshes) mesh.material = metalMaterials[next]
+      }
+      applyMetalRef.current(metalRef.current)
       // cube par défaut de Blender et tissu de présentation : on a déjà
       // un fond et un sol d'ombre
       for (const name of HIDDEN) {
@@ -269,6 +298,9 @@ export default function HeroModel({ src, className }: HeroModelProps) {
           m.dispose()
         }
       })
+      applyMetalRef.current = null
+      metalMaterials.gold.dispose()
+      metalMaterials.silver.dispose()
       envMap?.dispose()
       floor.geometry.dispose()
       floorMaterial.dispose()

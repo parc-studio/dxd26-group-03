@@ -1,5 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { getCatalogElement, type JewelleryDetail } from '../data/catalog'
+import type { Metal } from './HeroModel'
 import './JewellerySheet.css'
 
 // Loaded on demand to keep three.js out of the main bundle.
@@ -20,15 +21,26 @@ const SHOWCASE = {
   description:
     'A fine chain traced like a shoreline, set with peridot and blue apatite ' +
     'that catch the light like sun on shallow and deep water.',
-  ingredients: [
-    { id: 'chain_gold', label: 'Gold chain' },
+  chains: {
+    gold: { id: 'chain_gold', label: 'Gold chain' },
+    silver: { id: 'chain_silver', label: 'Silver chain' },
+  },
+  gems: [
     { id: 'gem_green', label: 'Peridot gem' },
     { id: 'gem_light_blue', label: 'Apatite gem' },
-  ].map((part) => ({ ...part, image: getCatalogElement(part.id)?.image ?? '' })),
+  ],
 }
+
+const METAL_OPTIONS: { value: Metal; label: string }[] = [
+  { value: 'gold', label: 'Gold' },
+  { value: 'silver', label: 'Silver' },
+]
+
+const swatch = (id: string) => getCatalogElement(id)?.image ?? ''
 
 export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   const [qty, setQty] = useState(1)
+  const [metal, setMetal] = useState<Metal>('gold')
   const [dragY, setDragY] = useState(0)
   const [closing, setClosing] = useState(false)
   const [entered, setEntered] = useState(false)
@@ -204,6 +216,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
               <HeroModel
                 className="jewellery-sheet__hero-model"
                 src={HERO_MODEL_URL}
+                metal={metal}
               />
             </Suspense>
           </div>
@@ -218,11 +231,40 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
             <section className="jewellery-sheet__section" aria-label="Elements">
               <h3 className="jewellery-sheet__section-title">Elements</h3>
               <ul className="jewellery-sheet__ingredients">
-                {SHOWCASE.ingredients.map((part) => (
+                <li className="jewellery-sheet__ingredient">
+                  <span
+                    className="jewellery-sheet__ingredient-swatch"
+                    style={{
+                      backgroundImage: `url(${swatch(SHOWCASE.chains[metal].id)})`,
+                    }}
+                    aria-hidden="true"
+                  />
+                  <span className="jewellery-sheet__ingredient-label">
+                    {SHOWCASE.chains[metal].label}
+                  </span>
+                  <div
+                    className="jewellery-sheet__metal"
+                    role="group"
+                    aria-label="Chain metal"
+                  >
+                    {METAL_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className="jewellery-sheet__metal-btn"
+                        aria-pressed={metal === option.value}
+                        onClick={() => setMetal(option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </li>
+                {SHOWCASE.gems.map((part) => (
                   <li key={part.id} className="jewellery-sheet__ingredient">
                     <span
                       className="jewellery-sheet__ingredient-swatch"
-                      style={{ backgroundImage: `url(${part.image})` }}
+                      style={{ backgroundImage: `url(${swatch(part.id)})` }}
                       aria-hidden="true"
                     />
                     <span className="jewellery-sheet__ingredient-label">

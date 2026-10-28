@@ -292,3 +292,38 @@
     font-size: var(--text-2xl);
   }
 }
+
+.jewellery-sheet__metal {
+  display: inline-flex;
+  margin-left: auto;
+  padding: 2px;
+  border: 1px solid color-mix(in srgb, var(--color-brand-soft) 40%, white);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+
+.jewellery-sheet__metal-btn {
+  margin: 0;
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.jewellery-sheet__metal-btn[aria-pressed='true'] {
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+}
+
+.jewellery-sheet__metal-btn:focus-visible {
+  outline: 1px solid var(--color-brand);
+  outline-offset: 2px;
+}
