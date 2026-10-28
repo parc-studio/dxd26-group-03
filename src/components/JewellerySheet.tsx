@@ -30,9 +30,25 @@ const SHOWCASE = {
   ],
 };
 
-// Per-piece overrides of the showcase name and finished-piece photo.
-const PIECES: Record<string, { name: string; finalPhoto?: string }> = {
-  necklace_apatite: { name: "Necklace Apatite", finalPhoto: "apatite-chain.jpg" },
+type Piece = Partial<Pick<typeof SHOWCASE, "name" | "stock" | "description" | "gems">> & {
+  /** Metals the piece is made in (default: all); one hides the switch. */
+  metals?: Metal[];
+  /** Finished-piece photo, shared by every metal. */
+  finalPhoto?: string;
+};
+
+// Per-piece overrides of the showcase.
+const PIECES: Record<string, Piece> = {
+  necklace_apatite: {
+    name: "Necklace Apatite",
+    stock: 2,
+    description:
+      "A fine silver chain with a single drop of blue apatite " +
+      "that catches the light like deep water.",
+    gems: [{ id: "apatite", label: "Apatite" }],
+    metals: ["silver"],
+    finalPhoto: "apatite-chain.jpg",
+  },
 };
 
 // Making-of photos for the showcased piece, shown before the price.
@@ -50,11 +66,11 @@ const photo = (metal: Metal, pieceId: string, pieceName: string) => [
 
 // Each slot holds every metal's photo (once per distinct file), stacked so
 // switching metal crossfades instead of reloading the image.
-const gallery = (pieceId: string, pieceName: string) => {
-  const byMetal = METALS.map((metal) => photo(metal, pieceId, pieceName));
+const gallery = (pieceId: string, pieceName: string, metals: Metal[]) => {
+  const byMetal = metals.map((metal) => photo(metal, pieceId, pieceName));
   return byMetal[0].map((_, slot) => {
     const layers: { src: string; alt: string; metals: Metal[] }[] = [];
-    METALS.forEach((metal, i) => {
+    metals.forEach((metal, i) => {
       const { src, alt } = byMetal[i][slot];
       const layer = layers.find((l) => l.src === src);
       if (layer) layer.metals.push(metal);
@@ -74,8 +90,12 @@ const METALS = METAL_OPTIONS.map((option) => option.value);
 const swatch = (id: string) => getCatalogElement(id)?.image ?? "";
 
 export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
+  const piece = { ...SHOWCASE, metals: METALS, ...PIECES[detail.id] };
+  const metalOptions = METAL_OPTIONS.filter((o) => piece.metals.includes(o.value));
   const [qty, setQty] = useState(1);
-  const [metal, setMetal] = useState<Metal>("silver");
+  const [metal, setMetal] = useState<Metal>(() =>
+    piece.metals.includes("silver") ? "silver" : piece.metals[0],
+  );
   const [closing, setClosing] = useState(false);
   const [entered, setEntered] = useState(false);
   // Element whose name bubble is showing after a tap on its swatch.
@@ -108,7 +128,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   // Shop format: "CHF25.00", no space after the currency.
   const priceLabel = `CHF${detail.price.toFixed(2)}`;
 
-  const pieceName = PIECES[detail.id]?.name ?? SHOWCASE.name;
+  const pieceName = piece.name;
 
   return (
     <div
@@ -156,23 +176,25 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
             </div>
 
             <div className="jewellery-sheet__hero-controls">
-              <div
-                className="jewellery-sheet__metal"
-                role="group"
-                aria-label="Chain metal"
-              >
-                {METAL_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className="jewellery-sheet__metal-btn"
-                    aria-pressed={metal === option.value}
-                    onClick={() => setMetal(option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+              {metalOptions.length > 1 && (
+                <div
+                  className="jewellery-sheet__metal"
+                  role="group"
+                  aria-label="Chain metal"
+                >
+                  {metalOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className="jewellery-sheet__metal-btn"
+                      aria-pressed={metal === option.value}
+                      onClick={() => setMetal(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               <ul
                 className="jewellery-sheet__ingredients"
@@ -180,7 +202,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
               >
                 {[
                   { ...SHOWCASE.chains[metal], className: "" },
-                  ...SHOWCASE.gems.map((part) => ({
+                  ...piece.gems.map((part) => ({
                     ...part,
                     className: ` jewellery-sheet__ingredient-swatch--${part.id}`,
                   })),
@@ -217,14 +239,14 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
               {pieceName}
             </h2>
 
-            <p className="jewellery-sheet__desc">{SHOWCASE.description}</p>
+            <p className="jewellery-sheet__desc">{piece.description}</p>
 
             <section
               className="jewellery-sheet__section"
               aria-label="Making of"
             >
               <div className="jewellery-sheet__gallery">
-                {gallery(detail.id, pieceName).map((layers, slot) => (
+                {gallery(detail.id, pieceName, piece.metals).map((layers, slot) => (
                   <figure key={slot} className="jewellery-sheet__photo">
                     {layers.map((layer) => {
                       const shown = layer.metals.includes(metal);
@@ -270,13 +292,13 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
                 type="button"
                 className="jewellery-sheet__qty-btn"
                 aria-label="Increase quantity"
-                disabled={qty >= SHOWCASE.stock}
-                onClick={() => setQty((q) => Math.min(SHOWCASE.stock, q + 1))}
+                disabled={qty >= piece.stock}
+                onClick={() => setQty((q) => Math.min(piece.stock, q + 1))}
               >
                 +
               </button>
             </div>
-            <p className="jewellery-sheet__stock">{SHOWCASE.stock} in stock</p>
+            <p className="jewellery-sheet__stock">{piece.stock} in stock</p>
           </div>
 
           <button

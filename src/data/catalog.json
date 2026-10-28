@@ -121,7 +121,7 @@
       "kind": "jewellery",
       "description": "A fine gold chain with one apatite drop — a cool and refreshing stone.",
       "ingredients": ["chain_silver", "apatite"],
-      "price": 168,
+      "price": 69,
       "displayName": "Collier 'Apatite'",
       "materialsLine": "Or & apatite",
       "image": "/textures/necklase_apatite.png",
