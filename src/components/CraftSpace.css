@@ -16,6 +16,15 @@
   box-sizing: border-box;
   /* Pure white craft surface (Celestial header/page) */
   background: #fff;
+
+  /*
+   * Craft image scale defaults (Fotini) — keep in sync with
+   * src/data/craftScales.ts (authoritative; applied as --craft-scale).
+   * Per-piece: CRAFT_SCALE_BY_ID or catalog.json "scale".
+   */
+  --craft-scale-default: 1;
+  --craft-scale-ring: 0.9;
+  --craft-scale-jewellery: 1.2;
 }
 
 /* While the finished-product reveal is up, freeze craft pointer input */
