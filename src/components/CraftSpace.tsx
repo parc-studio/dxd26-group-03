@@ -1,9 +1,10 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   createStarterInstances,
   findRecipeResult,
   getCatalogElement,
   getJewelleryDetail,
+  isAppointmentPair,
   spawnInstance,
   type JewelleryDetail,
 } from '../data/catalog'
@@ -28,10 +29,13 @@ import type {
   MergeBurstState,
   ParentMergePhase,
 } from '../types'
+import { AppointmentToast } from './AppointmentToast'
 import { CraftElement } from './CraftElement'
 import { JewellerySheet } from './JewellerySheet'
 import { MergeBurst } from './MergeBurst'
 import './CraftSpace.css'
+
+const APPOINTMENT_TOAST_MS = 6000
 
 export function CraftSpace() {
   const spaceRef = useRef<HTMLDivElement>(null)
@@ -57,10 +61,44 @@ export function CraftSpace() {
   >({})
   const [underFlashId, setUnderFlashId] = useState<string | null>(null)
   const [revealAnimId, setRevealAnimId] = useState<string | null>(null)
+  const [appointmentToast, setAppointmentToast] = useState(false)
+  const appointmentToastVisibleRef = useRef(false)
+  const appointmentToastTimerRef = useRef<number | null>(null)
 
   const commitElements = useCallback((next: CraftInstance[]) => {
     elementsRef.current = next
     setElements(next)
+  }, [])
+
+  const dismissAppointmentToast = useCallback(() => {
+    if (appointmentToastTimerRef.current !== null) {
+      window.clearTimeout(appointmentToastTimerRef.current)
+      appointmentToastTimerRef.current = null
+    }
+    appointmentToastVisibleRef.current = false
+    setAppointmentToast(false)
+  }, [])
+
+  const showAppointmentToast = useCallback(() => {
+    if (appointmentToastVisibleRef.current) return
+    appointmentToastVisibleRef.current = true
+    setAppointmentToast(true)
+    if (appointmentToastTimerRef.current !== null) {
+      window.clearTimeout(appointmentToastTimerRef.current)
+    }
+    appointmentToastTimerRef.current = window.setTimeout(() => {
+      appointmentToastTimerRef.current = null
+      appointmentToastVisibleRef.current = false
+      setAppointmentToast(false)
+    }, APPOINTMENT_TOAST_MS)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (appointmentToastTimerRef.current !== null) {
+        window.clearTimeout(appointmentToastTimerRef.current)
+      }
+    }
   }, [])
 
   const refreshPlayfield = useCallback(() => {
@@ -212,11 +250,27 @@ export function CraftSpace() {
         w,
         h,
         (otherCatalogId) =>
-          Boolean(findRecipeResult(dragged.catalogId, otherCatalogId)),
+          Boolean(findRecipeResult(dragged.catalogId, otherCatalogId)) ||
+          isAppointmentPair(dragged.catalogId, otherCatalogId),
       )
       commitElements(pushed)
+
+      const draggedNow = pushed.find((el) => el.instanceId === instanceId)
+      if (!draggedNow) return
+      const target = findDropTarget(
+        pushed,
+        instanceId,
+        draggedNow.x,
+        draggedNow.y,
+      )
+      if (
+        target &&
+        isAppointmentPair(draggedNow.catalogId, target.catalogId)
+      ) {
+        showAppointmentToast()
+      }
     },
-    [commitElements, refreshPlayfield, spaceSize],
+    [commitElements, refreshPlayfield, showAppointmentToast, spaceSize],
   )
 
   const bringFront = useCallback((instanceId: string) => {
@@ -257,6 +311,14 @@ export function CraftSpace() {
       const target = findDropTarget(placed, instanceId, clamped.x, clamped.y)
       if (!target) {
         // Soft settle so a non-merge drop doesn't leave overlaps.
+        const { w, h } = spaceSize()
+        commitElements(separateAll(elementsRef.current, bounds, w, h))
+        delete dragOriginRef.current[instanceId]
+        return
+      }
+
+      // Appointment pairs look combinable but have no product — CTA only.
+      if (isAppointmentPair(dragged.catalogId, target.catalogId)) {
         const { w, h } = spaceSize()
         commitElements(separateAll(elementsRef.current, bounds, w, h))
         delete dragOriginRef.current[instanceId]
@@ -421,6 +483,10 @@ export function CraftSpace() {
       {bursts.map((b) => (
         <MergeBurst key={b.id} x={b.x} y={b.y} kind={b.kind} />
       ))}
+
+      {appointmentToast ? (
+        <AppointmentToast onClose={dismissAppointmentToast} />
+      ) : null}
 
       {sheet ? (
         <JewellerySheet detail={sheet} onClose={closeJewellery} />

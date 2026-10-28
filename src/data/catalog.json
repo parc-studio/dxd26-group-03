@@ -178,5 +178,12 @@
     { "catalogId": "gem_green", "x": 40, "y": 70 },
     { "catalogId": "gem_violet", "x": 62, "y": 72 },
     { "catalogId": "gem_yellow", "x": 84, "y": 74 }
+  ],
+  "appointmentPairs": [
+    { "a": "ring_thin_silver", "b": "gem_blue" },
+    { "a": "ring_thin_silver", "b": "gem_light_blue" },
+    { "a": "ring_thin_silver", "b": "gem_green" },
+    { "a": "ring_thin_silver", "b": "gem_violet" },
+    { "a": "ring_thin_silver", "b": "gem_yellow" }
   ]
 }

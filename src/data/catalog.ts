@@ -1,10 +1,16 @@
 import raw from './catalog.json'
-import type { CatalogElement, CraftInstance, Recipe } from '../types'
+import type {
+  AppointmentPair,
+  CatalogElement,
+  CraftInstance,
+  Recipe,
+} from '../types'
 
 const catalog = raw as {
   elements: CatalogElement[]
   recipes: Recipe[]
   starters: { catalogId: string; x: number; y: number }[]
+  appointmentPairs?: AppointmentPair[]
 }
 
 const byId = new Map(catalog.elements.map((el) => [el.id, el]))
@@ -14,6 +20,12 @@ const recipeMap = new Map<string, string>()
 for (const recipe of catalog.recipes) {
   const key = [recipe.a, recipe.b].sort().join('::')
   recipeMap.set(key, recipe.result)
+}
+
+/** Undirected appointment-CTA pairs (overlap allowed, no product merge). */
+const appointmentPairSet = new Set<string>()
+for (const pair of catalog.appointmentPairs ?? []) {
+  appointmentPairSet.add([pair.a, pair.b].sort().join('::'))
 }
 
 let instanceCounter = 0
@@ -30,6 +42,12 @@ export function getCatalogElement(id: string): CatalogElement | undefined {
 export function findRecipeResult(a: string, b: string): string | null {
   if (a === b) return null
   return recipeMap.get([a, b].sort().join('::')) ?? null
+}
+
+/** True when this pair should overlap and prompt “book an appointment”. */
+export function isAppointmentPair(a: string, b: string): boolean {
+  if (a === b) return false
+  return appointmentPairSet.has([a, b].sort().join('::'))
 }
 
 export function spawnInstance(
@@ -81,6 +99,18 @@ export function assertCatalogAligned(knownImageFiles: string[]): string[] {
   for (const recipe of catalog.recipes) {
     for (const id of [recipe.a, recipe.b, recipe.result]) {
       if (!elementIds.has(id)) errors.push(`recipe references missing element ${id}`)
+    }
+  }
+
+  for (const pair of catalog.appointmentPairs ?? []) {
+    for (const id of [pair.a, pair.b]) {
+      if (!elementIds.has(id)) {
+        errors.push(`appointmentPair references missing element ${id}`)
+      }
+    }
+    const key = [pair.a, pair.b].sort().join('::')
+    if (recipeMap.has(key)) {
+      errors.push(`appointmentPair ${key} also has a recipe — remove one`)
     }
   }
 
@@ -150,3 +180,4 @@ export function getJewelleryDetail(catalogId: string): JewelleryDetail | null {
 
 export const CATALOG_ELEMENTS = catalog.elements
 export const RECIPES = catalog.recipes
+export const APPOINTMENT_PAIRS = catalog.appointmentPairs ?? []

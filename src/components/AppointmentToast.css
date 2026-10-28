@@ -1,0 +1,77 @@
+.appointment-toast {
+  position: absolute;
+  left: 50%;
+  bottom: calc(1.25rem + var(--safe-bottom));
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: min(92vw, 22rem);
+  padding: 0.85rem 0.85rem 0.85rem 1.25rem;
+  transform: translateX(-50%);
+  border: 1px solid color-mix(in srgb, var(--color-brand) 18%, transparent);
+  border-radius: 0.35rem;
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-cream));
+  box-shadow: 0 8px 28px rgba(71, 43, 43, 0.14);
+  color: var(--color-brand);
+  font-family: var(--font-display);
+  animation: appointment-toast-in 320ms ease-out both;
+  pointer-events: auto;
+}
+
+.appointment-toast__message {
+  margin: 0;
+  flex: 1;
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.02em;
+  line-height: var(--leading-snug);
+  text-align: center;
+  text-transform: lowercase;
+  color: var(--color-brand);
+}
+
+.appointment-toast__close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--color-brand);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.appointment-toast__close:hover {
+  background: color-mix(in srgb, var(--color-brand) 8%, transparent);
+}
+
+.appointment-toast__close:focus-visible {
+  outline: 1px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+@keyframes appointment-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .appointment-toast {
+    animation: none;
+  }
+}
