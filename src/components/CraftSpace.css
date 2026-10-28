@@ -43,36 +43,3 @@
   box-sizing: border-box;
 }
 
-/* Temporary shake-debug control — remove once DeviceMotion is verified on devices */
-.craft-shake-debug {
-  position: absolute;
-  right: 12px;
-  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-  z-index: 50;
-  margin: 0;
-  padding: 0.55rem 0.85rem;
-  border: 1px solid color-mix(in srgb, var(--color-brand) 35%, transparent);
-  border-radius: 0.4rem;
-  background: color-mix(in srgb, #fff 88%, transparent);
-  color: var(--color-brand);
-  font-family: var(--font-display);
-  font-size: 0.75rem;
-  font-weight: var(--weight-medium);
-  letter-spacing: 0.04em;
-  line-height: 1;
-  cursor: pointer;
-  pointer-events: auto;
-  touch-action: manipulation;
-  -webkit-appearance: none;
-  appearance: none;
-  box-shadow: 0 4px 14px rgba(71, 43, 43, 0.12);
-}
-
-.craft-shake-debug:focus-visible {
-  outline: 2px solid var(--color-brand);
-  outline-offset: 2px;
-}
-
-.craft-shake-debug:active {
-  transform: translateY(1px);
-}

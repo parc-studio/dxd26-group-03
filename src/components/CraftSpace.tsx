@@ -27,6 +27,7 @@ import { opposingExplodeDirs, runParentExplode } from "../lib/mergeExplode";
 import { MERGE_CONVERGE_MS, MERGE_PUNCH_MS } from "../lib/mergeTiming";
 import { attachShakeListener } from "../lib/shakeDetect";
 import { runShakeJostle } from "../lib/shakeJostle";
+import { attachTiltDrift } from "../lib/tiltDrift";
 import type {
   CraftInstance,
   MergeBurstState,
@@ -64,12 +65,13 @@ export function CraftSpace() {
   const elementsRef = useRef<CraftInstance[]>([]);
   const busyRef = useRef(false);
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
+  /** Pieces under a finger; tilt drift leaves them where they are. */
+  const draggingRef = useRef(new Set<string>());
   const explodeCancelRef = useRef<(() => void) | null>(null);
   const shakeJostleRef = useRef<{
     cancel: () => void;
     kick: (intensity?: number) => void;
   } | null>(null);
-  const shakeResetPendingRef = useRef(false);
 
   const [elements, setElements] = useState<CraftInstance[]>(() => {
     const starters = createStarterInstances();
@@ -343,6 +345,7 @@ export function CraftSpace() {
   const handleDragStart = useCallback(
     (instanceId: string, origin: { x: number; y: number }) => {
       dragOriginRef.current[instanceId] = origin;
+      draggingRef.current.add(instanceId);
     },
     [],
   );
@@ -359,7 +362,6 @@ export function CraftSpace() {
     explodeCancelRef.current = null;
     shakeJostleRef.current?.cancel();
     shakeJostleRef.current = null;
-    shakeResetPendingRef.current = false;
 
     jewelleryRevealOpenRef.current = false;
     setJewelleryReveal(null);
@@ -406,7 +408,6 @@ export function CraftSpace() {
     shakeJostleRef.current?.cancel();
 
     busyRef.current = true;
-    shakeResetPendingRef.current = true;
     jewelleryRevealOpenRef.current = false;
     setJewelleryReveal(null);
     setBursts([]);
@@ -423,6 +424,7 @@ export function CraftSpace() {
     const bounds = refreshPlayfield();
     const { w, h } = spaceSize();
     const live = elementsRef.current;
+    // nothing to jostle: re-seat the starters rather than leave it empty
     if (live.length === 0) {
       resetCraftToStarters();
       return;
@@ -440,11 +442,8 @@ export function CraftSpace() {
       onFrame: applyExplodePositions,
       onDone: () => {
         shakeJostleRef.current = null;
-        if (shakeResetPendingRef.current) {
-          resetCraftToStarters();
-        } else {
-          busyRef.current = false;
-        }
+        // pieces stay where the jostle left them
+        busyRef.current = false;
       },
     });
   }, [
@@ -456,22 +455,47 @@ export function CraftSpace() {
     spaceSize,
   ]);
 
-  // Android-first shake → jostle → reset. iOS permission gated for later.
-  // Note: listener is attached once; startShakeJostle is read via ref so we
-  // don't detach/reattach on every callback identity change.
+  // Tilting the phone slowly slides the pieces toward the low side.
+  const sheetOpenRef = useRef(false);
+  sheetOpenRef.current = sheet !== null;
+
+  useEffect(
+    () =>
+      attachTiltDrift({
+        getBodies: () =>
+          elementsRef.current.map((el) => ({
+            id: el.instanceId,
+            x: el.x,
+            y: el.y,
+            pinned: draggingRef.current.has(el.instanceId),
+          })),
+        getSpace: () => ({ ...spaceSize(), playfield: playfieldRef.current }),
+        isEnabled: () =>
+          !busyRef.current &&
+          !sheetOpenRef.current &&
+          !jewelleryRevealOpenRef.current &&
+          !shakeJostleRef.current &&
+          !explodeCancelRef.current,
+        onFrame: applyExplodePositions,
+      }),
+    [applyExplodePositions, spaceSize],
+  );
+
+  // A big shake jostles the pieces, same as the Shake button / logo
+  // long-press. Thresholds are high so tilting or a light wobble don't fire.
+  // startShakeJostle is read via ref so the listener is attached once.
   const startShakeJostleRef = useRef(startShakeJostle);
   startShakeJostleRef.current = startShakeJostle;
 
   useEffect(() => {
     const detach = attachShakeListener({
+      threshold: 20,
+      minSamples: 3,
       onShakePulse: (intensity) => {
         shakeJostleRef.current?.kick(intensity);
       },
       onShake: () => {
-        console.info(
-          "[craft-shake]",
-          "CraftSpace handling onShake → jostle+reset",
-        );
+        console.info("[craft-shake]", "big shake → jostle");
         startShakeJostleRef.current();
       },
     });
@@ -536,6 +560,7 @@ export function CraftSpace() {
 
   const handleDrop = useCallback(
     (instanceId: string, pos: { x: number; y: number }) => {
+      draggingRef.current.delete(instanceId);
       if (busyRef.current) return;
       clearAppointmentHold();
 
@@ -711,22 +736,10 @@ export function CraftSpace() {
         ref={brandRef}
         cartCount={cartCount}
         onLogoLongPress={() => {
-          console.info("[craft-shake]", "logo long-press → jostle+reset");
+          console.info("[craft-shake]", "logo long-press → jostle");
           startShakeJostle();
         }}
       />
-
-      {/* Temporary: verify jostle+reset without DeviceMotion (LAN http / iOS). */}
-      <button
-        type="button"
-        className="craft-shake-debug"
-        onClick={() => {
-          console.info("[craft-shake]", "debug Shake button → jostle+reset");
-          startShakeJostle();
-        }}
-      >
-        Shake
-      </button>
 
       {elements.map((el) => (
         <CraftElement
