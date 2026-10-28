@@ -31,7 +31,8 @@
   width: min(100%, 28rem);
   max-width: 28rem;
   margin-inline: auto;
-  max-height: calc(100dvh - (var(--safe-top) + 4.25rem));
+  /* three quarters of the screen; content scrolls inside */
+  height: 75dvh;
   display: flex;
   flex-direction: column;
   border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
@@ -53,7 +54,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-3) var(--space-4) var(--space-2);
+  /* comfortable touch target for the drag-to-close handle */
+  min-height: 2.75rem;
+  padding: 0 var(--space-4);
   touch-action: none;
   cursor: grab;
   background: var(--color-surface);
@@ -261,7 +264,6 @@
 
 @media (min-width: 768px) {
   .jewellery-sheet__panel {
-    max-height: calc(100dvh - (var(--safe-top) + 5.5rem));
     border-radius: var(--radius-sheet) var(--radius-sheet) 0.9rem 0.9rem;
     bottom: 0.75rem;
   }

@@ -13,8 +13,8 @@ const ENVIRONMENT_URL = `${import.meta.env.BASE_URL}hdri/studio_small_09_1k.hdr`
 
 // objets de l'export Blender à ne pas afficher
 const HIDDEN = ['Cube', 'Linen']
-// largeur visible, en multiples de la largeur occupée par les gemmes
-const FRAME_WIDTH = 1.6
+// marge autour du collier entier au cadrage de départ (1 = bord à bord)
+const FIT_MARGIN = 1.05
 // sol invisible sous les gemmes, en hauteurs de la zone des gemmes
 const FLOOR_GAP = 0.2
 // orbite : légèrement au-dessus au départ, jamais sous l'horizon
@@ -162,7 +162,11 @@ export default function HeroModel({ src, metal, className }: HeroModelProps) {
     // jamais sous le sol
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true
-    controls.enablePan = false
+    // deux doigts : pincer pour zoomer et glisser pour déplacer la scène
+    // (souris : clic droit ou Maj + glisser)
+    controls.enablePan = true
+    controls.screenSpacePanning = true
+    controls.touches.TWO = THREE.TOUCH.DOLLY_PAN
     controls.zoomSpeed = 0.8
     controls.minPolarAngle = MIN_POLAR
     controls.maxPolarAngle = MAX_POLAR
@@ -170,6 +174,17 @@ export default function HeroModel({ src, metal, className }: HeroModelProps) {
     // avant le premier contact : lent va-et-vient gauche / droite
     controls.autoRotate = true
     controls.autoRotateSpeed = IDLE_SPEED
+    // le déplacement reste autour du collier et au-dessus du sol invisible
+    const panBounds = new THREE.Box3()
+    const keepTargetInBounds = () => {
+      if (panBounds.isEmpty()) return
+      const before = controls.target.clone()
+      panBounds.clampPoint(controls.target, controls.target)
+      // décaler la caméra d'autant, pour ne pas la faire pivoter
+      camera.position.add(controls.target.clone().sub(before))
+    }
+    controls.addEventListener('change', keepTargetInBounds)
+
     const stopIdle = () => {
       controls.autoRotate = false
     }
@@ -248,22 +263,37 @@ export default function HeroModel({ src, metal, className }: HeroModelProps) {
       floor.scale.setScalar(size.x * 40)
       floor.visible = true
 
-      // cadrage : assez large pour voir la chaîne monter vers les coins
+      // cadrage : le collier entier (sans les objets masqués), sous tous les
+      // angles de l'orbite, grâce à sa sphère englobante
+      const necklace = new THREE.Box3()
+      model.updateMatrixWorld(true)
+      model.traverseVisible((child) => {
+        if (child instanceof THREE.Mesh) necklace.expandByObject(child)
+      })
+      const sphere = necklace.getBoundingSphere(new THREE.Sphere())
       const halfFov = THREE.MathUtils.degToRad(camera.fov) / 2
-      const dist = (size.x * FRAME_WIDTH) / 2 / Math.tan(halfFov) / Math.min(camera.aspect, 1.6)
+      const halfFovH = Math.atan(Math.tan(halfFov) * camera.aspect)
+      const dist = (sphere.radius / Math.sin(Math.min(halfFov, halfFovH))) * FIT_MARGIN
       camera.near = dist / 100
       camera.far = dist * 100
       camera.updateProjectionMatrix()
-      camera.position.setFromSphericalCoords(dist, START_POLAR, 0)
-      controls.target.set(0, 0, 0)
-      controls.minDistance = dist * 0.4
-      controls.maxDistance = dist * 2.5
+      controls.target.copy(sphere.center)
+      panBounds.setFromCenterAndSize(
+        sphere.center,
+        new THREE.Vector3().setScalar(sphere.radius * 2),
+      )
+      panBounds.min.y = Math.max(panBounds.min.y, floor.position.y + sphere.radius * 0.05)
+      camera.position
+        .setFromSphericalCoords(dist, START_POLAR, 0)
+        .add(sphere.center)
+      controls.minDistance = dist * 0.2
+      controls.maxDistance = dist * 1.5
       controls.update()
 
-      // ombre portée : caméra d'ombre serrée autour des gemmes
+      // ombre portée : caméra d'ombre autour du collier entier
       key.position.set(size.x * 2, size.x * 8, size.x * 4)
       glint.position.set(-size.x * 6, size.x * 1.5, size.x * 1)
-      const s = size.x * 3
+      const s = Math.max(size.x * 3, sphere.radius * 1.5)
       Object.assign(key.shadow.camera, { left: -s, right: s, top: s, bottom: -s })
       key.shadow.camera.near = size.x * 0.1
       key.shadow.camera.far = size.x * 20
@@ -287,6 +317,7 @@ export default function HeroModel({ src, metal, className }: HeroModelProps) {
       renderer.setAnimationLoop(null)
       observer.disconnect()
       controls.removeEventListener('start', stopIdle)
+      controls.removeEventListener('change', keepTargetInBounds)
       controls.dispose()
       model?.traverse((obj) => {
         if (!(obj instanceof THREE.Mesh)) return

@@ -117,10 +117,72 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
     else setDragY(0)
   }
 
+  // Touch: native listeners, because only a non-passive touchmove can stop the
+  // browser from turning a downward swipe at the top into a scroll/overscroll.
+  useEffect(() => {
+    const sc = scrollRef.current
+    if (!sc) return
+    let touch: { id: number; startY: number; dy: number; dragging: boolean } | null =
+      null
+
+    const onTouchStart = (e: TouchEvent) => {
+      const t = e.touches[0]
+      // The 3D view keeps its own gestures (orbit, pinch).
+      const onHero = (e.target as Element).closest('.jewellery-sheet__hero')
+      if (e.touches.length !== 1 || onHero || sc.scrollTop > 2) {
+        touch = null
+        return
+      }
+      touch = { id: t.identifier, startY: t.clientY, dy: 0, dragging: false }
+    }
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!touch) return
+      const t = [...e.changedTouches].find((c) => c.identifier === touch?.id)
+      if (!t) return
+      const dy = t.clientY - touch.startY
+      if (!touch.dragging) {
+        // Upward or already scrolled: let the content scroll normally.
+        if (dy < 0 || sc.scrollTop > 2) {
+          touch = null
+          return
+        }
+        if (dy < 10) return
+        touch.dragging = true
+      }
+      e.preventDefault()
+      touch.dy = Math.max(0, dy)
+      setDragY(touch.dy)
+    }
+
+    const onTouchEnd = () => {
+      if (!touch?.dragging) {
+        touch = null
+        return
+      }
+      const { dy } = touch
+      touch = null
+      if (dy >= DISMISS_PX) requestClose()
+      else setDragY(0)
+    }
+
+    sc.addEventListener('touchstart', onTouchStart, { passive: true })
+    sc.addEventListener('touchmove', onTouchMove, { passive: false })
+    sc.addEventListener('touchend', onTouchEnd)
+    sc.addEventListener('touchcancel', onTouchEnd)
+    return () => {
+      sc.removeEventListener('touchstart', onTouchStart)
+      sc.removeEventListener('touchmove', onTouchMove)
+      sc.removeEventListener('touchend', onTouchEnd)
+      sc.removeEventListener('touchcancel', onTouchEnd)
+    }
+  }, [requestClose])
+
+  // Mouse: drag the content down from the top (touch is handled above).
   const onBodyPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const sc = scrollRef.current
     if (!sc || sc.scrollTop > 2) return
-    if (e.button !== 0 && e.pointerType === 'mouse') return
+    if (e.pointerType !== 'mouse' || e.button !== 0) return
     dragRef.current = {
       pointerId: e.pointerId,
       startY: e.clientY,
