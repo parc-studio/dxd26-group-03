@@ -19,7 +19,7 @@ export function AppointmentToast({ onClose }: AppointmentToastProps) {
       >
         <span aria-hidden="true">×</span>
       </button>
-      <p className="appointment-toast__eyebrow">Custom combination?</p>
+      <p className="appointment-toast__eyebrow">Combination not available?</p>
       <p className="appointment-toast__title">Book an appointment</p>
     </div>
   )
