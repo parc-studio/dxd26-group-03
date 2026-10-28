@@ -54,6 +54,8 @@
 }
 
 .appointment-toast__underline {
+  /* Fotini: underline load speed (independent of 6s toast dismiss). */
+  --appointment-underline-duration: 1.1s;
   position: absolute;
   left: 0;
   right: 0;
@@ -63,7 +65,8 @@
   background: var(--color-brand);
   transform: scaleX(0);
   transform-origin: left center;
-  animation: appointment-toast-underline 5.4s linear both;
+  animation: appointment-toast-underline var(--appointment-underline-duration)
+    ease-out both;
 }
 
 .appointment-toast.is-leaving .appointment-toast__underline {

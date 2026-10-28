@@ -77,11 +77,46 @@ export function spawnInstance(
   }
 }
 
+function shuffleInPlace<T>(items: T[]): T[] {
+  for (let i = items.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const tmp = items[i]
+    items[i] = items[j]
+    items[j] = tmp
+  }
+  return items
+}
+
+function jitterPct(value: number, amount = 5): number {
+  const next = value + (Math.random() * 2 - 1) * amount
+  return Math.min(90, Math.max(10, next))
+}
+
+/**
+ * Scatter starters across the playfield with mixed categories
+ * (shuffle ids onto shuffled/jittered slots so chains/gems/rings don't clump).
+ */
 export function createStarterInstances(): CraftInstance[] {
   // Finished jewellery only appears after a successful jewellery merge.
-  return catalog.starters
-    .map((s) => spawnInstance(s.catalogId, s.x, s.y))
-    .filter((el): el is CraftInstance => el !== null && el.kind !== 'jewellery')
+  const materialStarters = catalog.starters.filter((s) => {
+    const def = byId.get(s.catalogId)
+    return Boolean(def && def.kind !== 'jewellery')
+  })
+
+  const ids = shuffleInPlace(materialStarters.map((s) => s.catalogId))
+  const slots = shuffleInPlace(
+    materialStarters.map((s) => ({
+      x: jitterPct(s.x),
+      y: jitterPct(s.y),
+    })),
+  )
+
+  return ids
+    .map((catalogId, i) => {
+      const slot = slots[i] ?? { x: 50, y: 50 }
+      return spawnInstance(catalogId, slot.x, slot.y)
+    })
+    .filter((el): el is CraftInstance => el !== null)
 }
 
 /** Dev-time alignment check: every recipe id exists; every image path is used. */
