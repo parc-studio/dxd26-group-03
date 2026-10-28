@@ -454,13 +454,19 @@ export function CraftSpace() {
   ])
 
   // Android-first shake → jostle → reset. iOS permission gated for later.
+  // Note: listener is attached once; startShakeJostle is read via ref so we
+  // don't detach/reattach on every callback identity change.
+  const startShakeJostleRef = useRef(startShakeJostle)
+  startShakeJostleRef.current = startShakeJostle
+
   useEffect(() => {
     const detach = attachShakeListener({
       onShakePulse: (intensity) => {
         shakeJostleRef.current?.kick(intensity)
       },
       onShake: () => {
-        startShakeJostle()
+        console.info('[craft-shake]', 'CraftSpace handling onShake → jostle+reset')
+        startShakeJostleRef.current()
       },
     })
     return () => {
@@ -468,7 +474,7 @@ export function CraftSpace() {
       shakeJostleRef.current?.cancel()
       shakeJostleRef.current = null
     }
-  }, [startShakeJostle])
+  }, [])
 
   // The URL drives the product sheet, so back/forward and shared links work.
   useEffect(() => {
@@ -695,7 +701,25 @@ export function CraftSpace() {
       className={`craft-space${jewelleryReveal ? ' is-jewellery-revealing' : ''}`}
       ref={spaceRef}
     >
-      <CelestialHeader ref={brandRef} />
+      <CelestialHeader
+        ref={brandRef}
+        onLogoLongPress={() => {
+          console.info('[craft-shake]', 'logo long-press → jostle+reset')
+          startShakeJostle()
+        }}
+      />
+
+      {/* Temporary: verify jostle+reset without DeviceMotion (LAN http / iOS). */}
+      <button
+        type="button"
+        className="craft-shake-debug"
+        onClick={() => {
+          console.info('[craft-shake]', 'debug Shake button → jostle+reset')
+          startShakeJostle()
+        }}
+      >
+        Shake
+      </button>
 
       {elements.map((el) => (
         <CraftElement

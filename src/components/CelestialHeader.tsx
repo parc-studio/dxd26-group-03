@@ -1,12 +1,49 @@
-import { forwardRef } from 'react'
+import { forwardRef, useCallback, useRef } from 'react'
 import './CelestialHeader.css'
+
+const LOGO_LONG_PRESS_MS = 650
 
 interface CelestialHeaderProps {
   onLogoClick?: () => void
+  /** Temporary craft debug: long-press logo → same path as shake reset. */
+  onLogoLongPress?: () => void
 }
 
 export const CelestialHeader = forwardRef<HTMLElement, CelestialHeaderProps>(
-  function CelestialHeader({ onLogoClick }, ref) {
+  function CelestialHeader({ onLogoClick, onLogoLongPress }, ref) {
+    const longPressTimerRef = useRef<number | null>(null)
+    const longPressFiredRef = useRef(false)
+
+    const clearLongPress = useCallback(() => {
+      if (longPressTimerRef.current !== null) {
+        window.clearTimeout(longPressTimerRef.current)
+        longPressTimerRef.current = null
+      }
+    }, [])
+
+    const handleLogoPointerDown = useCallback(() => {
+      if (!onLogoLongPress) return
+      longPressFiredRef.current = false
+      clearLongPress()
+      longPressTimerRef.current = window.setTimeout(() => {
+        longPressTimerRef.current = null
+        longPressFiredRef.current = true
+        onLogoLongPress()
+      }, LOGO_LONG_PRESS_MS)
+    }, [clearLongPress, onLogoLongPress])
+
+    const handleLogoClick = useCallback(() => {
+      if (longPressFiredRef.current) {
+        longPressFiredRef.current = false
+        return
+      }
+      if (onLogoClick) {
+        onLogoClick()
+        return
+      }
+      window.location.hash = '/'
+    }, [onLogoClick])
+
     return (
       <header ref={ref} className="celestial-header">
         <h1 className="celestial-header__title">
@@ -14,12 +51,11 @@ export const CelestialHeader = forwardRef<HTMLElement, CelestialHeaderProps>(
             type="button"
             className="celestial-header__logo-btn"
             aria-label="Go to celestial home"
-            onClick={
-              onLogoClick ??
-              (() => {
-                window.location.hash = '/'
-              })
-            }
+            onPointerDown={handleLogoPointerDown}
+            onPointerUp={clearLongPress}
+            onPointerLeave={clearLongPress}
+            onPointerCancel={clearLongPress}
+            onClick={handleLogoClick}
           >
             <img
               className="celestial-header__logo"
