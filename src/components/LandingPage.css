@@ -187,26 +187,31 @@
 }
 
 .landing__cta {
+  /* Fotini: widen pills via --landing-cta-min-width (and optional --landing-cta-pad-x). */
+  --landing-cta-min-width: 11.5rem;
+  --landing-cta-pad-x: 1.25rem;
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  width: max-content;
+  min-width: min(var(--landing-cta-min-width), 100%);
   max-width: 100%;
   min-height: 2.65rem;
-  padding: 0.7rem clamp(0.65rem, 3vw, 1.35rem);
+  padding: 0.7rem var(--landing-cta-pad-x);
   border: none;
   border-radius: var(--radius-pill);
   background: var(--color-brand);
   color: var(--color-on-brand);
   font-family: var(--font-display);
-  font-size: clamp(0.9rem, 2.6vw, 0.95rem);
+  font-size: clamp(0.78rem, 2.6vw, 0.95rem);
   font-weight: var(--weight-medium);
   letter-spacing: 0.01em;
   line-height: 1;
   text-align: center;
   text-decoration: none;
-  white-space: normal;
+  white-space: nowrap;
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(71, 43, 43, 0.18);
 }
@@ -223,10 +228,10 @@
 /* Wider / landscape: keep side-by-side halves (already default) */
 @media (min-width: 768px) {
   .landing__cta {
+    --landing-cta-min-width: 13rem;
+    --landing-cta-pad-x: 1.75rem;
     min-height: 2.85rem;
-    padding: 0.8rem 1.75rem;
     font-size: 1rem;
-    white-space: nowrap;
   }
 }
 
