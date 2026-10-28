@@ -1,4 +1,12 @@
-import { Suspense, lazy, useCallback, useEffect, useState } from "react";
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { getCatalogElement, type JewelleryDetail } from "../data/catalog";
 import { jewelleryHeroModelUrl } from "../lib/jewelleryModel";
 import type { Metal } from "./HeroModel";
@@ -91,6 +99,59 @@ const METALS = METAL_OPTIONS.map((option) => option.value);
 
 const swatch = (id: string) => getCatalogElement(id)?.image ?? "";
 
+const BADGE_SIZE = 15;
+const BADGE_BG = "rgb(224, 224, 224)";
+// Scale of the window once it has become the badge.
+const BADGE_SCALE = 0.1;
+const FLY_MS = 800;
+
+/**
+ * Morphs the whole panel into the bag badge while moving it to the header
+ * bag, in one motion. Returns a cancel function.
+ */
+function flyPanelToCart(
+  panel: HTMLElement,
+  veil: HTMLElement,
+  onArrive: () => void,
+): () => void {
+  const bag = document.querySelector(".celestial-header__cart");
+  if (!bag || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    onArrive();
+    return () => {};
+  }
+  const rect = panel.getBoundingClientRect();
+  const to = bag.getBoundingClientRect();
+  const dx = to.right - BADGE_SIZE / 2 - (rect.left + rect.width / 2);
+  const dy = to.bottom - BADGE_SIZE / 2 - (rect.top + rect.height / 2);
+  // clip is in panel pixels, shown at BADGE_SCALE on screen
+  const dot = BADGE_SIZE / BADGE_SCALE;
+
+  const timing = {
+    duration: FLY_MS,
+    easing: "cubic-bezier(0.55, 0, 0.25, 1)",
+    fill: "forwards" as const,
+  };
+  const morph = panel.animate(
+    [
+      { transform: "translate(0, 0) scale(1)", clipPath: "inset(0px 0px round 0px)" },
+      {
+        transform: `translate(${dx}px, ${dy}px) scale(${BADGE_SCALE})`,
+        clipPath: `inset(${(rect.height - dot) / 2}px ${(rect.width - dot) / 2}px round ${dot / 2}px)`,
+      },
+    ],
+    timing,
+  );
+  const fade = veil.animate(
+    [{ opacity: 0 }, { opacity: 0, offset: 0.2 }, { opacity: 1, offset: 0.7 }, { opacity: 1 }],
+    timing,
+  );
+  morph.onfinish = onArrive;
+  return () => {
+    morph.cancel();
+    fade.cancel();
+  };
+}
+
 export function JewellerySheet({
   detail,
   onClose,
@@ -103,6 +164,10 @@ export function JewellerySheet({
     piece.metals.includes("silver") ? "silver" : piece.metals[0],
   );
   const [closing, setClosing] = useState(false);
+  // Quantity being added while the window flies into the bag.
+  const [flying, setFlying] = useState<number | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const veilRef = useRef<HTMLDivElement>(null);
   const [entered, setEntered] = useState(false);
   // Element whose name bubble is showing after a tap on its swatch.
   const [shownElement, setShownElement] = useState<string | null>(null);
@@ -123,6 +188,18 @@ export function JewellerySheet({
     window.setTimeout(onClose, 280);
   }, [onClose]);
 
+  // latest callbacks, so a parent re-render doesn't restart the flight
+  const callbacks = useRef({ onAddToCart, onClose });
+  callbacks.current = { onAddToCart, onClose };
+
+  useLayoutEffect(() => {
+    if (flying === null || !panelRef.current || !veilRef.current) return;
+    return flyPanelToCart(panelRef.current, veilRef.current, () => {
+      callbacks.current.onAddToCart(flying);
+      callbacks.current.onClose();
+    });
+  }, [flying]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") requestClose();
@@ -138,12 +215,22 @@ export function JewellerySheet({
 
   return (
     <div
-      className={`jewellery-sheet${entered && !closing ? " is-open" : ""}${closing ? " is-closing" : ""}`}
+      className={`jewellery-sheet${entered && !closing ? " is-open" : ""}${closing ? " is-closing" : ""}${flying !== null ? " is-flying" : ""}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="jewellery-sheet-title"
     >
-      <div className="jewellery-sheet__panel">
+      <div ref={panelRef} className="jewellery-sheet__panel">
+        {flying !== null && (
+          <div
+            ref={veilRef}
+            className="jewellery-sheet__badge-veil"
+            style={{ background: BADGE_BG, fontSize: `${9 / BADGE_SCALE}px` }}
+            aria-hidden="true"
+          >
+            {flying}
+          </div>
+        )}
         <header className="jewellery-sheet__bar">
           <button
             type="button"
@@ -311,8 +398,8 @@ export function JewellerySheet({
             type="button"
             className="jewellery-sheet__cart"
             onClick={() => {
-              onAddToCart(qty);
-              requestClose();
+              if (closing || flying !== null) return;
+              setFlying(qty);
             }}
           >
             Add to cart

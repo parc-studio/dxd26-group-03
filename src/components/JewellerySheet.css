@@ -317,6 +317,24 @@
   opacity: 0.88;
 }
 
+/* window shrinking into the bag badge (see flyPanelToCart): above the
+   header so it can fly up to the bag */
+.jewellery-sheet.is-flying {
+  z-index: 50;
+  pointer-events: none;
+}
+
+.jewellery-sheet__badge-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  color: var(--color-brand);
+  font-weight: 600;
+  opacity: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .jewellery-sheet__ingredient-name {
     animation: none;
