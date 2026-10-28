@@ -2,45 +2,39 @@ import { useMemo, useState } from 'react'
 import { CelestialHeader } from './CelestialHeader'
 import './LandingPage.css'
 
+/** Boutique grid cards — lifestyle fabric shots (keep opaque photo BG). */
 const PRODUCTS = [
   {
-    id: 'poseidon',
-    image: '/example_poseidon_cyanite_dore.avif',
-    name: 'Bague "Poséidon" - Cyanite & doré',
+    id: 'dionysos-silver',
+    image: '/products/dionysos-silver.png',
+    name: '"Dionysos" ring - Aventurine & silver',
     price: 'CHF25.00',
     category: 'Rings',
   },
   {
-    id: 'dionysos',
-    image: '/example_ring_dionysos.avif',
-    name: 'Bague "Dionysos" - Aventurine & doré',
+    id: 'dionysos-gold',
+    image: '/products/dionysos-gold.png',
+    name: '"Dionysos" ring - Aventurine & gold',
     price: 'CHF25.00',
     category: 'Rings',
   },
   {
-    id: 'apatite',
-    image: '/example_collier_apatite.avif',
-    name: 'Collier – Apatite – doré',
-    price: 'CHF69.00',
-    category: 'Necklaces',
+    id: 'heracles-silver',
+    image: '/products/heracles-silver.png',
+    name: 'Ring "Héraclès" - Labradorite & silver',
+    price: 'CHF25.00',
+    category: 'Rings',
   },
   {
-    id: 'mirror-gold',
-    image: '/final-gold.jfif',
-    name: 'Collier "Miroir des Mers" – doré',
-    price: 'CHF168.00',
-    category: 'Necklaces',
-  },
-  {
-    id: 'mirror-silver',
-    image: '/final-silver.jfif',
-    name: 'Collier "Miroir des Mers" – argenté',
-    price: 'CHF168.00',
-    category: 'Necklaces',
+    id: 'heracles-gold',
+    image: '/products/heracles-gold.png',
+    name: 'Ring "Héraclès" - Labradorite & gold',
+    price: 'CHF25.00',
+    category: 'Rings',
   },
 ] as const
 
-const CATEGORIES = ['All products', 'Rings', 'Necklaces'] as const
+const CATEGORIES = ['All products', 'Rings'] as const
 
 interface LandingPageProps {
   onCreateYourOwn: () => void
