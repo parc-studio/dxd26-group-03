@@ -20,16 +20,16 @@ export const MERGE_FLASH_SCALE = 1.22
  * Approx travel of each parent from the merge point after the explode
  * (~80–120px+). Used to scale initial velocity; settle is physics-driven.
  */
-export const MERGE_PARENT_SPLIT_PX = 100
+export const MERGE_PARENT_SPLIT_PX = 80
 
 /** Initial outward speed (px / second) at the explode start. */
-export const MERGE_EXPLODE_SPEED_PX = 700
+export const MERGE_EXPLODE_SPEED_PX = 500
 
 /** Velocity retention per second (friction). Lower = stops sooner. */
-export const MERGE_EXPLODE_DAMPING = 6
+export const MERGE_EXPLODE_DAMPING = 7
 
 /** Stop integrating when speed falls below this (px / second). */
-export const MERGE_EXPLODE_STOP_SPEED_PX = 18
+export const MERGE_EXPLODE_STOP_SPEED_PX = 14
 
 /** Safety cap so a soft explode cannot hang the board. */
 export const MERGE_EXPLODE_MAX_MS = 900

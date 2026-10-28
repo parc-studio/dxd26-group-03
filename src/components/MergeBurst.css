@@ -7,128 +7,151 @@
   transform: translate(-50%, -50%);
 }
 
-.merge-burst__flash {
+/* Soft ambient wash only — sparks carry the flash, not a flat white disc */
+.merge-burst__bloom {
   position: absolute;
   left: 0;
   top: 0;
-  /* Base size — scaled further by --merge-flash-scale from mergeTiming */
-  width: calc(9.25rem * var(--merge-flash-scale, 1));
-  height: calc(9.25rem * var(--merge-flash-scale, 1));
-  margin-left: calc(-4.625rem * var(--merge-flash-scale, 1));
-  margin-top: calc(-4.625rem * var(--merge-flash-scale, 1));
+  width: calc(4.2rem * var(--merge-flash-scale, 1));
+  height: calc(4.2rem * var(--merge-flash-scale, 1));
+  margin-left: calc(-2.1rem * var(--merge-flash-scale, 1));
+  margin-top: calc(-2.1rem * var(--merge-flash-scale, 1));
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    #fff 0%,
-    color-mix(in srgb, var(--color-cream) 95%, white) 16%,
-    color-mix(in srgb, var(--color-cream) 58%, transparent) 40%,
-    color-mix(in srgb, var(--color-brand-soft) 24%, transparent) 58%,
-    transparent 76%
+    color-mix(in srgb, var(--color-cream) 42%, transparent) 0%,
+    color-mix(in srgb, var(--color-cream) 16%, transparent) 48%,
+    transparent 78%
   );
-  animation: merge-flash-jewellery var(--merge-flash-ms, 1260ms)
+  filter: blur(8px);
+  animation: merge-bloom var(--merge-flash-ms, 1260ms)
     cubic-bezier(0.22, 0.55, 0.28, 1) both;
-}
-
-.merge-burst__core {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: calc(2.85rem * var(--merge-flash-scale, 1));
-  height: calc(2.85rem * var(--merge-flash-scale, 1));
-  margin-left: calc(-1.425rem * var(--merge-flash-scale, 1));
-  margin-top: calc(-1.425rem * var(--merge-flash-scale, 1));
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    #fff 0%,
-    color-mix(in srgb, var(--color-cream) 90%, white) 45%,
-    transparent 75%
-  );
-  animation: merge-core-punch var(--merge-punch-ms, 300ms)
-    cubic-bezier(0.2, 0.7, 0.25, 1) both;
 }
 
 .merge-burst__spark {
   position: absolute;
   left: 0;
   top: 0;
-  width: 5px;
-  height: 5px;
-  margin: -2.5px 0 0 -2.5px;
-  border-radius: 1px;
-  background: linear-gradient(135deg, var(--color-cream), var(--color-brand-warm));
-  box-shadow: 0 0 6px color-mix(in srgb, var(--color-brand-soft) 55%, transparent);
-  transform: rotate(var(--a)) translateY(0) scale(0.4);
-  animation: merge-spark var(--merge-flash-ms, 1260ms)
-    cubic-bezier(0.22, 0.55, 0.28, 1) both;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: #fff8e8;
+  box-shadow:
+    0 0 6px 1px color-mix(in srgb, var(--color-cream) 90%, white),
+    0 0 14px color-mix(in srgb, var(--color-cream) 55%, transparent);
+  transform: rotate(var(--a)) translateY(0) scale(0.35);
+  animation: merge-spark-fly var(--merge-flash-ms, 1260ms)
+    cubic-bezier(0.18, 0.7, 0.25, 1) both;
 }
 
-.merge-burst__spark:nth-child(odd) {
+.merge-burst__spark:nth-child(3n) {
   width: 3px;
   height: 3px;
-  background: linear-gradient(135deg, var(--color-cream-soft), var(--color-brand));
+  margin: -1.5px 0 0 -1.5px;
+  background: color-mix(in srgb, var(--color-cream) 70%, white);
 }
 
-/*
- * Punch peaks early, then a long soft opacity fall-off across the reveal window
- * so the bloom eases out instead of cutting.
- */
-@keyframes merge-flash-jewellery {
+.merge-burst__spark:nth-child(4n) {
+  background: color-mix(in srgb, var(--color-cream-soft) 80%, #fff);
+  box-shadow:
+    0 0 5px 1px #fff,
+    0 0 12px color-mix(in srgb, var(--color-brand-soft) 35%, transparent);
+}
+
+/* Cross-flare sparkle (jewellery glitter) */
+.merge-burst__spark--star {
+  width: 2px;
+  height: 2px;
+  margin: -1px 0 0 -1px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-cream) 80%, white),
+    0 -7px 0 -1px #fff,
+    0 7px 0 -1px #fff,
+    -7px 0 0 -1px #fff,
+    7px 0 0 -1px #fff,
+    0 0 10px 2px color-mix(in srgb, var(--color-cream) 70%, white);
+}
+
+.merge-burst__glint {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 8px 2px color-mix(in srgb, var(--color-cream) 85%, white);
+  transform: translate(var(--gx), var(--gy)) scale(0);
+  animation: merge-glint-twinkle var(--merge-flash-ms, 1260ms) ease-out both;
+}
+
+@keyframes merge-bloom {
   0% {
     opacity: 0;
-    transform: scale(0.22);
+    transform: scale(0.35);
   }
-  10% {
+  16% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.22;
+    transform: scale(1.45);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+@keyframes merge-spark-fly {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateY(0) scale(0.2);
+  }
+  12% {
     opacity: 1;
-    transform: scale(1.08);
-  }
-  22% {
-    opacity: 0.96;
-    transform: scale(1.28);
+    transform: rotate(var(--a)) translateY(calc(var(--d) * -0.25)) scale(1.15);
   }
   55% {
-    opacity: 0.45;
-    transform: scale(1.72);
+    opacity: 0.85;
   }
   100% {
     opacity: 0;
-    transform: scale(2.15);
+    transform: rotate(var(--a)) translateY(calc(var(--d) * -1.55)) scale(0.15);
   }
 }
 
-@keyframes merge-core-punch {
+@keyframes merge-glint-twinkle {
   0% {
     opacity: 0;
-    transform: scale(0.2);
+    transform: translate(var(--gx), var(--gy)) scale(0);
   }
-  35% {
+  20% {
     opacity: 1;
-    transform: scale(1.4);
+    transform: translate(var(--gx), var(--gy)) scale(1.4);
+  }
+  45% {
+    opacity: 0.4;
+    transform: translate(var(--gx), var(--gy)) scale(0.6);
+  }
+  65% {
+    opacity: 1;
+    transform: translate(var(--gx), var(--gy)) scale(1.1);
   }
   100% {
     opacity: 0;
-    transform: scale(2);
-  }
-}
-
-@keyframes merge-spark {
-  0% {
-    opacity: 0;
-    transform: rotate(var(--a)) translateY(0) scale(0.3);
-  }
-  14% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: rotate(var(--a)) translateY(calc(var(--d) * -1.45)) scale(0.1);
+    transform: translate(var(--gx), var(--gy)) scale(0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .merge-burst__flash,
-  .merge-burst__core,
-  .merge-burst__spark {
-    animation-duration: 200ms;
+  .merge-burst__bloom,
+  .merge-burst__spark,
+  .merge-burst__glint {
+    animation-duration: 220ms;
   }
 }

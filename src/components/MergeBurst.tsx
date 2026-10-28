@@ -12,9 +12,10 @@ interface MergeBurstProps {
   kind?: MergeBurstKind
 }
 
-const SPARKS = Array.from({ length: 14 }, (_, i) => i)
+/** Soft jewellery sparkles — radial light points + twinkles (not a flat white disc). */
+const SPARKS = Array.from({ length: 26 }, (_, i) => i)
+const GLINTS = Array.from({ length: 12 }, (_, i) => i)
 
-/** Intense flash for finished jewellery merges (parents vanish into it). */
 export function MergeBurst({ x, y, kind = 'jewellery' }: MergeBurstProps) {
   const totalMs = MERGE_PUNCH_MS + MERGE_REVEAL_MS
 
@@ -31,16 +32,27 @@ export function MergeBurst({ x, y, kind = 'jewellery' }: MergeBurstProps) {
       }}
       aria-hidden="true"
     >
-      <span className="merge-burst__flash" />
-      <span className="merge-burst__core" />
+      {/* Soft ambient bloom — kept subtle so sparks read as the main event */}
+      <span className="merge-burst__bloom" />
       {SPARKS.map((i) => (
         <span
-          key={i}
-          className="merge-burst__spark"
+          key={`s-${i}`}
+          className={`merge-burst__spark${i % 3 === 0 ? ' merge-burst__spark--star' : ''}`}
           style={{
-            ['--a' as string]: `${(360 / SPARKS.length) * i}deg`,
-            ['--d' as string]: `${34 + (i % 4) * 12}px`,
-            animationDelay: `${i * 14}ms`,
+            ['--a' as string]: `${(360 / SPARKS.length) * i + (i % 2) * 7}deg`,
+            ['--d' as string]: `${28 + (i % 5) * 14}px`,
+            animationDelay: `${i * 12}ms`,
+          }}
+        />
+      ))}
+      {GLINTS.map((i) => (
+        <span
+          key={`g-${i}`}
+          className="merge-burst__glint"
+          style={{
+            ['--gx' as string]: `${Math.cos((i / GLINTS.length) * Math.PI * 2) * (18 + (i % 3) * 10)}px`,
+            ['--gy' as string]: `${Math.sin((i / GLINTS.length) * Math.PI * 2) * (14 + (i % 4) * 8)}px`,
+            animationDelay: `${40 + i * 28}ms`,
           }}
         />
       ))}
