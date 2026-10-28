@@ -77,10 +77,10 @@
   z-index: 1;
   width: 100%;
   margin: 0;
-  aspect-ratio: 5 / 4;
-  max-height: 16.5rem;
+  aspect-ratio: 4 / 3;
+  max-height: 17rem;
   border-radius: 0;
-  background: var(--color-brand);
+  background: var(--color-hero-bg);
   overflow: hidden;
 }
 
@@ -94,7 +94,7 @@
 .jewellery-sheet__body {
   position: relative;
   z-index: 2;
-  padding: var(--space-4) var(--space-5) var(--space-5);
+  padding: var(--space-4) var(--space-5) var(--space-3);
   background: var(--color-surface);
 }
 
@@ -131,22 +131,46 @@
   margin: 0 0 var(--space-5);
 }
 
+.jewellery-sheet__section:last-child {
+  margin-bottom: 0;
+}
+
+/* Metal switch top right of the 3D view, element swatches stacked below it */
+.jewellery-sheet__hero-controls {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-3);
+  pointer-events: none;
+}
+
+.jewellery-sheet__hero-controls > * {
+  pointer-events: auto;
+}
+
 .jewellery-sheet__ingredients {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .jewellery-sheet__ingredient {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
+  position: relative;
 }
 
 .jewellery-sheet__ingredient-swatch {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  cursor: pointer;
   flex-shrink: 0;
   width: 2.35rem;
   height: 2.35rem;
@@ -155,7 +179,40 @@
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  box-shadow: 0 1px 4px rgba(71, 43, 43, 0.12);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+}
+
+.jewellery-sheet__ingredient-swatch:focus-visible {
+  outline: 2px solid var(--color-surface);
+  outline-offset: 2px;
+}
+
+/* Name bubble shown to the left of a tapped swatch */
+.jewellery-sheet__ingredient-name {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: calc(100% + var(--space-2));
+  height: fit-content;
+  margin-block: auto;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: jewellery-sheet-name-in 160ms ease-out;
+}
+
+@keyframes jewellery-sheet-name-in {
+  from {
+    opacity: 0;
+    transform: translateX(4px);
+  }
 }
 
 /* the gem PNGs run to their edges; inset them so they clear the circle */
@@ -166,12 +223,6 @@
 
 .jewellery-sheet__ingredient-swatch--peridot {
   background-size: 78%;
-}
-
-.jewellery-sheet__ingredient-label {
-  font-family: var(--font-ui);
-  font-size: var(--text-sm);
-  color: var(--color-ink-body);
 }
 
 .jewellery-sheet__price {
@@ -267,6 +318,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .jewellery-sheet__ingredient-name {
+    animation: none;
+  }
+
   .jewellery-sheet__panel {
     transition: none;
   }
@@ -274,7 +329,7 @@
 
 @media (min-width: 768px) {
   .jewellery-sheet__hero {
-    max-height: 18rem;
+    max-height: 19rem;
   }
 
   .jewellery-sheet__name {
@@ -284,7 +339,6 @@
 
 .jewellery-sheet__metal {
   display: inline-flex;
-  margin-left: auto;
   padding: 2px;
   border: 1px solid color-mix(in srgb, var(--color-brand-soft) 40%, white);
   border-radius: var(--radius-pill);

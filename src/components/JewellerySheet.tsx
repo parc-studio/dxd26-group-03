@@ -17,7 +17,7 @@ const heroModelUrl = (metal: Metal) =>
 // Text for the piece shown by the 3D model, which is the same for every
 // jewellery result; swatches reuse the closest catalog textures.
 const SHOWCASE = {
-  name: 'Necklace Mirror of the Seas',
+  name: 'Necklace Poseidon',
   stock: 1,
   description:
     'A fine chain traced like a shoreline, set with peridot and blue apatite ' +
@@ -41,7 +41,7 @@ const gallery = (metal: Metal) => [
   },
   {
     src: `${import.meta.env.BASE_URL}final-${metal}.jfif`,
-    alt: `The finished Mirror of the Seas necklace in ${metal}`,
+    alt: `The finished Poseidon necklace in ${metal}`,
   },
 ]
 
@@ -57,11 +57,19 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   const [metal, setMetal] = useState<Metal>('silver')
   const [closing, setClosing] = useState(false)
   const [entered, setEntered] = useState(false)
+  // Element whose name bubble is showing after a tap on its swatch.
+  const [shownElement, setShownElement] = useState<string | null>(null)
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true))
     return () => cancelAnimationFrame(id)
   }, [])
+
+  useEffect(() => {
+    if (!shownElement) return
+    const id = window.setTimeout(() => setShownElement(null), 2000)
+    return () => window.clearTimeout(id)
+  }, [shownElement])
 
   const requestClose = useCallback(() => {
     setClosing(true)
@@ -109,17 +117,60 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
         </header>
 
         <div className="jewellery-sheet__scroll">
-          <div
-            className="jewellery-sheet__hero"
-            aria-hidden="true"
-          >
-            <Suspense fallback={null}>
-              <HeroModel
-                className="jewellery-sheet__hero-model"
-                src={heroModelUrl(metal)}
-                metal={metal}
-              />
-            </Suspense>
+          <div className="jewellery-sheet__hero">
+            <div className="jewellery-sheet__hero-model" aria-hidden="true">
+              <Suspense fallback={null}>
+                <HeroModel
+                  className="jewellery-sheet__hero-model"
+                  src={heroModelUrl(metal)}
+                  metal={metal}
+                />
+              </Suspense>
+            </div>
+
+            <div className="jewellery-sheet__hero-controls">
+              <div className="jewellery-sheet__metal" role="group" aria-label="Chain metal">
+                {METAL_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className="jewellery-sheet__metal-btn"
+                    aria-pressed={metal === option.value}
+                    onClick={() => setMetal(option.value)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+
+              <ul className="jewellery-sheet__ingredients" aria-label="Elements">
+                {[
+                  { ...SHOWCASE.chains[metal], className: '' },
+                  ...SHOWCASE.gems.map((part) => ({
+                    ...part,
+                    className: ` jewellery-sheet__ingredient-swatch--${part.id}`,
+                  })),
+                ].map((part) => (
+                  <li key={part.id} className="jewellery-sheet__ingredient">
+                    <button
+                      type="button"
+                      className={`jewellery-sheet__ingredient-swatch${part.className}`}
+                      style={{ backgroundImage: `url(${swatch(part.id)})` }}
+                      aria-label={part.label}
+                      aria-expanded={shownElement === part.id}
+                      onClick={() =>
+                        setShownElement((id) => (id === part.id ? null : part.id))
+                      }
+                    />
+                    {shownElement === part.id && (
+                      <span className="jewellery-sheet__ingredient-name" role="status">
+                        {part.label}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           <div className="jewellery-sheet__body">
@@ -128,52 +179,6 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
             </h2>
 
             <p className="jewellery-sheet__desc">{SHOWCASE.description}</p>
-
-            <section className="jewellery-sheet__section" aria-label="Elements">
-              <ul className="jewellery-sheet__ingredients">
-                <li className="jewellery-sheet__ingredient">
-                  <span
-                    className="jewellery-sheet__ingredient-swatch"
-                    style={{
-                      backgroundImage: `url(${swatch(SHOWCASE.chains[metal].id)})`,
-                    }}
-                    aria-hidden="true"
-                  />
-                  <span className="jewellery-sheet__ingredient-label">
-                    {SHOWCASE.chains[metal].label}
-                  </span>
-                  <div
-                    className="jewellery-sheet__metal"
-                    role="group"
-                    aria-label="Chain metal"
-                  >
-                    {METAL_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        className="jewellery-sheet__metal-btn"
-                        aria-pressed={metal === option.value}
-                        onClick={() => setMetal(option.value)}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </li>
-                {SHOWCASE.gems.map((part) => (
-                  <li key={part.id} className="jewellery-sheet__ingredient">
-                    <span
-                      className={`jewellery-sheet__ingredient-swatch jewellery-sheet__ingredient-swatch--${part.id}`}
-                      style={{ backgroundImage: `url(${swatch(part.id)})` }}
-                      aria-hidden="true"
-                    />
-                    <span className="jewellery-sheet__ingredient-label">
-                      {part.label}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
 
             <section className="jewellery-sheet__section" aria-label="Making of">
               <div className="jewellery-sheet__gallery">

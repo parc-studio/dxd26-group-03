@@ -9,6 +9,7 @@
   --color-brand-deep: #462a2b; /* hinted button variant — keep as alias */
   --color-brand-warm: #5c3e34; /* collection overlays / secondary brown */
   --color-brand-soft: #a67c6d; /* muted metal-rose accent (site CSS) */
+  --color-hero-bg: #241818; /* rgb(36, 24, 24) — 3D jewellery view backdrop */
 
   /* --- Color: cream / gold --- */
   --color-cream: #ffe5a9; /* hero title on dark (live; ~#fee4a8 hint) */

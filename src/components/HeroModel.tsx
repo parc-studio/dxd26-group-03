@@ -87,6 +87,22 @@ function brightenGem(material: THREE.MeshPhysicalMaterial) {
   material.emissiveIntensity = GEM_GLOW
 }
 
+// L'OutputPass applique l'exposition et le tone mapping Neutral au fond aussi :
+// on part de la couleur voulue à l'écran et on remonte la courbe (inverse
+// exacte tant que la couleur reste sous la zone de compression, cas des bruns)
+// pour que le fond ressorte exactement en --color-hero-bg.
+function backgroundBeforeToneMapping(target: THREE.Color, exposure: number) {
+  const { r, g, b } = target
+  const low = Math.min(r, g, b)
+  // Neutral retire à chaque canal un décalage fixé par le canal le plus bas
+  const offset = low < 0.04 ? Math.sqrt(low / 6.25) - low : 0.04
+  return new THREE.Color(
+    (r + offset) / exposure,
+    (g + offset) / exposure,
+    (b + offset) / exposure,
+  )
+}
+
 interface HeroModelProps {
   src: string
   metal: Metal
@@ -122,8 +138,11 @@ export default function HeroModel({ src, metal, className }: HeroModelProps) {
 
     const scene = new THREE.Scene()
     // fond opaque : les gemmes transmissives réfractent ce qui est derrière
-    const background = getComputedStyle(host).getPropertyValue('--color-brand').trim()
-    scene.background = new THREE.Color(background || '#472b2b')
+    const background = getComputedStyle(host).getPropertyValue('--color-hero-bg').trim()
+    scene.background = backgroundBeforeToneMapping(
+      new THREE.Color(background || '#241818'),
+      renderer.toneMappingExposure,
+    )
     // les métaux et les gemmes ont besoin d'un environnement à refléter
     let envMap: THREE.Texture | null = null
     scene.environmentIntensity = 0.9
