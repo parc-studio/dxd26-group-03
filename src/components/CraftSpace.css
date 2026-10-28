@@ -18,6 +18,11 @@
   background: #fff;
 }
 
+/* While the finished-product reveal is up, freeze craft pointer input */
+.craft-space.is-jewellery-revealing .craft-el {
+  pointer-events: none;
+}
+
 .craft-space .celestial-header {
   /* Full-bleed header; craft body keeps 16px side pad */
   left: 50%;

@@ -21,7 +21,6 @@ import { opposingExplodeDirs, runParentExplode } from '../lib/mergeExplode'
 import {
   MERGE_CONVERGE_MS,
   MERGE_PUNCH_MS,
-  MERGE_REVEAL_MS,
 } from '../lib/mergeTiming'
 import type {
   CraftInstance,
@@ -31,6 +30,7 @@ import type {
 import { AppointmentToast } from './AppointmentToast'
 import { CelestialHeader } from './CelestialHeader'
 import { CraftElement } from './CraftElement'
+import { JewelleryReveal } from './JewelleryReveal'
 import { JewellerySheet } from './JewellerySheet'
 import { MergeBurst } from './MergeBurst'
 import './CraftSpace.css'
@@ -58,17 +58,20 @@ export function CraftSpace() {
   )
   const [bursts, setBursts] = useState<MergeBurstState[]>([])
   const [sheet, setSheet] = useState<JewelleryDetail | null>(null)
+  const [jewelleryReveal, setJewelleryReveal] =
+    useState<JewelleryDetail | null>(null)
   const [parentMergePhase, setParentMergePhase] = useState<
     Record<string, ParentMergePhase>
   >({})
   const [underFlashId, setUnderFlashId] = useState<string | null>(null)
-  const [revealAnimId, setRevealAnimId] = useState<string | null>(null)
   const [appointmentToast, setAppointmentToast] = useState<
     'off' | 'on' | 'leaving'
   >('off')
   const appointmentToastVisibleRef = useRef(false)
   const appointmentToastTimerRef = useRef<number | null>(null)
   const appointmentHoldTimerRef = useRef<number | null>(null)
+  const jewelleryRevealOpenRef = useRef(false)
+  const explodeDoneRef = useRef(true)
 
   const commitElements = useCallback((next: CraftInstance[]) => {
     elementsRef.current = next
@@ -320,13 +323,34 @@ export function CraftSpace() {
     [],
   )
 
+  const clearBusyIfIdle = useCallback(() => {
+    if (!jewelleryRevealOpenRef.current && explodeDoneRef.current) {
+      busyRef.current = false
+    }
+  }, [])
+
   const openJewellery = useCallback((catalogId: string) => {
-    if (busyRef.current) return
+    if (busyRef.current && !jewelleryRevealOpenRef.current) return
     const detail = getJewelleryDetail(catalogId)
     if (detail) setSheet(detail)
   }, [])
 
   const closeJewellery = useCallback(() => setSheet(null), [])
+
+  const closeJewelleryReveal = useCallback(() => {
+    jewelleryRevealOpenRef.current = false
+    setJewelleryReveal(null)
+    clearBusyIfIdle()
+  }, [clearBusyIfIdle])
+
+  const viewProductFromReveal = useCallback(() => {
+    if (!jewelleryReveal) return
+    const detail = jewelleryReveal
+    jewelleryRevealOpenRef.current = false
+    setJewelleryReveal(null)
+    setSheet(detail)
+    clearBusyIfIdle()
+  }, [jewelleryReveal, clearBusyIfIdle])
 
   const handleDrop = useCallback(
     (instanceId: string, pos: { x: number; y: number }) => {
@@ -416,8 +440,10 @@ export function CraftSpace() {
 
       const result = spawnInstance(resultCatalogId, mid.x, mid.y)
       if (!result) return
+      const detail = getJewelleryDetail(resultCatalogId)
 
       busyRef.current = true
+      explodeDoneRef.current = false
 
       setParentMergePhase({
         [parentA]: 'converge',
@@ -454,22 +480,24 @@ export function CraftSpace() {
 
         window.setTimeout(() => {
           setUnderFlashId(null)
-          setRevealAnimId(result.instanceId)
+          setBursts((b) => b.filter((x) => x.id !== burstId))
 
-          window.setTimeout(() => {
-            setRevealAnimId(null)
-            setBursts((b) => b.filter((x) => x.id !== burstId))
+          if (detail) {
+            jewelleryRevealOpenRef.current = true
+            setJewelleryReveal(detail)
+          }
 
-            startParentExplode(mid, parentA, parentB, approach, () => {
-              busyRef.current = false
-              delete dragOriginRef.current[instanceId]
-            })
-          }, MERGE_REVEAL_MS)
+          startParentExplode(mid, parentA, parentB, approach, () => {
+            explodeDoneRef.current = true
+            delete dragOriginRef.current[instanceId]
+            clearBusyIfIdle()
+          })
         }, MERGE_PUNCH_MS)
       }, MERGE_CONVERGE_MS)
     },
     [
       clearAppointmentHold,
+      clearBusyIfIdle,
       commitElements,
       refreshPlayfield,
       spaceSize,
@@ -478,7 +506,10 @@ export function CraftSpace() {
   )
 
   return (
-    <div className="craft-space" ref={spaceRef}>
+    <div
+      className={`craft-space${jewelleryReveal ? ' is-jewellery-revealing' : ''}`}
+      ref={spaceRef}
+    >
       <CelestialHeader ref={brandRef} />
 
       {elements.map((el) => (
@@ -490,7 +521,6 @@ export function CraftSpace() {
           zIndex={10 + Math.max(0, order.indexOf(el.instanceId))}
           mergePhase={parentMergePhase[el.instanceId]}
           revealing={underFlashId === el.instanceId}
-          revealAnim={revealAnimId === el.instanceId}
           onMove={handleMove}
           onDrop={handleDrop}
           onDragStart={handleDragStart}
@@ -508,6 +538,19 @@ export function CraftSpace() {
           exiting={appointmentToast === 'leaving'}
           onClose={beginAppointmentToastLeave}
           onExited={finishAppointmentToastLeave}
+        />
+      ) : null}
+
+      {jewelleryReveal ? (
+        <JewelleryReveal
+          detail={jewelleryReveal}
+          metal={
+            jewelleryReveal.ingredients.some((p) => p.id.includes('silver'))
+              ? 'silver'
+              : 'gold'
+          }
+          onClose={closeJewelleryReveal}
+          onViewProduct={viewProductFromReveal}
         />
       ) : null}
 

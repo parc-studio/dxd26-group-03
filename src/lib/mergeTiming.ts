@@ -10,6 +10,9 @@ export const MERGE_REVEAL_MS = 960
 export const MERGE_JEWELLERY_MS =
   MERGE_CONVERGE_MS + MERGE_PUNCH_MS + MERGE_REVEAL_MS
 
+/** Full-screen finished-product reveal (veil / 3D / UI). */
+export const JEWELLERY_REVEAL_EXIT_MS = 720
+
 /**
  * Multiplier for the jewellery merge flash disc size (CSS `--merge-flash-scale`).
  * 1 = base size in MergeBurst.css; raise for a bigger bloom.
