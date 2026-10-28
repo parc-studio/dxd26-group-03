@@ -38,10 +38,7 @@ export function AppointmentToast({
         <span aria-hidden="true">×</span>
       </button>
       <p className="appointment-toast__eyebrow">Combination not available?</p>
-      <p className="appointment-toast__title">
-        Book an appointment
-        <span className="appointment-toast__underline" aria-hidden="true" />
-      </p>
+      <p className="appointment-toast__title">Book an appointment</p>
     </div>
   )
 }
