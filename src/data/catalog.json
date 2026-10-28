@@ -19,15 +19,6 @@
       "imageSize": "contain"
     },
     {
-      "id": "gem_blue",
-      "label": "Blue gem",
-      "category": "stones",
-      "shape": "circle",
-      "kind": "material",
-      "image": "/textures/gem_blue.png",
-      "imageSize": "contain"
-    },
-    {
       "id": "gem_light_blue",
       "label": "Light blue gem",
       "category": "stones",
@@ -73,21 +64,21 @@
       "imageSize": "contain"
     },
     {
-      "id": "gem_rect_light_blue",
+      "id": "apatite",
       "label": "Apatite",
       "category": "stones",
       "shape": "rect",
       "kind": "material",
-      "image": "/textures/gem_rect_light_blue.png",
+      "image": "/textures/apatite.png",
       "imageSize": "contain"
     },
     {
-      "id": "gem_rect_light_green",
+      "id": "peridot",
       "label": "Peridot",
       "category": "stones",
       "shape": "rect",
       "kind": "material",
-      "image": "/textures/gem_rect_light_green.png",
+      "image": "/textures/peridot.png",
       "imageSize": "contain"
     },
     {
@@ -123,74 +114,44 @@
       "image": "/textures/ring_thin_silver.png"
     },
     {
-      "id": "necklace_partial_blue",
-      "label": "Gold chain + blue gem",
-      "category": "chains",
+      "id": "necklace_apatite",
+      "label": "Necklace Apatite",
+      "category": "jewellery",
       "shape": "ring",
-      "kind": "mid",
-      "image": "/textures/necklase_single_gem_blue.png",
+      "kind": "jewellery",
+      "description": "A fine gold chain with one apatite drop — a cool and refreshing stone.",
+      "ingredients": ["chain_gold", "apatite"],
+      "price": 168,
+      "displayName": "Collier 'Apatite'",
+      "materialsLine": "Or & apatite",
+      "image": "/textures/necklase_apatite.png",
       "imageSize": "contain"
     },
     {
-      "id": "necklace_single",
-      "label": "Single light-blue necklace",
+      "id": "necklace_peridot",
+      "label": "Necklace Peridot Apatite",
       "category": "jewellery",
       "shape": "ring",
       "kind": "jewellery",
-      "image": "/textures/necklase_single_gem_light_blue.png",
-      "description": "A fine gold chain with one light-blue drop — quiet sparkle on a short path.",
-      "ingredients": ["chain_gold", "gem_light_blue"],
+      "description": "A fine gold chain with one peridot drop — a warm and inviting stone.",
+      "ingredients": ["chain_gold", "peridot", "apatite"],
       "price": 168,
-      "displayName": "Collier 'Clair'",
-      "materialsLine": "Or & gemme bleu clair"
-    },
-    {
-      "id": "necklace_single_blue",
-      "label": "Single blue necklace",
-      "category": "jewellery",
-      "shape": "ring",
-      "kind": "jewellery",
-      "image": "/textures/necklase_single_gem_blue.png",
-      "description": "The same slender gold chain, finished with a deeper blue gem — a cooler night sky.",
-      "ingredients": ["chain_gold", "gem_blue"],
-      "price": 178,
-      "displayName": "Collier 'Azur'",
-      "materialsLine": "Or & gemme bleue"
-    },
-    {
-      "id": "necklace_heart",
-      "label": "Heart necklace",
-      "category": "jewellery",
-      "shape": "ring",
-      "kind": "jewellery",
-      "image": "/textures/necklase_heart_blue_light_blue.png",
-      "description": "Two blues meeting on a gold chain — light and deep, set as a small heart of light.",
-      "ingredients": ["chain_gold", "gem_light_blue", "gem_blue"],
-      "price": 248,
-      "displayName": "Collier 'Cœur'",
-      "materialsLine": "Or, gemme bleue & bleu clair"
+      "displayName": "Collier 'Peridot Apatite'",
+      "materialsLine": "Or & peridot",
+      "image": "/textures/necklase_peridot.png",
+      "imageSize": "contain"
     }
   ],
   "recipes": [
     {
       "a": "chain_gold",
-      "b": "gem_light_blue",
-      "result": "necklace_single"
+      "b": "apatite",
+      "result": "necklace_apatite"
     },
     {
-      "a": "chain_gold",
-      "b": "gem_blue",
-      "result": "necklace_partial_blue"
-    },
-    {
-      "a": "necklace_single",
-      "b": "gem_blue",
-      "result": "necklace_heart"
-    },
-    {
-      "a": "necklace_partial_blue",
-      "b": "gem_light_blue",
-      "result": "necklace_heart"
+      "a": "necklace_apatite",
+      "b": "peridot",
+      "result": "necklace_peridot"
     }
   ],
   "starters": [
@@ -200,31 +161,28 @@
     { "catalogId": "ring_silver", "x": 86, "y": 38 },
     { "catalogId": "ring_thin_gold", "x": 28, "y": 52 },
     { "catalogId": "ring_thin_silver", "x": 52, "y": 50 },
-    { "catalogId": "gem_blue", "x": 76, "y": 54 },
     { "catalogId": "gem_light_blue", "x": 18, "y": 68 },
     { "catalogId": "green_amethyst", "x": 40, "y": 70 },
     { "catalogId": "amethyst", "x": 62, "y": 72 },
-    { "catalogId": "labradorite", "x": 50, "y": 62 },
-    { "catalogId": "gem_yellow", "x": 84, "y": 74 },
-    { "catalogId": "gem_rect_light_blue", "x": 28, "y": 84 },
-    { "catalogId": "gem_rect_light_green", "x": 72, "y": 86 }
+    { "catalogId": "labradorite", "x": 84, "y": 74 },
+    { "catalogId": "gem_yellow", "x": 50, "y": 62 },
+    { "catalogId": "apatite", "x": 28, "y": 84 },
+    { "catalogId": "peridot", "x": 72, "y": 86 }
   ],
   "appointmentPairs": [
-    { "a": "ring_thin_silver", "b": "gem_blue" },
     { "a": "ring_thin_silver", "b": "gem_light_blue" },
     { "a": "ring_thin_silver", "b": "green_amethyst" },
     { "a": "ring_thin_silver", "b": "amethyst" },
     { "a": "ring_thin_silver", "b": "gem_yellow" },
     { "a": "ring_thin_silver", "b": "labradorite" },
-    { "a": "ring_thin_silver", "b": "gem_rect_light_blue" },
-    { "a": "ring_thin_silver", "b": "gem_rect_light_green" },
-    { "a": "ring_thin_gold", "b": "gem_blue" },
+    { "a": "ring_thin_silver", "b": "apatite" },
+    { "a": "ring_thin_silver", "b": "peridot" },
     { "a": "ring_thin_gold", "b": "gem_light_blue" },
     { "a": "ring_thin_gold", "b": "green_amethyst" },
     { "a": "ring_thin_gold", "b": "amethyst" },
     { "a": "ring_thin_gold", "b": "gem_yellow" },
     { "a": "ring_thin_gold", "b": "labradorite" },
-    { "a": "ring_thin_gold", "b": "gem_rect_light_blue" },
-    { "a": "ring_thin_gold", "b": "gem_rect_light_green" }
+    { "a": "ring_thin_gold", "b": "apatite" },
+    { "a": "ring_thin_gold", "b": "peridot" }
   ]
 }
