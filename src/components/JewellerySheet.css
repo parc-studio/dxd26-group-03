@@ -94,7 +94,15 @@
 .jewellery-sheet__body {
   position: relative;
   z-index: 2;
-  padding: var(--space-4) var(--space-5) calc(var(--space-5) + var(--safe-bottom));
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  background: var(--color-surface);
+}
+
+/* Price, quantity and cart stay pinned below the scrolling content */
+.jewellery-sheet__footer {
+  flex-shrink: 0;
+  padding: var(--space-3) var(--space-5) calc(var(--space-3) + var(--safe-bottom));
+  border-top: 1px solid color-mix(in srgb, var(--color-brand-soft) 28%, white);
   background: var(--color-surface);
 }
 
@@ -167,24 +175,25 @@
 }
 
 .jewellery-sheet__price {
-  margin: 0 0 var(--space-6);
-  padding-top: var(--space-4);
-  border-top: 1px solid color-mix(in srgb, var(--color-brand-soft) 28%, white);
+  margin: 0;
+  white-space: nowrap;
   font-family: var(--font-display);
   font-size: var(--text-lg);
   color: var(--color-ink);
 }
 
-/* Quantity picker as on the shop: three joined 48px squares */
+/* Price, quantity picker and stock on one line */
 .jewellery-sheet__stock-row {
   display: flex;
   align-items: center;
-  gap: var(--space-6);
-  margin-bottom: var(--space-8);
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
+/* Quantity picker as on the shop: three joined squares */
 .jewellery-sheet__qty {
-  --qty-size: 3rem;
+  --qty-size: 2.75rem;
   --qty-border: 1px solid #e3e3e6;
   display: inline-flex;
 }
@@ -226,6 +235,7 @@
 
 .jewellery-sheet__stock {
   margin: 0;
+  white-space: nowrap;
   font-family: var(--font-ui);
   font-size: var(--text-md);
   color: var(--color-ink);

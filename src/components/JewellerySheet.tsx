@@ -23,12 +23,12 @@ const SHOWCASE = {
     'A fine chain traced like a shoreline, set with peridot and blue apatite ' +
     'that catch the light like sun on shallow and deep water.',
   chains: {
-    gold: { id: 'chain_gold', label: 'Gold chain' },
-    silver: { id: 'chain_silver', label: 'Silver chain' },
+    gold: { id: 'chain_gold', label: 'Stainless steel' },
+    silver: { id: 'chain_silver', label: 'Stainless steel' },
   },
   gems: [
-    { id: 'peridot', label: 'Peridot gem' },
-    { id: 'apatite', label: 'Apatite gem' },
+    { id: 'peridot', label: 'Peridot' },
+    { id: 'apatite', label: 'Apatite' },
   ],
 }
 
@@ -191,46 +191,47 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
                 ))}
               </div>
             </section>
-
-            <p className="jewellery-sheet__price">{priceLabel}</p>
-
-            <div className="jewellery-sheet__stock-row">
-              <div className="jewellery-sheet__qty" role="group" aria-label="Quantity">
-                <button
-                  type="button"
-                  className="jewellery-sheet__qty-btn"
-                  aria-label="Decrease quantity"
-                  onClick={() => setQty((q) => Math.max(1, q - 1))}
-                >
-                  -
-                </button>
-                <span className="jewellery-sheet__qty-value" aria-live="polite">
-                  {qty}
-                </span>
-                <button
-                  type="button"
-                  className="jewellery-sheet__qty-btn"
-                  aria-label="Increase quantity"
-                  disabled={qty >= SHOWCASE.stock}
-                  onClick={() => setQty((q) => Math.min(SHOWCASE.stock, q + 1))}
-                >
-                  +
-                </button>
-              </div>
-              <p className="jewellery-sheet__stock">{SHOWCASE.stock} in stock</p>
-            </div>
-
-            <button
-              type="button"
-              className="jewellery-sheet__cart"
-              onClick={() => {
-                /* prototype placeholder */
-              }}
-            >
-              Add to cart
-            </button>
           </div>
         </div>
+
+        <footer className="jewellery-sheet__footer">
+          <div className="jewellery-sheet__stock-row">
+            <p className="jewellery-sheet__price">{priceLabel}</p>
+            <div className="jewellery-sheet__qty" role="group" aria-label="Quantity">
+              <button
+                type="button"
+                className="jewellery-sheet__qty-btn"
+                aria-label="Decrease quantity"
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+              >
+                -
+              </button>
+              <span className="jewellery-sheet__qty-value" aria-live="polite">
+                {qty}
+              </span>
+              <button
+                type="button"
+                className="jewellery-sheet__qty-btn"
+                aria-label="Increase quantity"
+                disabled={qty >= SHOWCASE.stock}
+                onClick={() => setQty((q) => Math.min(SHOWCASE.stock, q + 1))}
+              >
+                +
+              </button>
+            </div>
+            <p className="jewellery-sheet__stock">{SHOWCASE.stock} in stock</p>
+          </div>
+
+          <button
+            type="button"
+            className="jewellery-sheet__cart"
+            onClick={() => {
+              /* prototype placeholder */
+            }}
+          >
+            Add to cart
+          </button>
+        </footer>
       </div>
     </div>
   )
