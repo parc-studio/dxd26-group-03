@@ -37,7 +37,7 @@ const PIECES: Record<string, { name: string; finalPhoto?: string }> = {
 
 // Making-of photos for the showcased piece, shown before the price.
 // Files follow the chosen metal: WIP-gold.jfif, final-silver.jfif, …
-const gallery = (metal: Metal, pieceId: string, pieceName: string) => [
+const photo = (metal: Metal, pieceId: string, pieceName: string) => [
   {
     src: `${import.meta.env.BASE_URL}WIP-${metal}.jfif`,
     alt: `Jeweller’s bench with blue apatite and peridot stones, a spool of fine ${metal} chain and pliers`,
@@ -48,10 +48,28 @@ const gallery = (metal: Metal, pieceId: string, pieceName: string) => [
   },
 ];
 
+// Each slot holds every metal's photo (once per distinct file), stacked so
+// switching metal crossfades instead of reloading the image.
+const gallery = (pieceId: string, pieceName: string) => {
+  const byMetal = METALS.map((metal) => photo(metal, pieceId, pieceName));
+  return byMetal[0].map((_, slot) => {
+    const layers: { src: string; alt: string; metals: Metal[] }[] = [];
+    METALS.forEach((metal, i) => {
+      const { src, alt } = byMetal[i][slot];
+      const layer = layers.find((l) => l.src === src);
+      if (layer) layer.metals.push(metal);
+      else layers.push({ src, alt, metals: [metal] });
+    });
+    return layers;
+  });
+};
+
 const METAL_OPTIONS: { value: Metal; label: string }[] = [
   { value: "gold", label: "Gold" },
   { value: "silver", label: "Silver" },
 ];
+
+const METALS = METAL_OPTIONS.map((option) => option.value);
 
 const swatch = (id: string) => getCatalogElement(id)?.image ?? "";
 
@@ -206,16 +224,22 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
               aria-label="Making of"
             >
               <div className="jewellery-sheet__gallery">
-                {gallery(metal, detail.id, pieceName).map((photo) => (
-                  <figure key={photo.src} className="jewellery-sheet__photo">
-                    <img
-                      className="jewellery-sheet__photo-img"
-                      src={photo.src}
-                      alt={photo.alt}
-                      loading="lazy"
-                      decoding="async"
-                      draggable={false}
-                    />
+                {gallery(detail.id, pieceName).map((layers, slot) => (
+                  <figure key={slot} className="jewellery-sheet__photo">
+                    {layers.map((layer) => {
+                      const shown = layer.metals.includes(metal);
+                      return (
+                        <img
+                          key={layer.src}
+                          className={`jewellery-sheet__photo-img${shown ? " is-shown" : ""}`}
+                          src={layer.src}
+                          alt={shown ? layer.alt : ""}
+                          aria-hidden={!shown}
+                          decoding="async"
+                          draggable={false}
+                        />
+                      );
+                    })}
                   </figure>
                 ))}
               </div>
