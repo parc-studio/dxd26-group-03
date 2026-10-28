@@ -1,49 +1,29 @@
 /**
  * Android-first shake detection via `devicemotion`.
  *
- * Tune sensitivity here (exported constants below):
- *   SHAKE_THRESHOLD      — peak linear |a| in m/s² (rest noise ~0.5–2; real shake ≫)
- *   SHAKE_COUNT          — spikes required inside SHAKE_WINDOW_MS
- *   SHAKE_WINDOW_MS      — multi-peak window
- *   SHAKE_COOLDOWN_MS    — one confirmed shake → one reset (debounce)
- *   SHAKE_MIN_SPIKE_GAP_MS — min gap between counted spikes (same peak ≠ 2)
+ * Secure context: many Chromium builds only deliver motion on HTTPS (or
+ * localhost). Plain `http://LAN-IP` often gets zero events — use the Vite
+ * HTTPS LAN URL, or the on-screen Shake / long-press-logo debug trigger.
  *
- * Secure context: Chromium often blocks motion on plain http://LAN — use HTTPS.
- * iOS: still needs DeviceMotionEvent.requestPermission() from a user gesture.
+ * iOS follow-up: Safari 13+ needs `DeviceMotionEvent.requestPermission()`
+ * from a user gesture before events fire. `getDeviceMotionPermissionApi()`
+ * is ready for an “Enable shake” control; we do not prompt on load yet.
  */
 
-/** Peak linear acceleration magnitude (m/s²) to count as a spike. */
-export const SHAKE_THRESHOLD = 14
-
-/** How many spikes must land inside SHAKE_WINDOW_MS. */
-export const SHAKE_COUNT = 4
-
-/** Sliding window for counting spikes (ms). */
-export const SHAKE_WINDOW_MS = 750
-
-/** After a fire, ignore further shakes this long (ms). */
-export const SHAKE_COOLDOWN_MS = 3500
-
-/** Min time between samples we inspect (ms). */
-export const SHAKE_SAMPLE_MS = 40
-
-/** Min time between two counted spikes so one peak isn’t double-counted. */
-export const SHAKE_MIN_SPIKE_GAP_MS = 70
-
 export interface ShakeDetectOptions {
+  /** Peak Δacceleration that counts as a shake sample. */
   threshold?: number
+  /** Min samples above threshold within the window to confirm a shake. */
   minSamples?: number
+  /** Sliding window for counting samples (ms). */
   windowMs?: number
+  /** Ignore new confirmations for this long after one fires (ms). */
   cooldownMs?: number
+  /** Min ms between acceleration samples. */
   sampleIntervalMs?: number
-  minSpikeGapMs?: number
-  /** When true, ignore motion (e.g. finger is dragging a craft piece). */
-  isSuppressed?: () => boolean
+  /** Called when a shake burst is confirmed. */
   onShake: () => void
-  /**
-   * Only invoked after a shake has been confirmed and while a jostle may
-   * still be running — never used to start motion from a single noisy sample.
-   */
+  /** Called on every above-threshold sample (live jostle kicks). */
   onShakePulse?: (intensity: number) => void
 }
 
@@ -55,73 +35,68 @@ interface DeviceMotionEventWithPermission {
 
 const LOG = '[craft-shake]'
 
-/**
- * Prefer true linear acceleration. If the device only exposes
- * accelerationIncludingGravity, high-pass it so gravity (~9.8) drops out.
- */
-function readLinearAccel(event: DeviceMotionEvent): {
+function readAccel(event: DeviceMotionEvent): {
   ax: number
   ay: number
   az: number
-  source: 'linear' | 'gravity-hp'
+  source: 'linear' | 'gravity'
 } | null {
   const linear = event.acceleration
+  const grav = event.accelerationIncludingGravity
+
   const lx = linear?.x
   const ly = linear?.y
   const lz = linear?.z
   if (lx != null && ly != null && lz != null) {
-    if (Math.abs(lx) + Math.abs(ly) + Math.abs(lz) > 0.05) {
+    // Some Androids report linear as all zeros forever — treat as missing.
+    if (Math.abs(lx) + Math.abs(ly) + Math.abs(lz) > 0.01) {
       return { ax: lx, ay: ly, az: lz, source: 'linear' }
     }
   }
 
-  const grav = event.accelerationIncludingGravity
   const gx = grav?.x
   const gy = grav?.y
   const gz = grav?.z
-  if (gx == null || gy == null || gz == null) return null
-  return { ax: gx, ay: gy, az: gz, source: 'gravity-hp' }
+  if (gx != null && gy != null && gz != null) {
+    return { ax: gx, ay: gy, az: gz, source: 'gravity' }
+  }
+
+  return null
 }
 
 export function attachShakeListener(options: ShakeDetectOptions): () => void {
-  const threshold = options.threshold ?? SHAKE_THRESHOLD
-  const minSamples = options.minSamples ?? SHAKE_COUNT
-  const windowMs = options.windowMs ?? SHAKE_WINDOW_MS
-  const cooldownMs = options.cooldownMs ?? SHAKE_COOLDOWN_MS
-  const sampleIntervalMs = options.sampleIntervalMs ?? SHAKE_SAMPLE_MS
-  const minSpikeGapMs = options.minSpikeGapMs ?? SHAKE_MIN_SPIKE_GAP_MS
+  // Soft defaults — previous 18 was too stiff on some Android phones.
+  const threshold = options.threshold ?? 7
+  const minSamples = options.minSamples ?? 2
+  const windowMs = options.windowMs ?? 900
+  const cooldownMs = options.cooldownMs ?? 1800
+  const sampleIntervalMs = options.sampleIntervalMs ?? 50
 
-  // Low-pass of including-gravity → high-pass residual ≈ linear accel.
-  let lpX = 0
-  let lpY = 0
-  let lpZ = 0
-  let lpReady = false
-  const LP_ALPHA = 0.15
-
+  let lastX = 0
+  let lastY = 0
+  let lastZ = 0
+  let hasSample = false
   let lastSampleAt = 0
-  let lastSpikeAt = -Infinity
   let cooldownUntil = 0
   let sawEvent = false
   let loggedSource: string | null = null
-  /** After a confirmed shake, pulses may re-kick an active jostle until cooldown. */
-  let pulseArmedUntil = 0
-  const spikes: number[] = []
+  const hits: number[] = []
 
-  const secure =
-    typeof window.isSecureContext === 'boolean' ? window.isSecureContext : true
+  const secure = typeof window.isSecureContext === 'boolean' ? window.isSecureContext : true
   console.info(LOG, 'listener attached', {
     secureContext: secure,
     protocol: window.location.protocol,
     host: window.location.host,
-    SHAKE_THRESHOLD: threshold,
-    SHAKE_COUNT: minSamples,
-    SHAKE_WINDOW_MS: windowMs,
-    SHAKE_COOLDOWN_MS: cooldownMs,
+    threshold,
+    minSamples,
+    hasDeviceMotion:
+      typeof window.DeviceMotionEvent !== 'undefined',
+    iOSPermissionApi: Boolean(getDeviceMotionPermissionApi()),
   })
   if (!secure) {
     console.warn(
       LOG,
-      'NOT a secure context — DeviceMotion is often blocked. Prefer https://LAN:5173 or use the Shake debug button / long-press logo.',
+      'NOT a secure context — DeviceMotion is often blocked. Prefer https://LAN:5173 (self-signed) or use the Shake debug button / long-press logo.',
     )
   }
 
@@ -131,70 +106,55 @@ export function attachShakeListener(options: ShakeDetectOptions): () => void {
       console.info(LOG, 'first devicemotion event received')
     }
 
-    if (options.isSuppressed?.()) return
+    const sample = readAccel(event)
+    if (!sample) return
 
-    const raw = readLinearAccel(event)
-    if (!raw) return
-
-    let { ax, ay, az } = raw
-    if (raw.source === 'gravity-hp') {
-      if (!lpReady) {
-        lpX = ax
-        lpY = ay
-        lpZ = az
-        lpReady = true
-        return
-      }
-      lpX = lpX * (1 - LP_ALPHA) + ax * LP_ALPHA
-      lpY = lpY * (1 - LP_ALPHA) + ay * LP_ALPHA
-      lpZ = lpZ * (1 - LP_ALPHA) + az * LP_ALPHA
-      ax -= lpX
-      ay -= lpY
-      az -= lpZ
-    }
-
-    if (loggedSource !== raw.source) {
-      loggedSource = raw.source
-      console.info(LOG, `using acceleration source: ${raw.source}`)
+    const { ax, ay, az, source } = sample
+    if (loggedSource !== source) {
+      loggedSource = source
+      console.info(LOG, `using acceleration source: ${source}`)
     }
 
     const now = performance.now()
     if (now - lastSampleAt < sampleIntervalMs) return
     lastSampleAt = now
 
-    // Peak linear magnitude (m/s²). Rest noise ≪ threshold; a real shake spikes.
-    const intensity = Math.hypot(ax, ay, az)
-    if (intensity < threshold) return
-
-    if (now - lastSpikeAt < minSpikeGapMs) return
-    lastSpikeAt = now
-
-    spikes.push(now)
-    while (spikes.length && now - spikes[0]! > windowMs) spikes.shift()
-
-    console.debug(LOG, 'spike', intensity.toFixed(1), `${spikes.length}/${minSamples}`)
-
-    // Pulses only after a confirmed shake (re-kick during the jostle), never alone.
-    if (now < pulseArmedUntil) {
-      options.onShakePulse?.(intensity)
+    if (!hasSample) {
+      lastX = ax
+      lastY = ay
+      lastZ = az
+      hasSample = true
+      return
     }
 
-    if (spikes.length < minSamples) return
+    const dx = ax - lastX
+    const dy = ay - lastY
+    const dz = az - lastZ
+    lastX = ax
+    lastY = ay
+    lastZ = az
+
+    const intensity = Math.abs(dx) + Math.abs(dy) + Math.abs(dz)
+    if (intensity < threshold) return
+
+    console.debug(LOG, 'pulse', intensity.toFixed(1))
+    options.onShakePulse?.(intensity)
+
+    hits.push(now)
+    while (hits.length && now - hits[0]! > windowMs) hits.shift()
+
+    if (hits.length < minSamples) return
     if (now < cooldownUntil) return
 
     cooldownUntil = now + cooldownMs
-    pulseArmedUntil = now + Math.min(cooldownMs, 1200)
-    spikes.length = 0
-    console.info(LOG, 'SHAKE FIRED', {
-      intensity: Number(intensity.toFixed(1)),
-      threshold,
-      count: minSamples,
-    })
+    hits.length = 0
+    console.info(LOG, 'SHAKE FIRED', { intensity: Number(intensity.toFixed(1)) })
     options.onShake()
   }
 
   window.addEventListener('devicemotion', onMotion)
 
+  // If no event arrives quickly, surface a hint (common on http LAN / iOS).
   const watchdog = window.setTimeout(() => {
     if (!sawEvent) {
       console.warn(
@@ -211,6 +171,10 @@ export function attachShakeListener(options: ShakeDetectOptions): () => void {
   }
 }
 
+/**
+ * iOS-only helper for a future “Enable shake” control.
+ * Returns null when the browser does not gate motion behind permission.
+ */
 export function getDeviceMotionPermissionApi():
   | (() => Promise<DeviceMotionPermission>)
   | null {
