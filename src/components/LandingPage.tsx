@@ -32,8 +32,8 @@ const PREVIEW_PIECES = [
   { src: '/textures/labradorite.png', left: '55%', top: '28%', size: '13%' },
   { src: '/textures/ring_thin_gold.png', left: '48%', top: '56%', size: '16%' },
   { src: '/textures/gem_light_blue.png', left: '14%', top: '68%', size: '13%' },
-  { src: '/textures/gem_rect_light_green.png', left: '68%', top: '70%', size: '15%' },
-  { src: '/textures/gem_rect_light_blue.png', left: '42%', top: '78%', size: '14%' },
+  { src: '/textures/peridot.png', left: '68%', top: '70%', size: '15%' },
+  { src: '/textures/apatite.png', left: '42%', top: '78%', size: '14%' },
 ] as const
 
 interface LandingPageProps {

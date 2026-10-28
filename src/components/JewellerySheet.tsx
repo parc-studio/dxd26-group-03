@@ -12,7 +12,8 @@ interface JewellerySheetProps {
 }
 
 const DISMISS_PX = 96
-const HERO_MODEL_URL = `${import.meta.env.BASE_URL}chain1-gold.glb`
+const heroModelUrl = (metal: Metal) =>
+  `${import.meta.env.BASE_URL}chain1-${metal}.glb`
 
 // Text for the piece shown by the 3D model, which is the same for every
 // jewellery result; swatches reuse the closest catalog textures.
@@ -27,8 +28,8 @@ const SHOWCASE = {
     silver: { id: 'chain_silver', label: 'Silver chain' },
   },
   gems: [
-    { id: 'gem_rect_light_green', label: 'Peridot gem' },
-    { id: 'gem_rect_light_blue', label: 'Apatite gem' },
+    { id: 'peridot', label: 'Peridot gem' },
+    { id: 'apatite', label: 'Apatite gem' },
   ],
 }
 
@@ -288,7 +289,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
             <Suspense fallback={null}>
               <HeroModel
                 className="jewellery-sheet__hero-model"
-                src={HERO_MODEL_URL}
+                src={heroModelUrl(metal)}
                 metal={metal}
               />
             </Suspense>

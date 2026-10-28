@@ -254,14 +254,14 @@
  * Tweak: --jewellery-glow-*, --jewellery-shadow-*
  */
 .craft-el--jewellery-piece {
-  --jewellery-glow-size: 5.6rem;
+  --jewellery-glow-size: 7rem;
   --jewellery-glow-cream: color-mix(in srgb, var(--color-cream) 58%, white);
   --jewellery-glow-soft: color-mix(in srgb, var(--color-cream) 30%, transparent);
   --jewellery-glow-blur: 20px;
   --jewellery-glow-opacity: 0.82;
   /* Soft oval ground shadow (CodePen-style under-object halo) */
-  --jewellery-shadow-width: 5rem;
-  --jewellery-shadow-height: 0.72rem;
+  --jewellery-shadow-width: 6.2rem;
+  --jewellery-shadow-height: 0.85rem;
   --jewellery-shadow-opacity: 0.28;
 }
 
@@ -321,6 +321,9 @@
 }
 
 .craft-el--jewellery-piece.craft-el--ring .craft-el__shape {
+  /* Finished necklaces read larger than material rings on the board. */
+  width: 6.35rem;
+  height: 6.35rem;
   filter: drop-shadow(0 10px 18px rgba(71, 43, 43, 0.12));
   box-shadow: none;
 }
@@ -458,5 +461,15 @@
   .craft-el--ring .craft-el__shape {
     width: 5.2rem;
     height: 5.2rem;
+  }
+
+  .craft-el--jewellery-piece.craft-el--ring .craft-el__shape {
+    width: 7.1rem;
+    height: 7.1rem;
+  }
+
+  .craft-el--jewellery-piece {
+    --jewellery-glow-size: 7.8rem;
+    --jewellery-shadow-width: 7rem;
   }
 }
