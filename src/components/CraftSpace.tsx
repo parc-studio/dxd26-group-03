@@ -22,6 +22,8 @@ import {
   MERGE_CONVERGE_MS,
   MERGE_PUNCH_MS,
 } from '../lib/mergeTiming'
+import { attachShakeListener } from '../lib/shakeDetect'
+import { runShakeJostle } from '../lib/shakeJostle'
 import type {
   CraftInstance,
   MergeBurstState,
@@ -60,6 +62,11 @@ export function CraftSpace() {
   const busyRef = useRef(false)
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({})
   const explodeCancelRef = useRef<(() => void) | null>(null)
+  const shakeJostleRef = useRef<{
+    cancel: () => void
+    kick: (intensity?: number) => void
+  } | null>(null)
+  const shakeResetPendingRef = useRef(false)
 
   const [elements, setElements] = useState<CraftInstance[]>(() => {
     const starters = createStarterInstances()
@@ -342,6 +349,126 @@ export function CraftSpace() {
       busyRef.current = false
     }
   }, [])
+
+  /** Wipe merges/products and seat a fresh starter scatter. */
+  const resetCraftToStarters = useCallback(() => {
+    explodeCancelRef.current?.()
+    explodeCancelRef.current = null
+    shakeJostleRef.current?.cancel()
+    shakeJostleRef.current = null
+    shakeResetPendingRef.current = false
+
+    jewelleryRevealOpenRef.current = false
+    setJewelleryReveal(null)
+    setBursts([])
+    setParentMergePhase({})
+    setUnderFlashId(null)
+    dragOriginRef.current = {}
+    explodeDoneRef.current = true
+    clearAppointmentHold()
+    beginAppointmentToastLeave()
+
+    sheetPushedRef.current = false
+    if (readProductFromHash()) {
+      window.history.replaceState(null, '', `#${CRAFT_HASH}`)
+    }
+    setSheet(null)
+
+    const starters = createStarterInstances()
+    const bounds = refreshPlayfield()
+    const { w, h } = spaceSize()
+    const seated = separateAll(
+      starters.map((el) => {
+        const c = clampToPlayfield(el.x, el.y, bounds)
+        return { ...el, x: c.x, y: c.y }
+      }),
+      bounds,
+      w,
+      h,
+    )
+    commitElements(seated)
+    setOrder(seated.map((el) => el.instanceId))
+    busyRef.current = false
+  }, [
+    beginAppointmentToastLeave,
+    clearAppointmentHold,
+    commitElements,
+    refreshPlayfield,
+    spaceSize,
+  ])
+
+  const startShakeJostle = useCallback(() => {
+    explodeCancelRef.current?.()
+    explodeCancelRef.current = null
+    shakeJostleRef.current?.cancel()
+
+    busyRef.current = true
+    shakeResetPendingRef.current = true
+    jewelleryRevealOpenRef.current = false
+    setJewelleryReveal(null)
+    setBursts([])
+    setParentMergePhase({})
+    setUnderFlashId(null)
+    clearAppointmentHold()
+    beginAppointmentToastLeave()
+    sheetPushedRef.current = false
+    if (readProductFromHash()) {
+      window.history.replaceState(null, '', `#${CRAFT_HASH}`)
+    }
+    setSheet(null)
+
+    const bounds = refreshPlayfield()
+    const { w, h } = spaceSize()
+    const live = elementsRef.current
+    if (live.length === 0) {
+      resetCraftToStarters()
+      return
+    }
+
+    shakeJostleRef.current = runShakeJostle({
+      bodies: live.map((el) => ({
+        id: el.instanceId,
+        x: el.x,
+        y: el.y,
+      })),
+      spaceWidthPx: w,
+      spaceHeightPx: h,
+      playfield: bounds,
+      onFrame: applyExplodePositions,
+      onDone: () => {
+        shakeJostleRef.current = null
+        if (shakeResetPendingRef.current) {
+          resetCraftToStarters()
+        } else {
+          busyRef.current = false
+        }
+      },
+    })
+  }, [
+    applyExplodePositions,
+    beginAppointmentToastLeave,
+    clearAppointmentHold,
+    refreshPlayfield,
+    resetCraftToStarters,
+    spaceSize,
+  ])
+
+  // Android-first shake → jostle → reset. iOS permission gated for later.
+  useEffect(() => {
+    const detach = attachShakeListener({
+      onShakePulse: (intensity) => {
+        shakeJostleRef.current?.kick(intensity)
+      },
+      onShake: () => {
+        startShakeJostle()
+      },
+    })
+    return () => {
+      detach()
+      shakeJostleRef.current?.cancel()
+      shakeJostleRef.current = null
+    }
+  }, [startShakeJostle])
 
   // The URL drives the product sheet, so back/forward and shared links work.
   useEffect(() => {
