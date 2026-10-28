@@ -16,7 +16,7 @@ import {
   separateAll,
   type PlayfieldBounds,
 } from '../lib/craftPhysics'
-import { findDropTarget } from '../lib/hitTest'
+import { findDropTarget, findMatchingTarget } from '../lib/hitTest'
 import { opposingExplodeDirs, runParentExplode } from '../lib/mergeExplode'
 import {
   MERGE_CONVERGE_MS,
@@ -303,16 +303,15 @@ export function CraftSpace() {
 
       const draggedNow = pushed.find((el) => el.instanceId === instanceId)
       if (!draggedNow) return
-      const target = findDropTarget(
+      const appointmentTarget = findMatchingTarget(
         pushed,
         instanceId,
         draggedNow.x,
         draggedNow.y,
+        (otherCatalogId) =>
+          isAppointmentPair(draggedNow.catalogId, otherCatalogId),
       )
-      if (
-        target &&
-        isAppointmentPair(draggedNow.catalogId, target.catalogId)
-      ) {
+      if (appointmentTarget) {
         armAppointmentHold()
       } else {
         clearAppointmentHold()
@@ -414,6 +413,28 @@ export function CraftSpace() {
       if (!dragged) return
 
       const target = findDropTarget(placed, instanceId, clamped.x, clamped.y)
+      const appointmentTarget = findMatchingTarget(
+        placed,
+        instanceId,
+        clamped.x,
+        clamped.y,
+        (otherCatalogId) =>
+          isAppointmentPair(dragged.catalogId, otherCatalogId),
+      )
+      const recipeCatalogId = target
+        ? findRecipeResult(dragged.catalogId, target.catalogId)
+        : null
+
+      // A real recipe on the nearest piece still crafts. Otherwise a thin
+      // ring + any stone books an appointment instead of bouncing silently.
+      if (!recipeCatalogId && appointmentTarget) {
+        showAppointmentToast()
+        const { w, h } = spaceSize()
+        commitElements(separateAll(elementsRef.current, bounds, w, h))
+        delete dragOriginRef.current[instanceId]
+        return
+      }
+
       if (!target) {
         // Soft settle so a non-merge drop doesn't leave overlaps.
         const { w, h } = spaceSize()
@@ -422,15 +443,7 @@ export function CraftSpace() {
         return
       }
 
-      // Appointment pairs look combinable but have no product — CTA only.
-      if (isAppointmentPair(dragged.catalogId, target.catalogId)) {
-        const { w, h } = spaceSize()
-        commitElements(separateAll(elementsRef.current, bounds, w, h))
-        delete dragOriginRef.current[instanceId]
-        return
-      }
-
-      const resultCatalogId = findRecipeResult(dragged.catalogId, target.catalogId)
+      const resultCatalogId = recipeCatalogId
       if (!resultCatalogId) {
         const { w, h } = spaceSize()
         commitElements(separateAll(elementsRef.current, bounds, w, h))
@@ -544,6 +557,7 @@ export function CraftSpace() {
       clearBusyIfIdle,
       commitElements,
       refreshPlayfield,
+      showAppointmentToast,
       spaceSize,
       startParentExplode,
     ],

@@ -18,7 +18,7 @@ export const CRAFT_SCALE_DEFAULTS = {
   /** Material rings */
   ring: 0.9,
   /** Finished jewellery products (PNG cutouts run small) */
-  jewellery: 1.2,
+  jewellery: 1.6,
 } as const
 
 /** Optional overrides keyed by catalog id. */

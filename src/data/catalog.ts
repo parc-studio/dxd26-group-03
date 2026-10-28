@@ -22,10 +22,25 @@ for (const recipe of catalog.recipes) {
   recipeMap.set(key, recipe.result)
 }
 
+/** Thin rings that book an appointment with every stone, rather than crafting. */
+const THIN_RING_IDS = ['ring_thin_silver', 'ring_thin_gold'] as const
+
+function pairKey(a: string, b: string): string {
+  return [a, b].sort().join('::')
+}
+
 /** Undirected appointment-CTA pairs (overlap allowed, no product merge). */
 const appointmentPairSet = new Set<string>()
 for (const pair of catalog.appointmentPairs ?? []) {
-  appointmentPairSet.add([pair.a, pair.b].sort().join('::'))
+  appointmentPairSet.add(pairKey(pair.a, pair.b))
+}
+
+// Every gem/stone pairs with both thin rings, even if a catalog line is missing.
+for (const el of catalog.elements) {
+  if (el.category !== 'stones') continue
+  for (const ringId of THIN_RING_IDS) {
+    appointmentPairSet.add(pairKey(el.id, ringId))
+  }
 }
 
 let instanceCounter = 0
@@ -41,13 +56,15 @@ export function getCatalogElement(id: string): CatalogElement | undefined {
 
 export function findRecipeResult(a: string, b: string): string | null {
   if (a === b) return null
-  return recipeMap.get([a, b].sort().join('::')) ?? null
+  return recipeMap.get(pairKey(a, b)) ?? null
 }
 
 /** True when this pair should overlap and prompt “book an appointment”. */
 export function isAppointmentPair(a: string, b: string): boolean {
   if (a === b) return false
-  return appointmentPairSet.has([a, b].sort().join('::'))
+  // A real recipe wins over the appointment CTA.
+  if (recipeMap.has(pairKey(a, b))) return false
+  return appointmentPairSet.has(pairKey(a, b))
 }
 
 export function spawnInstance(
@@ -144,9 +161,26 @@ export function assertCatalogAligned(knownImageFiles: string[]): string[] {
         errors.push(`appointmentPair references missing element ${id}`)
       }
     }
-    const key = [pair.a, pair.b].sort().join('::')
+    const key = pairKey(pair.a, pair.b)
     if (recipeMap.has(key)) {
       errors.push(`appointmentPair ${key} also has a recipe — remove one`)
+    }
+  }
+
+  const stoneIds = catalog.elements
+    .filter((el) => el.category === 'stones')
+    .map((el) => el.id)
+  for (const stoneId of stoneIds) {
+    for (const ringId of THIN_RING_IDS) {
+      const key = pairKey(stoneId, ringId)
+      const listed = (catalog.appointmentPairs ?? []).some(
+        (pair) => pairKey(pair.a, pair.b) === key,
+      )
+      if (!listed) {
+        errors.push(
+          `stone ${stoneId} missing appointment pair with ${ringId}`,
+        )
+      }
     }
   }
 
