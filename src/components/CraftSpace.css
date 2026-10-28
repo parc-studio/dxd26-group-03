@@ -9,60 +9,34 @@
   overscroll-behavior: none;
   -webkit-user-select: none;
   user-select: none;
-  padding:
-    max(0.5rem, var(--safe-top))
-    max(0.5rem, var(--safe-right))
-    max(0.75rem, var(--safe-bottom))
-    max(0.5rem, var(--safe-left));
-  background:
-    radial-gradient(
-      ellipse 85% 60% at 50% 12%,
-      color-mix(in srgb, var(--color-cream) 55%, transparent) 0%,
-      transparent 58%
-    ),
-    radial-gradient(
-      ellipse 50% 40% at 88% 78%,
-      color-mix(in srgb, var(--color-brand-soft) 14%, transparent) 0%,
-      transparent 55%
-    ),
-    linear-gradient(
-      165deg,
-      var(--color-surface) 0%,
-      var(--color-space-mid) 52%,
-      var(--color-surface-muted) 100%
-    );
+  padding: 0;
+  /* Flat cream / off-white — no yellow spotlight */
+  background: var(--color-surface-muted);
 }
 
-.craft-space__atmosphere {
-  pointer-events: none;
+.craft-space__header {
+  /* Tune bag + hamburger size here (Fotini). */
+  --craft-header-icon-size: 1.875rem;
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.55) 0%, transparent 32%),
-    radial-gradient(circle at 72% 42%, rgba(254, 228, 168, 0.2) 0%, transparent 28%);
-  animation: atmosphere-breathe 12s ease-in-out infinite;
-}
-
-.craft-space__grain {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  opacity: 0.03;
-  mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-.craft-space__brand {
-  position: absolute;
-  top: calc(0.65rem + var(--safe-top));
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 45;
-  width: min(92vw, 28rem);
-  padding-inline: 0.75rem;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding:
+    max(0.75rem, var(--safe-top))
+    max(1rem, var(--safe-right))
+    0.75rem
+    max(1rem, var(--safe-left));
+  background: var(--color-surface-muted);
+  border: none;
+  box-shadow: none;
   pointer-events: none;
-  animation: brand-in 900ms ease-out both;
 }
 
 .craft-space__title {
@@ -70,11 +44,26 @@
   line-height: 0;
 }
 
+.craft-space__logo-btn {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  line-height: 0;
+}
+
+.craft-space__logo-btn:focus-visible {
+  outline: 1px solid var(--color-brand);
+  outline-offset: 4px;
+}
+
 .craft-space__logo {
   display: block;
-  width: min(48vw, 12.5rem);
+  width: min(42vw, 9.5rem);
   height: auto;
-  margin-inline: auto;
   /* Dark mark on cream canvas — no invert */
   filter: none;
   user-select: none;
@@ -82,65 +71,63 @@
   pointer-events: none;
 }
 
-.craft-space__brand.is-sheet-open .craft-space__logo {
-  width: min(42vw, 11rem);
+.craft-space__header.is-sheet-open .craft-space__logo {
+  width: min(36vw, 8.5rem);
 }
 
-.craft-space__hint {
-  margin: var(--space-3) auto 0;
-  max-width: 16.5rem;
-  font-family: var(--font-display);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-regular);
-  letter-spacing: var(--tracking-normal);
-  line-height: var(--leading-snug);
-  color: var(--color-brand-warm);
+.craft-space__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+  pointer-events: auto;
 }
 
-@keyframes atmosphere-breathe {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.78;
-  }
+.craft-space__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--craft-header-icon-size) + 0.65rem);
+  height: calc(var(--craft-header-icon-size) + 0.65rem);
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-brand);
+  cursor: pointer;
 }
 
-@keyframes brand-in {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+.craft-space__icon-btn:focus-visible {
+  outline: 1px solid var(--color-brand);
+  outline-offset: 3px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .craft-space__atmosphere,
-  .craft-space__brand {
-    animation: none;
-  }
+.craft-space__icon {
+  display: block;
+  width: var(--craft-header-icon-size);
+  height: var(--craft-header-icon-size);
 }
 
 @media (min-width: 768px) {
-  .craft-space__brand {
-    top: clamp(1.5rem, 4vw, 2.75rem);
+  .craft-space__header {
+    --craft-header-icon-size: 2rem;
+    padding:
+      max(1rem, var(--safe-top))
+      clamp(1.25rem, 3vw, 2rem)
+      1rem
+      clamp(1.25rem, 3vw, 2rem);
   }
 
   .craft-space__logo {
-    width: min(28vw, 13rem);
+    width: min(22vw, 11rem);
   }
 
-  .craft-space__brand.is-sheet-open .craft-space__logo {
-    width: min(24vw, 11.5rem);
+  .craft-space__header.is-sheet-open .craft-space__logo {
+    width: min(20vw, 9.5rem);
   }
 
-  .craft-space__hint {
-    margin-top: 0.85rem;
-    max-width: none;
-    font-size: 0.85rem;
+  .craft-space__actions {
+    gap: 1.15rem;
   }
 }

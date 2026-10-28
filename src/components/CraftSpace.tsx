@@ -1,9 +1,10 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   createStarterInstances,
   findRecipeResult,
   getCatalogElement,
   getJewelleryDetail,
+  isAppointmentPair,
   spawnInstance,
   type JewelleryDetail,
 } from '../data/catalog'
@@ -28,10 +29,13 @@ import type {
   MergeBurstState,
   ParentMergePhase,
 } from '../types'
+import { AppointmentToast } from './AppointmentToast'
 import { CraftElement } from './CraftElement'
 import { JewellerySheet } from './JewellerySheet'
 import { MergeBurst } from './MergeBurst'
 import './CraftSpace.css'
+
+const APPOINTMENT_TOAST_MS = 6000
 
 export function CraftSpace() {
   const spaceRef = useRef<HTMLDivElement>(null)
@@ -57,10 +61,53 @@ export function CraftSpace() {
   >({})
   const [underFlashId, setUnderFlashId] = useState<string | null>(null)
   const [revealAnimId, setRevealAnimId] = useState<string | null>(null)
+  const [appointmentToast, setAppointmentToast] = useState<
+    'off' | 'on' | 'leaving'
+  >('off')
+  const appointmentToastVisibleRef = useRef(false)
+  const appointmentToastTimerRef = useRef<number | null>(null)
 
   const commitElements = useCallback((next: CraftInstance[]) => {
     elementsRef.current = next
     setElements(next)
+  }, [])
+
+  const beginAppointmentToastLeave = useCallback(() => {
+    if (appointmentToastTimerRef.current !== null) {
+      window.clearTimeout(appointmentToastTimerRef.current)
+      appointmentToastTimerRef.current = null
+    }
+    setAppointmentToast((phase) => (phase === 'on' ? 'leaving' : phase))
+  }, [])
+
+  const finishAppointmentToastLeave = useCallback(() => {
+    appointmentToastVisibleRef.current = false
+    setAppointmentToast('off')
+  }, [])
+
+  const showAppointmentToast = useCallback(() => {
+    if (appointmentToastVisibleRef.current) return
+    appointmentToastVisibleRef.current = true
+    setAppointmentToast('on')
+    if (appointmentToastTimerRef.current !== null) {
+      window.clearTimeout(appointmentToastTimerRef.current)
+    }
+    appointmentToastTimerRef.current = window.setTimeout(() => {
+      appointmentToastTimerRef.current = null
+      setAppointmentToast((phase) => (phase === 'on' ? 'leaving' : phase))
+    }, APPOINTMENT_TOAST_MS)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (appointmentToastTimerRef.current !== null) {
+        window.clearTimeout(appointmentToastTimerRef.current)
+      }
+    }
+  }, [])
+
+  const reloadPage = useCallback(() => {
+    window.location.reload()
   }, [])
 
   const refreshPlayfield = useCallback(() => {
@@ -212,11 +259,27 @@ export function CraftSpace() {
         w,
         h,
         (otherCatalogId) =>
-          Boolean(findRecipeResult(dragged.catalogId, otherCatalogId)),
+          Boolean(findRecipeResult(dragged.catalogId, otherCatalogId)) ||
+          isAppointmentPair(dragged.catalogId, otherCatalogId),
       )
       commitElements(pushed)
+
+      const draggedNow = pushed.find((el) => el.instanceId === instanceId)
+      if (!draggedNow) return
+      const target = findDropTarget(
+        pushed,
+        instanceId,
+        draggedNow.x,
+        draggedNow.y,
+      )
+      if (
+        target &&
+        isAppointmentPair(draggedNow.catalogId, target.catalogId)
+      ) {
+        showAppointmentToast()
+      }
     },
-    [commitElements, refreshPlayfield, spaceSize],
+    [commitElements, refreshPlayfield, showAppointmentToast, spaceSize],
   )
 
   const bringFront = useCallback((instanceId: string) => {
@@ -257,6 +320,14 @@ export function CraftSpace() {
       const target = findDropTarget(placed, instanceId, clamped.x, clamped.y)
       if (!target) {
         // Soft settle so a non-merge drop doesn't leave overlaps.
+        const { w, h } = spaceSize()
+        commitElements(separateAll(elementsRef.current, bounds, w, h))
+        delete dragOriginRef.current[instanceId]
+        return
+      }
+
+      // Appointment pairs look combinable but have no product — CTA only.
+      if (isAppointmentPair(dragged.catalogId, target.catalogId)) {
         const { w, h } = spaceSize()
         commitElements(separateAll(elementsRef.current, bounds, w, h))
         delete dragOriginRef.current[instanceId]
@@ -376,28 +447,67 @@ export function CraftSpace() {
 
   return (
     <div className="craft-space" ref={spaceRef}>
-      <div className="craft-space__atmosphere" aria-hidden="true" />
-      <div className="craft-space__grain" aria-hidden="true" />
-
       <header
         ref={brandRef}
-        className={`craft-space__brand${sheet ? ' is-sheet-open' : ''}`}
+        className={`craft-space__header${sheet ? ' is-sheet-open' : ''}`}
       >
         <h1 className="craft-space__title">
-          <img
-            className="craft-space__logo"
-            src="/celestial-logo-new.png"
-            alt="celestial Switzerland"
-            width={375}
-            height={145}
-            draggable={false}
-          />
+          <button
+            type="button"
+            className="craft-space__logo-btn"
+            aria-label="Reload celestial craft space"
+            onClick={reloadPage}
+          >
+            <img
+              className="craft-space__logo"
+              src="/celestial-logo-new.png"
+              alt="celestial Switzerland"
+              width={375}
+              height={145}
+              draggable={false}
+            />
+          </button>
         </h1>
-        {!sheet ? (
-          <p className="craft-space__hint">
-            Drag materials to craft. Tap a finished piece for details.
-          </p>
-        ) : null}
+        <div className="craft-space__actions">
+          <button
+            type="button"
+            className="craft-space__icon-btn"
+            aria-label="Shopping bag"
+          >
+            <svg
+              className="craft-space__icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M6.5 8.5h11l-.7 11.2a1.5 1.5 0 0 1-1.5 1.4H8.7a1.5 1.5 0 0 1-1.5-1.4L6.5 8.5Z" />
+              <path d="M9 8.5V7a3 3 0 0 1 6 0v1.5" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="craft-space__icon-btn"
+            aria-label="Menu"
+          >
+            <svg
+              className="craft-space__icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+            >
+              <path d="M4 7h16" />
+              <path d="M4 12h16" />
+              <path d="M4 17h16" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       {elements.map((el) => (
@@ -421,6 +531,14 @@ export function CraftSpace() {
       {bursts.map((b) => (
         <MergeBurst key={b.id} x={b.x} y={b.y} kind={b.kind} />
       ))}
+
+      {appointmentToast !== 'off' ? (
+        <AppointmentToast
+          exiting={appointmentToast === 'leaving'}
+          onClose={beginAppointmentToastLeave}
+          onExited={finishAppointmentToastLeave}
+        />
+      ) : null}
 
       {sheet ? (
         <JewellerySheet detail={sheet} onClose={closeJewellery} />

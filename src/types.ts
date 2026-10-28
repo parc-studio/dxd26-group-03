@@ -50,6 +50,12 @@ export interface Recipe {
   result: string
 }
 
+/** Combinable-looking pair with no product yet — shows appointment CTA. */
+export interface AppointmentPair {
+  a: string
+  b: string
+}
+
 /** Live instance on the craft space. */
 export interface CraftInstance {
   instanceId: string
