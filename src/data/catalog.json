@@ -128,7 +128,7 @@
       "imageSize": "contain"
     },
     {
-      "id": "necklace_peridot",
+      "id": "necklace_poseidon",
       "label": "Necklace Peridot Apatite",
       "category": "jewellery",
       "shape": "ring",
@@ -151,7 +151,7 @@
     {
       "a": "necklace_apatite",
       "b": "peridot",
-      "result": "necklace_peridot"
+      "result": "necklace_poseidon"
     }
   ],
   "starters": [

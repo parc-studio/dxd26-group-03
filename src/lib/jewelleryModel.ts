@@ -6,6 +6,6 @@ export function jewelleryHeroModelUrl(id: string, metal: Metal): string {
   if (id === 'necklace_apatite') {
     return `${base}necklace1stone-2.glb`
   }
-  // necklace_peridot (and fallback) — metal-swappable chain showcase
+  // necklace_poseidon (and fallback) — metal-swappable chain showcase
   return `${base}chain1-${metal}.glb`
 }

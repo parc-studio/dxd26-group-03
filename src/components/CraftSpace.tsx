@@ -39,6 +39,19 @@ const APPOINTMENT_TOAST_MS = 6000
 /** Hold overlap this long before showing the appointment toast. */
 const APPOINTMENT_HOLD_MS = 350
 
+const CRAFT_HASH = '/craft'
+
+/** Catalog id of the product open in the URL (`#/craft/<id>`), if any. */
+function readProductFromHash(): string | null {
+  const match = window.location.hash.match(/^#\/?craft\/([^/?#]+)/)
+  return match ? decodeURIComponent(match[1]) : null
+}
+
+function detailFromHash(): JewelleryDetail | null {
+  const id = readProductFromHash()
+  return id ? getJewelleryDetail(id) : null
+}
+
 export function CraftSpace() {
   const spaceRef = useRef<HTMLDivElement>(null)
   const brandRef = useRef<HTMLElement>(null)
@@ -57,7 +70,9 @@ export function CraftSpace() {
     elementsRef.current.map((el) => el.instanceId),
   )
   const [bursts, setBursts] = useState<MergeBurstState[]>([])
-  const [sheet, setSheet] = useState<JewelleryDetail | null>(null)
+  const [sheet, setSheet] = useState<JewelleryDetail | null>(detailFromHash)
+  /** True when the open sheet pushed its own history entry (close → back). */
+  const sheetPushedRef = useRef(false)
   const [jewelleryReveal, setJewelleryReveal] =
     useState<JewelleryDetail | null>(null)
   const [parentMergePhase, setParentMergePhase] = useState<
@@ -329,13 +344,42 @@ export function CraftSpace() {
     }
   }, [])
 
-  const openJewellery = useCallback((catalogId: string) => {
-    if (busyRef.current && !jewelleryRevealOpenRef.current) return
-    const detail = getJewelleryDetail(catalogId)
-    if (detail) setSheet(detail)
+  // The URL drives the product sheet, so back/forward and shared links work.
+  useEffect(() => {
+    const onHashChange = () => {
+      const detail = detailFromHash()
+      if (!detail) sheetPushedRef.current = false
+      setSheet(detail)
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
 
-  const closeJewellery = useCallback(() => setSheet(null), [])
+  const showSheet = useCallback((detail: JewelleryDetail) => {
+    if (readProductFromHash() === detail.id) return
+    sheetPushedRef.current = true
+    window.location.hash = `${CRAFT_HASH}/${encodeURIComponent(detail.id)}`
+  }, [])
+
+  const openJewellery = useCallback(
+    (catalogId: string) => {
+      if (busyRef.current && !jewelleryRevealOpenRef.current) return
+      const detail = getJewelleryDetail(catalogId)
+      if (detail) showSheet(detail)
+    },
+    [showSheet],
+  )
+
+  const closeJewellery = useCallback(() => {
+    if (sheetPushedRef.current) {
+      sheetPushedRef.current = false
+      window.history.back()
+      return
+    }
+    // Landed directly on a product URL: swap it for the craft route in place.
+    window.history.replaceState(null, '', `#${CRAFT_HASH}`)
+    setSheet(null)
+  }, [])
 
   const closeJewelleryReveal = useCallback(() => {
     jewelleryRevealOpenRef.current = false
@@ -348,9 +392,9 @@ export function CraftSpace() {
     const detail = jewelleryReveal
     jewelleryRevealOpenRef.current = false
     setJewelleryReveal(null)
-    setSheet(detail)
+    showSheet(detail)
     clearBusyIfIdle()
-  }, [jewelleryReveal, clearBusyIfIdle])
+  }, [jewelleryReveal, clearBusyIfIdle, showSheet])
 
   const handleDrop = useCallback(
     (instanceId: string, pos: { x: number; y: number }) => {

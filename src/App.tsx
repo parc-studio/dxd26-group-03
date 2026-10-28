@@ -4,7 +4,7 @@ import { LandingPage } from './components/LandingPage'
 
 function readHashRoute(): 'landing' | 'craft' {
   const raw = window.location.hash.replace(/^#/, '')
-  if (raw === '/craft' || raw === 'craft') return 'craft'
+  if (/^\/?craft(\/|$)/.test(raw)) return 'craft'
   return 'landing'
 }
 

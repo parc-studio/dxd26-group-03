@@ -30,16 +30,21 @@ const SHOWCASE = {
   ],
 };
 
+// Per-piece overrides of the showcase name and finished-piece photo.
+const PIECES: Record<string, { name: string; finalPhoto?: string }> = {
+  necklace_apatite: { name: "Necklace Apatite", finalPhoto: "apatite-chain.jpg" },
+};
+
 // Making-of photos for the showcased piece, shown before the price.
 // Files follow the chosen metal: WIP-gold.jfif, final-silver.jfif, …
-const gallery = (metal: Metal) => [
+const gallery = (metal: Metal, pieceId: string, pieceName: string) => [
   {
     src: `${import.meta.env.BASE_URL}WIP-${metal}.jfif`,
     alt: `Jeweller’s bench with blue apatite and peridot stones, a spool of fine ${metal} chain and pliers`,
   },
   {
-    src: `${import.meta.env.BASE_URL}final-${metal}.jfif`,
-    alt: `The finished Poseidon necklace in ${metal}`,
+    src: `${import.meta.env.BASE_URL}${PIECES[pieceId]?.finalPhoto ?? `final-${metal}.jfif`}`,
+    alt: `The finished ${pieceName} in ${metal}`,
   },
 ];
 
@@ -85,7 +90,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   // Shop format: "CHF25.00", no space after the currency.
   const priceLabel = `CHF${detail.price.toFixed(2)}`;
 
-  const pieceName = SHOWCASE.name;
+  const pieceName = PIECES[detail.id]?.name ?? SHOWCASE.name;
 
   return (
     <div
@@ -201,7 +206,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
               aria-label="Making of"
             >
               <div className="jewellery-sheet__gallery">
-                {gallery(metal).map((photo) => (
+                {gallery(metal, detail.id, pieceName).map((photo) => (
                   <figure key={photo.src} className="jewellery-sheet__photo">
                     <img
                       className="jewellery-sheet__photo-img"
