@@ -701,57 +701,42 @@ export function CraftSpace() {
       );
 
       window.setTimeout(() => {
-        const burstId = `burst-${Date.now()}`;
         setParentMergePhase({
           [parentA]: "vanish",
           [parentB]: "vanish",
         });
+
+        const burstId = `burst-${Date.now()}`;
         setBursts((b) => [
           ...b,
           { id: burstId, x: mid.x, y: mid.y, kind: "jewellery" },
         ]);
-        setUnderFlashId(result.instanceId);
 
-        // Seat the finished piece; drop consumed parents so they cannot keep
-        // animating under the focus view (no parent explode on this path).
-        explodeCancelRef.current?.();
-        explodeCancelRef.current = null;
-        const settled = [
-          ...elementsRef.current.filter(
-            (el) =>
-              el.instanceId !== parentA && el.instanceId !== parentB,
-          ),
-          result,
-        ];
-        commitElements(settled);
+        const withResult = [...elementsRef.current, result];
+        commitElements(withResult);
         setOrder((o) => [
-          ...o.filter(
-            (id) =>
-              id !== parentA &&
-              id !== parentB &&
-              id !== result.instanceId,
-          ),
+          ...o.filter((id) => id !== result.instanceId),
           result.instanceId,
         ]);
+        setUnderFlashId(result.instanceId);
 
-        // Open the 3D reveal promptly — do not wait on punch/explode.
-        if (detail) {
-          jewelleryRevealOpenRef.current = true;
-          beginAppointmentToastLeave();
-          setJewelleryRevealMetal(revealMetal);
-          setJewelleryReveal(detail);
-        }
-
-        explodeDoneRef.current = true;
-        delete dragOriginRef.current[instanceId];
-        clearBusyIfIdle();
-
-        // Clear flash/burst after a short beat so they don't linger on the veil.
         window.setTimeout(() => {
           setUnderFlashId(null);
           setBursts((b) => b.filter((x) => x.id !== burstId));
-          setParentMergePhase({});
-        }, Math.min(MERGE_PUNCH_MS, 160));
+
+          if (detail) {
+            jewelleryRevealOpenRef.current = true;
+            beginAppointmentToastLeave();
+            setJewelleryRevealMetal(revealMetal);
+            setJewelleryReveal(detail);
+          }
+
+          startParentExplode(mid, parentA, parentB, approach, () => {
+            explodeDoneRef.current = true;
+            delete dragOriginRef.current[instanceId];
+            clearBusyIfIdle();
+          });
+        }, MERGE_PUNCH_MS);
       }, MERGE_CONVERGE_MS);
     },
     [
