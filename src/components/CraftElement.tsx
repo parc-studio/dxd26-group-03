@@ -6,6 +6,7 @@ import {
   type RefObject,
 } from 'react'
 import type { CraftInstance, ParentMergePhase } from '../types'
+import { resolveCraftScale } from '../data/craftScales'
 import { usePointerDrag } from '../hooks/usePointerDrag'
 import type { PlayfieldBounds } from '../lib/craftPhysics'
 import {
@@ -141,6 +142,7 @@ export function CraftElement({
   const isRing = data.shape === 'ring'
   const hasPhoto = Boolean(data.image)
   const paintReady = useTexturePaintReady(data.image)
+  const craftScale = resolveCraftScale(data)
   // Prefer contain so transparent product cutouts aren't cropped into a hard frame.
   const bgSize = data.imageSize ?? (isRing || hasPhoto ? 'contain' : 'cover')
 
@@ -187,6 +189,7 @@ export function CraftElement({
         top: `${data.y}%`,
         zIndex: dragging || mergePhase ? 1100 : revealing || revealAnim ? 1150 : zIndex,
         backgroundColor: 'transparent',
+        ['--craft-scale' as string]: String(craftScale),
         ['--merge-converge-ms' as string]: `${MERGE_CONVERGE_MS}ms`,
         ['--merge-punch-ms' as string]: `${MERGE_PUNCH_MS}ms`,
         ['--merge-reveal-ms' as string]: `${MERGE_REVEAL_MS}ms`,
@@ -194,6 +197,7 @@ export function CraftElement({
       data-instance-id={data.instanceId}
       data-catalog-id={data.catalogId}
       data-kind={data.kind}
+      data-craft-scale={craftScale}
       aria-label={aria}
       disabled={locked}
       {...handlers}

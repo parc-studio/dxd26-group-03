@@ -67,6 +67,7 @@ export function spawnInstance(
     image: def.image,
     imagePosition: def.imagePosition,
     imageSize: def.imageSize,
+    scale: def.scale,
     inset: def.inset,
     insetPosition: def.insetPosition,
     insetSize: def.insetSize,

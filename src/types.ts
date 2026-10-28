@@ -23,6 +23,11 @@ export interface CatalogElement {
   imagePosition?: string
   /** Optional CSS background-size for sheet-style photos. */
   imageSize?: string
+  /**
+   * Optional craft-board visual scale override (multiplies shape footprint).
+   * Prefer `src/data/craftScales.ts` for category defaults / BY_ID map.
+   */
+  scale?: number
   /** Optional inset photo (bead/stone seated in a ring, or mid accent). */
   inset?: string
   /** Placement of the inset circle inside the shape (CSS left top). */
@@ -67,6 +72,8 @@ export interface CraftInstance {
   image: string
   imagePosition?: string
   imageSize?: string
+  /** Craft-board scale from catalog, when set. */
+  scale?: number
   inset?: string
   insetPosition?: string
   insetSize?: string
