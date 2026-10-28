@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react'
 import { getCatalogElement, type JewelleryDetail } from '../data/catalog'
 import type { Metal } from './HeroModel'
 import './JewellerySheet.css'
@@ -11,7 +11,6 @@ interface JewellerySheetProps {
   onClose: () => void
 }
 
-const DISMISS_PX = 96
 const heroModelUrl = (metal: Metal) =>
   `${import.meta.env.BASE_URL}chain1-${metal}.glb`
 
@@ -56,30 +55,18 @@ const swatch = (id: string) => getCatalogElement(id)?.image ?? ''
 export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   const [qty, setQty] = useState(1)
   const [metal, setMetal] = useState<Metal>('silver')
-  const [dragY, setDragY] = useState(0)
   const [closing, setClosing] = useState(false)
   const [entered, setEntered] = useState(false)
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const dragRef = useRef<{
-    pointerId: number
-    startY: number
-    dragging: boolean
-  } | null>(null)
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setEntered(true))
     return () => cancelAnimationFrame(id)
   }, [])
 
-  const finishClose = useCallback(() => {
-    onClose()
-  }, [onClose])
-
   const requestClose = useCallback(() => {
     setClosing(true)
-    setDragY(0)
-    window.setTimeout(finishClose, 280)
-  }, [finishClose])
+    window.setTimeout(onClose, 280)
+  }, [onClose])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -88,152 +75,6 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [requestClose])
-
-  const onHandlePointerDown = (e: React.PointerEvent<HTMLElement>) => {
-    if (e.button !== 0 && e.pointerType === 'mouse') return
-    e.currentTarget.setPointerCapture(e.pointerId)
-    dragRef.current = {
-      pointerId: e.pointerId,
-      startY: e.clientY,
-      dragging: true,
-    }
-  }
-
-  const onHandlePointerMove = (e: React.PointerEvent<HTMLElement>) => {
-    const d = dragRef.current
-    if (!d || d.pointerId !== e.pointerId || !d.dragging) return
-    setDragY(Math.max(0, e.clientY - d.startY))
-  }
-
-  const onHandlePointerUp = (e: React.PointerEvent<HTMLElement>) => {
-    const d = dragRef.current
-    if (!d || d.pointerId !== e.pointerId) return
-    dragRef.current = null
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId)
-    } catch {
-      /* already released */
-    }
-    if (dragY >= DISMISS_PX) requestClose()
-    else setDragY(0)
-  }
-
-  // Touch: native listeners, because only a non-passive touchmove can stop the
-  // browser from turning a downward swipe at the top into a scroll/overscroll.
-  useEffect(() => {
-    const sc = scrollRef.current
-    if (!sc) return
-    let touch: { id: number; startY: number; dy: number; dragging: boolean } | null =
-      null
-
-    const onTouchStart = (e: TouchEvent) => {
-      const t = e.touches[0]
-      // The 3D view keeps its own gestures (orbit, pinch).
-      const onHero = (e.target as Element).closest('.jewellery-sheet__hero')
-      if (e.touches.length !== 1 || onHero || sc.scrollTop > 2) {
-        touch = null
-        return
-      }
-      touch = { id: t.identifier, startY: t.clientY, dy: 0, dragging: false }
-    }
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (!touch) return
-      const t = [...e.changedTouches].find((c) => c.identifier === touch?.id)
-      if (!t) return
-      const dy = t.clientY - touch.startY
-      if (!touch.dragging) {
-        // Upward or already scrolled: let the content scroll normally.
-        if (dy < 0 || sc.scrollTop > 2) {
-          touch = null
-          return
-        }
-        if (dy < 10) return
-        touch.dragging = true
-      }
-      e.preventDefault()
-      touch.dy = Math.max(0, dy)
-      setDragY(touch.dy)
-    }
-
-    const onTouchEnd = () => {
-      if (!touch?.dragging) {
-        touch = null
-        return
-      }
-      const { dy } = touch
-      touch = null
-      if (dy >= DISMISS_PX) requestClose()
-      else setDragY(0)
-    }
-
-    sc.addEventListener('touchstart', onTouchStart, { passive: true })
-    sc.addEventListener('touchmove', onTouchMove, { passive: false })
-    sc.addEventListener('touchend', onTouchEnd)
-    sc.addEventListener('touchcancel', onTouchEnd)
-    return () => {
-      sc.removeEventListener('touchstart', onTouchStart)
-      sc.removeEventListener('touchmove', onTouchMove)
-      sc.removeEventListener('touchend', onTouchEnd)
-      sc.removeEventListener('touchcancel', onTouchEnd)
-    }
-  }, [requestClose])
-
-  // Mouse: drag the content down from the top (touch is handled above).
-  const onBodyPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    const sc = scrollRef.current
-    if (!sc || sc.scrollTop > 2) return
-    if (e.pointerType !== 'mouse' || e.button !== 0) return
-    dragRef.current = {
-      pointerId: e.pointerId,
-      startY: e.clientY,
-      dragging: false,
-    }
-  }
-
-  const onBodyPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const d = dragRef.current
-    if (!d || d.pointerId !== e.pointerId) return
-    const dy = e.clientY - d.startY
-    if (!d.dragging) {
-      if (dy < 10) return
-      const sc = scrollRef.current
-      if (sc && sc.scrollTop > 2) {
-        dragRef.current = null
-        return
-      }
-      d.dragging = true
-      try {
-        e.currentTarget.setPointerCapture(e.pointerId)
-      } catch {
-        /* ignore */
-      }
-    }
-    if (d.dragging) {
-      e.preventDefault()
-      setDragY(Math.max(0, dy))
-    }
-  }
-
-  const onBodyPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    const d = dragRef.current
-    if (!d || d.pointerId !== e.pointerId) return
-    const wasDragging = d.dragging
-    dragRef.current = null
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId)
-    } catch {
-      /* ignore */
-    }
-    if (!wasDragging) return
-    if (dragY >= DISMISS_PX) requestClose()
-    else setDragY(0)
-  }
-
-  const panelOffset = closing || !entered ? '110%' : `${dragY}px`
-  const backdropOpacity =
-    closing || !entered ? 0 : Math.max(0.2, 1 - dragY / 280)
-  const panelTransition = dragY > 0 && !closing ? 'none' : undefined
 
   // Shop format: "CHF25.00", no space after the currency.
   const priceLabel = `CHF${detail.price.toFixed(2)}`
@@ -247,44 +88,30 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
       aria-modal="true"
       aria-labelledby="jewellery-sheet-title"
     >
-      <button
-        type="button"
-        className="jewellery-sheet__backdrop"
-        aria-label="Close"
-        style={{ opacity: backdropOpacity }}
-        onClick={requestClose}
-      />
+      <div className="jewellery-sheet__panel">
+        <header className="jewellery-sheet__bar">
+          <button
+            type="button"
+            className="jewellery-sheet__back"
+            aria-label="Back"
+            onClick={requestClose}
+          >
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
+              <path
+                d="M15 5l-7 7 7 7"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </header>
 
-      <div
-        className="jewellery-sheet__panel"
-        style={{
-          transform: `translate3d(0, ${panelOffset}, 0)`,
-          transition: panelTransition,
-        }}
-      >
-        <div
-          className="jewellery-sheet__grab"
-          onPointerDown={onHandlePointerDown}
-          onPointerMove={onHandlePointerMove}
-          onPointerUp={onHandlePointerUp}
-          onPointerCancel={onHandlePointerUp}
-        >
-          <span className="jewellery-sheet__handle" aria-hidden="true" />
-        </div>
-
-        <div
-          className="jewellery-sheet__scroll"
-          ref={scrollRef}
-          onPointerDown={onBodyPointerDown}
-          onPointerMove={onBodyPointerMove}
-          onPointerUp={onBodyPointerUp}
-          onPointerCancel={onBodyPointerUp}
-        >
+        <div className="jewellery-sheet__scroll">
           <div
             className="jewellery-sheet__hero"
             aria-hidden="true"
-            // Orbiting the camera must not start the sheet's drag-to-dismiss.
-            onPointerDown={(e) => e.stopPropagation()}
           >
             <Suspense fallback={null}>
               <HeroModel
@@ -336,7 +163,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
                 {SHOWCASE.gems.map((part) => (
                   <li key={part.id} className="jewellery-sheet__ingredient">
                     <span
-                      className="jewellery-sheet__ingredient-swatch"
+                      className={`jewellery-sheet__ingredient-swatch jewellery-sheet__ingredient-swatch--${part.id}`}
                       style={{ backgroundImage: `url(${swatch(part.id)})` }}
                       aria-hidden="true"
                     />
