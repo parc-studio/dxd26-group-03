@@ -1,0 +1,65 @@
+# Puts every branch online on GitHub Pages: main at the root, each other branch in a folder of
+# its name. Checks every 10 minutes and builds only when a branch has moved.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: check
+        name: Has a branch moved since the last deploy?
+        run: |
+          git for-each-ref refs/remotes/origin --format='%(refname:lstrip=3) %(objectname)' \
+            | grep -v -e '^HEAD ' -e '^gh-pages ' | sort > built.txt
+          sha256sum .github/scripts/build-pages.py >> built.txt
+          deployed=$(curl -fsSL "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/built.txt" || true)
+          if [ "$GITHUB_EVENT_NAME" = schedule ] && [ "$deployed" = "$(cat built.txt)" ]; then
+            echo changed=false >> "$GITHUB_OUTPUT"
+          else
+            echo changed=true >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.check.outputs.changed == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - if: steps.check.outputs.changed == 'true'
+        name: Build every branch
+        run: |
+          python3 .github/scripts/build-pages.py _site
+          cp built.txt _site/built.txt
+      - if: steps.check.outputs.changed == 'true'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
