@@ -61,7 +61,9 @@ export function CraftSpace() {
   >({})
   const [underFlashId, setUnderFlashId] = useState<string | null>(null)
   const [revealAnimId, setRevealAnimId] = useState<string | null>(null)
-  const [appointmentToast, setAppointmentToast] = useState(false)
+  const [appointmentToast, setAppointmentToast] = useState<
+    'off' | 'on' | 'leaving'
+  >('off')
   const appointmentToastVisibleRef = useRef(false)
   const appointmentToastTimerRef = useRef<number | null>(null)
 
@@ -70,26 +72,29 @@ export function CraftSpace() {
     setElements(next)
   }, [])
 
-  const dismissAppointmentToast = useCallback(() => {
+  const beginAppointmentToastLeave = useCallback(() => {
     if (appointmentToastTimerRef.current !== null) {
       window.clearTimeout(appointmentToastTimerRef.current)
       appointmentToastTimerRef.current = null
     }
+    setAppointmentToast((phase) => (phase === 'on' ? 'leaving' : phase))
+  }, [])
+
+  const finishAppointmentToastLeave = useCallback(() => {
     appointmentToastVisibleRef.current = false
-    setAppointmentToast(false)
+    setAppointmentToast('off')
   }, [])
 
   const showAppointmentToast = useCallback(() => {
     if (appointmentToastVisibleRef.current) return
     appointmentToastVisibleRef.current = true
-    setAppointmentToast(true)
+    setAppointmentToast('on')
     if (appointmentToastTimerRef.current !== null) {
       window.clearTimeout(appointmentToastTimerRef.current)
     }
     appointmentToastTimerRef.current = window.setTimeout(() => {
       appointmentToastTimerRef.current = null
-      appointmentToastVisibleRef.current = false
-      setAppointmentToast(false)
+      setAppointmentToast((phase) => (phase === 'on' ? 'leaving' : phase))
     }, APPOINTMENT_TOAST_MS)
   }, [])
 
@@ -99,6 +104,10 @@ export function CraftSpace() {
         window.clearTimeout(appointmentToastTimerRef.current)
       }
     }
+  }, [])
+
+  const reloadPage = useCallback(() => {
+    window.location.reload()
   }, [])
 
   const refreshPlayfield = useCallback(() => {
@@ -443,14 +452,21 @@ export function CraftSpace() {
         className={`craft-space__header${sheet ? ' is-sheet-open' : ''}`}
       >
         <h1 className="craft-space__title">
-          <img
-            className="craft-space__logo"
-            src="/celestial-logo-new.png"
-            alt="celestial Switzerland"
-            width={375}
-            height={145}
-            draggable={false}
-          />
+          <button
+            type="button"
+            className="craft-space__logo-btn"
+            aria-label="Reload celestial craft space"
+            onClick={reloadPage}
+          >
+            <img
+              className="craft-space__logo"
+              src="/celestial-logo-new.png"
+              alt="celestial Switzerland"
+              width={375}
+              height={145}
+              draggable={false}
+            />
+          </button>
         </h1>
         <div className="craft-space__actions">
           <button
@@ -461,8 +477,6 @@ export function CraftSpace() {
             <svg
               className="craft-space__icon"
               viewBox="0 0 24 24"
-              width="22"
-              height="22"
               aria-hidden="true"
               fill="none"
               stroke="currentColor"
@@ -482,8 +496,6 @@ export function CraftSpace() {
             <svg
               className="craft-space__icon"
               viewBox="0 0 24 24"
-              width="22"
-              height="22"
               aria-hidden="true"
               fill="none"
               stroke="currentColor"
@@ -520,8 +532,12 @@ export function CraftSpace() {
         <MergeBurst key={b.id} x={b.x} y={b.y} kind={b.kind} />
       ))}
 
-      {appointmentToast ? (
-        <AppointmentToast onClose={dismissAppointmentToast} />
+      {appointmentToast !== 'off' ? (
+        <AppointmentToast
+          exiting={appointmentToast === 'leaving'}
+          onClose={beginAppointmentToastLeave}
+          onExited={finishAppointmentToastLeave}
+        />
       ) : null}
 
       {sheet ? (

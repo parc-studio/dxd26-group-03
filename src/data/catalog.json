@@ -64,6 +64,24 @@
       "imageSize": "contain"
     },
     {
+      "id": "gem_rect_light_blue",
+      "label": "Light blue rectangular gem",
+      "category": "stones",
+      "shape": "rect",
+      "kind": "material",
+      "image": "/textures/gem_rect_light_blue.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "gem_rect_light_green",
+      "label": "Light green rectangular gem",
+      "category": "stones",
+      "shape": "rect",
+      "kind": "material",
+      "image": "/textures/gem_rect_light_green.png",
+      "imageSize": "contain"
+    },
+    {
       "id": "ring_gold",
       "label": "Gold ring",
       "category": "gold",
@@ -177,13 +195,17 @@
     { "catalogId": "gem_light_blue", "x": 18, "y": 68 },
     { "catalogId": "gem_green", "x": 40, "y": 70 },
     { "catalogId": "gem_violet", "x": 62, "y": 72 },
-    { "catalogId": "gem_yellow", "x": 84, "y": 74 }
+    { "catalogId": "gem_yellow", "x": 84, "y": 74 },
+    { "catalogId": "gem_rect_light_blue", "x": 28, "y": 84 },
+    { "catalogId": "gem_rect_light_green", "x": 72, "y": 86 }
   ],
   "appointmentPairs": [
     { "a": "ring_thin_silver", "b": "gem_blue" },
     { "a": "ring_thin_silver", "b": "gem_light_blue" },
     { "a": "ring_thin_silver", "b": "gem_green" },
     { "a": "ring_thin_silver", "b": "gem_violet" },
-    { "a": "ring_thin_silver", "b": "gem_yellow" }
+    { "a": "ring_thin_silver", "b": "gem_yellow" },
+    { "a": "ring_thin_silver", "b": "gem_rect_light_blue" },
+    { "a": "ring_thin_silver", "b": "gem_rect_light_green" }
   ]
 }

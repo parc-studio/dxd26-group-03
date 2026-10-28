@@ -9,7 +9,7 @@
     1.15rem
     1.75rem
     calc(1.35rem + var(--safe-bottom));
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(0);
   border: none;
   border-radius: 52px 52px 0 0;
   background: #ffffff;
@@ -20,8 +20,14 @@
   color: var(--color-brand);
   font-family: var(--font-display);
   text-align: center;
+  opacity: 1;
   animation: appointment-toast-in 320ms ease-out both;
   pointer-events: auto;
+}
+
+.appointment-toast.is-leaving {
+  pointer-events: none;
+  animation: appointment-toast-out 380ms ease-in both;
 }
 
 .appointment-toast__eyebrow {
@@ -70,6 +76,10 @@
   cursor: pointer;
 }
 
+.appointment-toast__close:disabled {
+  cursor: default;
+}
+
 .appointment-toast__close span {
   display: block;
   margin-top: -0.05em;
@@ -77,7 +87,7 @@
   transform: scaleX(1.05);
 }
 
-.appointment-toast__close:hover {
+.appointment-toast__close:hover:not(:disabled) {
   background: #ffffff;
 }
 
@@ -89,7 +99,7 @@
 @keyframes appointment-toast-in {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(12px);
+    transform: translateX(-50%) translateY(18px);
   }
   to {
     opacity: 1;
@@ -97,16 +107,28 @@
   }
 }
 
+@keyframes appointment-toast-out {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(110%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .appointment-toast {
-    animation: none;
+  .appointment-toast,
+  .appointment-toast.is-leaving {
+    animation-duration: 1ms;
   }
 }
 
 @media (min-width: 768px) {
   .appointment-toast {
     width: min(28rem, 70vw);
-    padding: 1.25rem 2rem 1.5rem;
+    padding: 1.25rem 2rem calc(1.5rem + var(--safe-bottom));
     border-radius: 56px 56px 0 0;
   }
 
