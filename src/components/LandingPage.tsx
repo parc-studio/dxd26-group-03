@@ -150,7 +150,7 @@ export function LandingPage({ onCreateYourOwn }: LandingPageProps) {
           className="landing__craft-btn"
           onClick={onCreateYourOwn}
         >
-          Create your own
+          Discover the possibilities
         </button>
       </div>
     </div>
