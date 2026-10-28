@@ -43,7 +43,9 @@
   cursor: grabbing;
   animation: none;
   transform: translate(-50%, -50%) scale(1.08);
-  filter: drop-shadow(0 10px 18px rgba(71, 43, 43, 0.22));
+  /* Soft lift only — no rectangular border/frame */
+  filter: drop-shadow(0 14px 22px rgba(71, 43, 43, 0.28));
+  outline: none;
   z-index: 1000;
 }
 
@@ -99,36 +101,28 @@
   overflow: hidden;
   background-color: transparent;
   background-repeat: no-repeat;
-  box-shadow:
-    0 4px 14px rgba(71, 43, 43, 0.14),
-    0 1px 2px rgba(71, 43, 43, 0.08);
-  transition: box-shadow 160ms ease, transform 160ms ease;
+  box-shadow: none;
+  filter: drop-shadow(0 6px 14px rgba(71, 43, 43, 0.16));
+  transition: filter 160ms ease, transform 160ms ease;
   pointer-events: none;
+}
+
+/* Photo cuts: no card frame — shadow follows alpha via drop-shadow */
+.craft-el--photo .craft-el__shape {
+  overflow: visible;
+  box-shadow: none;
+  background-color: transparent;
+  border: none;
 }
 
 .craft-el--photo.craft-el--circle .craft-el__shape,
 .craft-el--photo.craft-el--oval .craft-el__shape {
-  box-shadow:
-    0 4px 14px rgba(71, 43, 43, 0.14),
-    0 1px 2px rgba(71, 43, 43, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: none;
 }
 
-/* Soft specular glaze over bead/stone crops only */
 .craft-el--circle .craft-el__shape::after,
 .craft-el--oval .craft-el__shape::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    145deg,
-    rgba(255, 252, 245, 0.32) 0%,
-    rgba(255, 252, 245, 0.06) 28%,
-    transparent 48%,
-    rgba(20, 16, 12, 0.16) 100%
-  );
-  pointer-events: none;
+  display: none;
 }
 
 .craft-el--ring .craft-el__shape::after {
@@ -136,9 +130,10 @@
 }
 
 .craft-el.is-dragging .craft-el__shape {
-  box-shadow:
-    0 12px 24px rgba(71, 43, 43, 0.2),
-    0 2px 4px rgba(71, 43, 43, 0.12);
+  box-shadow: none;
+  border: none;
+  outline: none;
+  filter: drop-shadow(0 16px 26px rgba(71, 43, 43, 0.3));
 }
 
 .craft-el__inset {
@@ -212,9 +207,18 @@
 }
 
 .craft-el--link .craft-el__shape {
-  width: 3.8rem;
-  height: 1.45rem;
-  border-radius: 999px;
+  width: 5.6rem;
+  height: 5.6rem;
+  border-radius: 0.75rem;
+  overflow: visible;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* Chains read large on the board (mobile-first finger target) */
+.craft-el--chains.craft-el--link .craft-el__shape {
+  width: 6.4rem;
+  height: 6.4rem;
 }
 
 .craft-el--ring .craft-el__shape {
@@ -234,10 +238,8 @@
 }
 
 .craft-el--mid .craft-el__shape {
-  box-shadow:
-    0 4px 14px rgba(71, 43, 43, 0.16),
-    0 0 0 1px color-mix(in srgb, var(--color-brand-soft) 35%, white),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow: none;
+  filter: drop-shadow(0 8px 16px rgba(71, 43, 43, 0.16));
 }
 
 /*
@@ -367,8 +369,13 @@
   }
 
   .craft-el--link .craft-el__shape {
-    width: 3.5rem;
-    height: 1.25rem;
+    width: 6rem;
+    height: 6rem;
+  }
+
+  .craft-el--chains.craft-el--link .craft-el__shape {
+    width: 7rem;
+    height: 7rem;
   }
 
   .craft-el--ring .craft-el__shape {

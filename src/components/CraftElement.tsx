@@ -84,18 +84,14 @@ export function CraftElement({
 
   const isRing = data.shape === 'ring'
   const hasPhoto = Boolean(data.image)
+  // Prefer contain so transparent product cutouts aren't cropped into a hard frame.
+  const bgSize = data.imageSize ?? (isRing || hasPhoto ? 'contain' : 'cover')
 
-  const shapeStyle: CSSProperties = isRing
-    ? {
-        backgroundImage: `url(${data.image})`,
-        backgroundPosition: 'center',
-        backgroundSize: 'contain',
-      }
-    : {
-        backgroundImage: `url(${data.image})`,
-        backgroundPosition: data.imagePosition ?? 'center',
-        backgroundSize: data.imageSize ?? 'cover',
-      }
+  const shapeStyle: CSSProperties = {
+    backgroundImage: `url(${data.image})`,
+    backgroundPosition: data.imagePosition ?? 'center',
+    backgroundSize: bgSize,
+  }
 
   const [insetLeft, insetTop] = (data.insetPosition ?? '50% 40%').split(/\s+/)
   const insetStyle: CSSProperties | undefined = data.inset
