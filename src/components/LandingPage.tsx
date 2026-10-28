@@ -70,12 +70,12 @@ export function LandingPage({ onCreateYourOwn }: LandingPageProps) {
       <main className="landing__main">
         <label className="landing__search">
           <span className="landing__search-icon" aria-hidden="true">
-            <svg viewBox="0 0 20 20" width="18" height="18" fill="none">
-              <circle cx="8.5" cy="8.5" r="5.75" stroke="currentColor" strokeWidth="1.4" />
+            <svg viewBox="0 0 20 20" width="17" height="17" fill="none">
+              <circle cx="8.25" cy="8.25" r="5.5" stroke="currentColor" strokeWidth="1.35" />
               <path
-                d="M13.2 13.2 17 17"
+                d="M12.9 12.9 16.75 16.75"
                 stroke="currentColor"
-                strokeWidth="1.4"
+                strokeWidth="1.35"
                 strokeLinecap="round"
               />
             </svg>
