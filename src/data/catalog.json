@@ -120,7 +120,10 @@
       "shape": "ring",
       "kind": "jewellery",
       "description": "A fine gold chain with one apatite drop — a cool and refreshing stone.",
-      "ingredients": ["chain_silver", "apatite"],
+      "ingredients": [
+        "chain_silver",
+        "apatite"
+      ],
       "price": 69,
       "displayName": "Collier 'Apatite'",
       "materialsLine": "Or & apatite",
@@ -133,11 +136,15 @@
       "category": "jewellery",
       "shape": "ring",
       "kind": "jewellery",
-      "description": "A fine gold chain with one peridot drop — a warm and inviting stone.",
-      "ingredients": ["chain_gold", "peridot", "apatite"],
+      "description": "A fine silver chain with peridot and blue apatite — sun on shallow and deep water.",
+      "ingredients": [
+        "chain_silver",
+        "peridot",
+        "apatite"
+      ],
       "price": 89,
       "displayName": "Collier 'Peridot Apatite'",
-      "materialsLine": "Or & peridot",
+      "materialsLine": "Argent, peridot & apatite",
       "image": "/textures/necklase_peridot.png",
       "imageSize": "contain"
     }
@@ -155,34 +162,128 @@
     }
   ],
   "starters": [
-    { "catalogId": "chain_gold", "x": 18, "y": 34 },
-    { "catalogId": "chain_silver", "x": 42, "y": 32 },
-    { "catalogId": "ring_gold", "x": 66, "y": 34 },
-    { "catalogId": "ring_silver", "x": 86, "y": 38 },
-    { "catalogId": "ring_thin_gold", "x": 28, "y": 52 },
-    { "catalogId": "ring_thin_silver", "x": 52, "y": 50 },
-    { "catalogId": "gem_light_blue", "x": 18, "y": 68 },
-    { "catalogId": "green_amethyst", "x": 40, "y": 70 },
-    { "catalogId": "amethyst", "x": 62, "y": 72 },
-    { "catalogId": "labradorite", "x": 84, "y": 74 },
-    { "catalogId": "gem_yellow", "x": 50, "y": 62 },
-    { "catalogId": "apatite", "x": 28, "y": 84 },
-    { "catalogId": "peridot", "x": 72, "y": 86 }
+    {
+      "catalogId": "chain_gold",
+      "x": 18,
+      "y": 34
+    },
+    {
+      "catalogId": "chain_silver",
+      "x": 42,
+      "y": 32
+    },
+    {
+      "catalogId": "ring_gold",
+      "x": 66,
+      "y": 34
+    },
+    {
+      "catalogId": "ring_silver",
+      "x": 86,
+      "y": 38
+    },
+    {
+      "catalogId": "ring_thin_gold",
+      "x": 28,
+      "y": 52
+    },
+    {
+      "catalogId": "ring_thin_silver",
+      "x": 52,
+      "y": 50
+    },
+    {
+      "catalogId": "gem_light_blue",
+      "x": 18,
+      "y": 68
+    },
+    {
+      "catalogId": "green_amethyst",
+      "x": 40,
+      "y": 70
+    },
+    {
+      "catalogId": "amethyst",
+      "x": 62,
+      "y": 72
+    },
+    {
+      "catalogId": "labradorite",
+      "x": 84,
+      "y": 74
+    },
+    {
+      "catalogId": "gem_yellow",
+      "x": 50,
+      "y": 62
+    },
+    {
+      "catalogId": "apatite",
+      "x": 28,
+      "y": 84
+    },
+    {
+      "catalogId": "peridot",
+      "x": 72,
+      "y": 86
+    }
   ],
   "appointmentPairs": [
-    { "a": "ring_thin_silver", "b": "gem_light_blue" },
-    { "a": "ring_thin_silver", "b": "green_amethyst" },
-    { "a": "ring_thin_silver", "b": "amethyst" },
-    { "a": "ring_thin_silver", "b": "gem_yellow" },
-    { "a": "ring_thin_silver", "b": "labradorite" },
-    { "a": "ring_thin_silver", "b": "apatite" },
-    { "a": "ring_thin_silver", "b": "peridot" },
-    { "a": "ring_thin_gold", "b": "gem_light_blue" },
-    { "a": "ring_thin_gold", "b": "green_amethyst" },
-    { "a": "ring_thin_gold", "b": "amethyst" },
-    { "a": "ring_thin_gold", "b": "gem_yellow" },
-    { "a": "ring_thin_gold", "b": "labradorite" },
-    { "a": "ring_thin_gold", "b": "apatite" },
-    { "a": "ring_thin_gold", "b": "peridot" }
+    {
+      "a": "ring_thin_silver",
+      "b": "gem_light_blue"
+    },
+    {
+      "a": "ring_thin_silver",
+      "b": "green_amethyst"
+    },
+    {
+      "a": "ring_thin_silver",
+      "b": "amethyst"
+    },
+    {
+      "a": "ring_thin_silver",
+      "b": "gem_yellow"
+    },
+    {
+      "a": "ring_thin_silver",
+      "b": "labradorite"
+    },
+    {
+      "a": "ring_thin_silver",
+      "b": "apatite"
+    },
+    {
+      "a": "ring_thin_silver",
+      "b": "peridot"
+    },
+    {
+      "a": "ring_thin_gold",
+      "b": "gem_light_blue"
+    },
+    {
+      "a": "ring_thin_gold",
+      "b": "green_amethyst"
+    },
+    {
+      "a": "ring_thin_gold",
+      "b": "amethyst"
+    },
+    {
+      "a": "ring_thin_gold",
+      "b": "gem_yellow"
+    },
+    {
+      "a": "ring_thin_gold",
+      "b": "labradorite"
+    },
+    {
+      "a": "ring_thin_gold",
+      "b": "apatite"
+    },
+    {
+      "a": "ring_thin_gold",
+      "b": "peridot"
+    }
   ]
 }

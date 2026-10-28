@@ -25,6 +25,7 @@ import {
 import { findDropTarget, findMatchingTarget } from "../lib/hitTest";
 import { opposingExplodeDirs, runParentExplode } from "../lib/mergeExplode";
 import { MERGE_CONVERGE_MS, MERGE_PUNCH_MS } from "../lib/mergeTiming";
+import { resolveJewelleryMetal } from "../lib/jewelleryModel";
 import { attachShakeListener } from "../lib/shakeDetect";
 import { runShakeJostle } from "../lib/shakeJostle";
 import { attachTiltDrift } from "../lib/tiltDrift";
@@ -37,6 +38,7 @@ import { AppointmentToast } from "./AppointmentToast";
 import { CelestialHeader } from "./CelestialHeader";
 import { CraftElement } from "./CraftElement";
 import "./CraftSpace.css";
+import type { Metal } from "./HeroModel";
 import { JewelleryReveal } from "./JewelleryReveal";
 import { JewellerySheet } from "./JewellerySheet";
 import { MergeBurst } from "./MergeBurst";
@@ -88,6 +90,9 @@ export function CraftSpace() {
   const sheetPushedRef = useRef(false);
   const [jewelleryReveal, setJewelleryReveal] =
     useState<JewelleryDetail | null>(null);
+  /** Metal for the open reveal — from the craft parents, not static catalog copy. */
+  const [jewelleryRevealMetal, setJewelleryRevealMetal] =
+    useState<Metal>("gold");
   const [parentMergePhase, setParentMergePhase] = useState<
     Record<string, ParentMergePhase>
   >({});
@@ -128,6 +133,8 @@ export function CraftSpace() {
   }, []);
 
   const showAppointmentToast = useCallback(() => {
+    // Never cover the finished-product 3D reveal / focus view.
+    if (jewelleryRevealOpenRef.current) return;
     if (appointmentToastVisibleRef.current) return;
     appointmentToastVisibleRef.current = true;
     setAppointmentToast("on");
@@ -141,6 +148,7 @@ export function CraftSpace() {
   }, []);
 
   const armAppointmentHold = useCallback(() => {
+    if (jewelleryRevealOpenRef.current) return;
     if (appointmentToastVisibleRef.current) return;
     if (appointmentHoldTimerRef.current !== null) return;
     appointmentHoldTimerRef.current = window.setTimeout(() => {
@@ -365,6 +373,7 @@ export function CraftSpace() {
 
     jewelleryRevealOpenRef.current = false;
     setJewelleryReveal(null);
+    setJewelleryRevealMetal("gold");
     setBursts([]);
     setParentMergePhase({});
     setUnderFlashId(null);
@@ -410,6 +419,7 @@ export function CraftSpace() {
     busyRef.current = true;
     jewelleryRevealOpenRef.current = false;
     setJewelleryReveal(null);
+    setJewelleryRevealMetal("gold");
     setBursts([]);
     setParentMergePhase({});
     setUnderFlashId(null);
@@ -546,6 +556,7 @@ export function CraftSpace() {
   const closeJewelleryReveal = useCallback(() => {
     jewelleryRevealOpenRef.current = false;
     setJewelleryReveal(null);
+    setJewelleryRevealMetal("gold");
     clearBusyIfIdle();
   }, [clearBusyIfIdle]);
 
@@ -554,6 +565,7 @@ export function CraftSpace() {
     const detail = jewelleryReveal;
     jewelleryRevealOpenRef.current = false;
     setJewelleryReveal(null);
+    setJewelleryRevealMetal("gold");
     showSheet(detail);
     clearBusyIfIdle();
   }, [jewelleryReveal, clearBusyIfIdle, showSheet]);
@@ -662,9 +674,18 @@ export function CraftSpace() {
       const result = spawnInstance(resultCatalogId, mid.x, mid.y);
       if (!result) return;
       const detail = getJewelleryDetail(resultCatalogId);
+      // Metal from the pieces on the board (e.g. silver apatite mid → silver GLB),
+      // not from the finished product's static ingredient list.
+      const revealMetal = resolveJewelleryMetal(
+        dragged.catalogId,
+        target.catalogId,
+        resultCatalogId,
+      );
 
       busyRef.current = true;
       explodeDoneRef.current = false;
+      // Slide the appointment CTA away before the big product focus opens.
+      beginAppointmentToastLeave();
 
       setParentMergePhase({
         [parentA]: "converge",
@@ -680,43 +701,61 @@ export function CraftSpace() {
       );
 
       window.setTimeout(() => {
+        const burstId = `burst-${Date.now()}`;
         setParentMergePhase({
           [parentA]: "vanish",
           [parentB]: "vanish",
         });
-
-        const burstId = `burst-${Date.now()}`;
         setBursts((b) => [
           ...b,
           { id: burstId, x: mid.x, y: mid.y, kind: "jewellery" },
         ]);
-
-        const withResult = [...elementsRef.current, result];
-        commitElements(withResult);
-        setOrder((o) => [
-          ...o.filter((id) => id !== result.instanceId),
-          result.instanceId,
-        ]);
         setUnderFlashId(result.instanceId);
 
+        // Seat the finished piece; drop consumed parents so they cannot keep
+        // animating under the focus view (no parent explode on this path).
+        explodeCancelRef.current?.();
+        explodeCancelRef.current = null;
+        const settled = [
+          ...elementsRef.current.filter(
+            (el) =>
+              el.instanceId !== parentA && el.instanceId !== parentB,
+          ),
+          result,
+        ];
+        commitElements(settled);
+        setOrder((o) => [
+          ...o.filter(
+            (id) =>
+              id !== parentA &&
+              id !== parentB &&
+              id !== result.instanceId,
+          ),
+          result.instanceId,
+        ]);
+
+        // Open the 3D reveal promptly — do not wait on punch/explode.
+        if (detail) {
+          jewelleryRevealOpenRef.current = true;
+          beginAppointmentToastLeave();
+          setJewelleryRevealMetal(revealMetal);
+          setJewelleryReveal(detail);
+        }
+
+        explodeDoneRef.current = true;
+        delete dragOriginRef.current[instanceId];
+        clearBusyIfIdle();
+
+        // Clear flash/burst after a short beat so they don't linger on the veil.
         window.setTimeout(() => {
           setUnderFlashId(null);
           setBursts((b) => b.filter((x) => x.id !== burstId));
-
-          if (detail) {
-            jewelleryRevealOpenRef.current = true;
-            setJewelleryReveal(detail);
-          }
-
-          startParentExplode(mid, parentA, parentB, approach, () => {
-            explodeDoneRef.current = true;
-            delete dragOriginRef.current[instanceId];
-            clearBusyIfIdle();
-          });
-        }, MERGE_PUNCH_MS);
+          setParentMergePhase({});
+        }, Math.min(MERGE_PUNCH_MS, 160));
       }, MERGE_CONVERGE_MS);
     },
     [
+      beginAppointmentToastLeave,
       clearAppointmentHold,
       clearBusyIfIdle,
       commitElements,
@@ -773,11 +812,7 @@ export function CraftSpace() {
       {jewelleryReveal ? (
         <JewelleryReveal
           detail={jewelleryReveal}
-          metal={
-            jewelleryReveal.ingredients.some((p) => p.id.includes("silver"))
-              ? "silver"
-              : "gold"
-          }
+          metal={jewelleryRevealMetal}
           onClose={closeJewelleryReveal}
           onViewProduct={viewProductFromReveal}
         />

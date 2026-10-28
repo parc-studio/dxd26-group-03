@@ -59,6 +59,18 @@ const PIECES: Record<string, Piece> = {
     metals: ["silver"],
     finalPhoto: "apatite-chain.jpg",
   },
+  // Crafted via silver apatite necklace + peridot — silver chain1 / final-silver.
+  necklace_poseidon: {
+    name: "Necklace Mirror of the Seas",
+    description:
+      "A fine silver chain traced like a shoreline, set with peridot and blue apatite " +
+      "that catch the light like sun on shallow and deep water.",
+    gems: [
+      { id: "peridot", label: "Peridot" },
+      { id: "apatite", label: "Apatite" },
+    ],
+    metals: ["silver", "gold"],
+  },
 };
 
 // Making-of photos for the showcased piece, shown before the price.
