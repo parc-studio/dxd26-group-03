@@ -11,15 +11,16 @@ export function AppointmentToast({ onClose }: AppointmentToastProps) {
       role="status"
       aria-live="polite"
     >
-      <p className="appointment-toast__message">book an appointment</p>
       <button
         type="button"
         className="appointment-toast__close"
         aria-label="Dismiss"
         onClick={onClose}
       >
-        ×
+        <span aria-hidden="true">×</span>
       </button>
+      <p className="appointment-toast__eyebrow">Custom combination?</p>
+      <p className="appointment-toast__title">Book an appointment</p>
     </div>
   )
 }
