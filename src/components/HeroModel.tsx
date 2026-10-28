@@ -12,7 +12,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 const ENVIRONMENT_URL = `${import.meta.env.BASE_URL}hdri/studio_small_09_1k.hdr`;
 
 // objets de l'export Blender à ne pas afficher
-const HIDDEN = ["Cube", "Linen"];
+const HIDDEN = ["Cube", "Linen", "Fond"];
 // marge autour du collier entier au cadrage de départ (1 = bord à bord)
 const FIT_MARGIN = 1.05;
 // sol invisible sous les gemmes, en hauteurs de la zone des gemmes
@@ -297,15 +297,22 @@ export default function HeroModel({
         for (const mesh of metalMeshes) mesh.material = metalMaterials[next];
       };
       applyMetalRef.current(metalRef.current);
-      // cube par défaut de Blender et tissu de présentation : on a déjà
+      // cube par défaut de Blender, tissu et fond de présentation : on a déjà
       // un fond et un sol d'ombre
       for (const name of HIDDEN) {
         const object = model.getObjectByName(name);
         if (object) object.visible = false;
       }
-      // le collier est modélisé à plat (le fermoir vers -Z) : on le redresse
-      // pour que les gemmes pendent et que la chaîne remonte à gauche et à droite
-      model.rotation.x = Math.PI / 2;
+      // un collier modélisé à plat (le fermoir vers -Z) est redressé pour que
+      // les gemmes pendent et que la chaîne remonte à gauche et à droite ;
+      // un collier déjà vertical (fermoir vers +Y) est laissé tel quel
+      const upright = new THREE.Box3();
+      model.updateMatrixWorld(true);
+      model.traverseVisible((child) => {
+        if (child instanceof THREE.Mesh) upright.expandByObject(child);
+      });
+      const extent = upright.getSize(new THREE.Vector3());
+      if (extent.y < extent.z) model.rotation.x = Math.PI / 2;
       model.updateMatrixWorld(true);
 
       // les gemmes (matériaux transmissifs) à l'origine
