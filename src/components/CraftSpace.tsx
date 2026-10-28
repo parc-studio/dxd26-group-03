@@ -18,7 +18,6 @@ import {
 } from '../lib/craftPhysics'
 import { findDropTarget } from '../lib/hitTest'
 import { opposingExplodeDirs, runParentExplode } from '../lib/mergeExplode'
-import { playMergeSound } from '../lib/mergeSound'
 import {
   MERGE_CONVERGE_MS,
   MERGE_PUNCH_MS,
@@ -393,7 +392,6 @@ export function CraftSpace() {
         if (!result) return
 
         busyRef.current = true
-        playMergeSound()
 
         const withResult = [
           ...elementsRef.current.map((el) =>
@@ -420,7 +418,6 @@ export function CraftSpace() {
       if (!result) return
 
       busyRef.current = true
-      playMergeSound()
 
       setParentMergePhase({
         [parentA]: 'converge',
