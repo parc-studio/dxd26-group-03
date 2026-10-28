@@ -1,5 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
-import type { JewelleryDetail } from '../data/catalog'
+import { getCatalogElement, type JewelleryDetail } from '../data/catalog'
 import './JewellerySheet.css'
 
 // Loaded on demand to keep three.js out of the main bundle.
@@ -11,7 +11,21 @@ interface JewellerySheetProps {
 }
 
 const DISMISS_PX = 96
-const HERO_MODEL_URL = `${import.meta.env.BASE_URL}necklace2-2.glb`
+const HERO_MODEL_URL = `${import.meta.env.BASE_URL}chain1-gold.glb`
+
+// Text for the piece shown by the 3D model, which is the same for every
+// jewellery result; swatches reuse the closest catalog textures.
+const SHOWCASE = {
+  name: 'Necklace Mirror of the Seas',
+  description:
+    'A fine chain traced like a shoreline, set with peridot and blue apatite ' +
+    'that catch the light like sun on shallow and deep water.',
+  ingredients: [
+    { id: 'chain_gold', label: 'Gold chain' },
+    { id: 'gem_green', label: 'Peridot gem' },
+    { id: 'gem_light_blue', label: 'Apatite gem' },
+  ].map((part) => ({ ...part, image: getCatalogElement(part.id)?.image ?? '' })),
+}
 
 export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
   const [qty, setQty] = useState(1)
@@ -138,7 +152,7 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
     maximumFractionDigits: 0,
   }).format(detail.price)
 
-  const pieceName = detail.displayName || detail.label
+  const pieceName = SHOWCASE.name
 
   return (
     <div
@@ -199,12 +213,12 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
               {pieceName}
             </h2>
 
-            <p className="jewellery-sheet__desc">{detail.description}</p>
+            <p className="jewellery-sheet__desc">{SHOWCASE.description}</p>
 
             <section className="jewellery-sheet__section" aria-label="Elements">
               <h3 className="jewellery-sheet__section-title">Elements</h3>
               <ul className="jewellery-sheet__ingredients">
-                {detail.ingredients.map((part) => (
+                {SHOWCASE.ingredients.map((part) => (
                   <li key={part.id} className="jewellery-sheet__ingredient">
                     <span
                       className="jewellery-sheet__ingredient-swatch"

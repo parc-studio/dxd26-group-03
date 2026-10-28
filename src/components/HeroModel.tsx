@@ -11,10 +11,12 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
 // HDRI de studio (Poly Haven, CC0) : reflets nets comme en bijouterie
 const ENVIRONMENT_URL = `${import.meta.env.BASE_URL}hdri/studio_small_09_1k.hdr`
 
-// largeur visible, en multiples de la largeur du pendentif
-const FRAME_WIDTH = 3
-// sol invisible sous les gemmes, en hauteurs de pendentif
-const FLOOR_GAP = 0.35
+// objets de l'export Blender à ne pas afficher
+const HIDDEN = ['Cube', 'Linen']
+// largeur visible, en multiples de la largeur occupée par les gemmes
+const FRAME_WIDTH = 1.6
+// sol invisible sous les gemmes, en hauteurs de la zone des gemmes
+const FLOOR_GAP = 0.2
 // orbite : légèrement au-dessus au départ, jamais sous l'horizon
 const START_POLAR = THREE.MathUtils.degToRad(75)
 const MIN_POLAR = THREE.MathUtils.degToRad(10)
@@ -28,7 +30,7 @@ function tuneMaterial(material: THREE.Material): THREE.Material {
   if (!(material instanceof THREE.MeshStandardMaterial)) return material
 
   // or poli : le clearcoat ajoute un second reflet très net par-dessus
-  if (material.name === 'Gold') {
+  if (/gold/i.test(material.name)) {
     material.dispose()
     return new THREE.MeshPhysicalMaterial({
       name: 'Gold',
@@ -41,15 +43,38 @@ function tuneMaterial(material: THREE.Material): THREE.Material {
     })
   }
 
-  // gemmes : le glb n'a pas de volume (KHR_materials_volume), on en ajoute un
-  // pour que la couleur se fonce dans l'épaisseur au lieu d'un simple verre fin
-  if (material instanceof THREE.MeshPhysicalMaterial && material.transmission > 0) {
-    material.thickness = 1.5
-    material.attenuationColor.copy(material.color)
-    material.attenuationDistance = 1
-    material.envMapIntensity = 1.2
+  // argent poli : presque blanc et très lisse, pour que chaque maillon
+  // accroche un petit reflet net comme sur une photo de chaîne fine
+  if (/silver|steel/i.test(material.name)) {
+    material.dispose()
+    return new THREE.MeshPhysicalMaterial({
+      name: 'Silver',
+      color: new THREE.Color().setRGB(0.97, 0.96, 0.93, THREE.LinearSRGBColorSpace),
+      metalness: 1,
+      roughness: 0.08,
+      envMapIntensity: 1.3,
+    })
   }
+
+  if (isGem(material)) material.envMapIntensity = 1.2
   return material
+}
+
+function isGem(material: THREE.Material | THREE.Material[]): material is THREE.MeshPhysicalMaterial {
+  return material instanceof THREE.MeshPhysicalMaterial && material.transmission > 0
+}
+
+// Le glb n'a pas de volume (KHR_materials_volume) : on en ajoute un, à
+// l'échelle de la gemme, pour que la couleur se fonce dans l'épaisseur au
+// lieu d'un simple verre fin.
+function addGemVolume(gem: THREE.Mesh<THREE.BufferGeometry, THREE.MeshPhysicalMaterial>) {
+  gem.geometry.computeBoundingBox()
+  const local = gem.geometry.boundingBox!.getSize(new THREE.Vector3())
+  const world = new THREE.Box3().setFromObject(gem).getSize(new THREE.Vector3())
+  // thickness est exprimé en unités locales, attenuationDistance en unités monde
+  gem.material.thickness = Math.max(local.x, local.y, local.z) * 0.5
+  gem.material.attenuationColor.copy(gem.material.color)
+  gem.material.attenuationDistance = Math.max(world.x, world.y, world.z) * 0.6
 }
 
 interface HeroModelProps {
@@ -90,6 +115,10 @@ export default function HeroModel({ src, className }: HeroModelProps) {
     key.shadow.bias = -0.0005
     scene.add(key, key.target)
 
+    // lumière rasante de côté, comme un soleil bas : fait scintiller les maillons
+    const glint = new THREE.DirectionalLight(0xfff4e6, 2)
+    scene.add(glint)
+
     // sol invisible qui ne reçoit que l'ombre, juste sous les gemmes
     const floorMaterial = new THREE.ShadowMaterial({ opacity: 0.3 })
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), floorMaterial)
@@ -103,7 +132,8 @@ export default function HeroModel({ src, className }: HeroModelProps) {
     // bloom discret : seuls les reflets les plus forts brillent
     const composer = new EffectComposer(renderer)
     composer.addPass(new RenderPass(scene, camera))
-    const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.12, 0.3, 0.95)
+    // rayon serré : les reflets des maillons deviennent de petites étincelles
+    const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.2, 0.15, 0.95)
     composer.addPass(bloom)
     composer.addPass(new OutputPass())
 
@@ -161,17 +191,25 @@ export default function HeroModel({ src, className }: HeroModelProps) {
           ? child.material.map(tuneMaterial)
           : tuneMaterial(child.material)
       })
-      // cube par défaut de Blender resté dans l'export
-      const cube = model.getObjectByName('Cube')
-      if (cube) cube.visible = false
+      // cube par défaut de Blender et tissu de présentation : on a déjà
+      // un fond et un sol d'ombre
+      for (const name of HIDDEN) {
+        const object = model.getObjectByName(name)
+        if (object) object.visible = false
+      }
       // le collier est modélisé à plat (le fermoir vers -Z) : on le redresse
       // pour que les gemmes pendent et que la chaîne remonte à gauche et à droite
       model.rotation.x = Math.PI / 2
       model.updateMatrixWorld(true)
 
-      // les gemmes à l'origine
-      const pendant = model.getObjectByName('Setting') ?? model
-      const box = new THREE.Box3().setFromObject(pendant)
+      // les gemmes (matériaux transmissifs) à l'origine
+      const box = new THREE.Box3()
+      model.traverse((child) => {
+        if (!(child instanceof THREE.Mesh) || !isGem(child.material)) return
+        addGemVolume(child)
+        box.expandByObject(child)
+      })
+      if (box.isEmpty()) box.setFromObject(model)
       model.position.sub(box.getCenter(new THREE.Vector3()))
       scene.add(model)
       const size = box.getSize(new THREE.Vector3())
@@ -192,11 +230,12 @@ export default function HeroModel({ src, className }: HeroModelProps) {
       controls.maxDistance = dist * 2.5
       controls.update()
 
-      // ombre portée : caméra d'ombre serrée autour du pendentif
+      // ombre portée : caméra d'ombre serrée autour des gemmes
       key.position.set(size.x * 2, size.x * 8, size.x * 4)
+      glint.position.set(-size.x * 6, size.x * 1.5, size.x * 1)
       const s = size.x * 3
       Object.assign(key.shadow.camera, { left: -s, right: s, top: s, bottom: -s })
-      key.shadow.camera.near = 0.1
+      key.shadow.camera.near = size.x * 0.1
       key.shadow.camera.far = size.x * 20
       key.shadow.camera.updateProjectionMatrix()
     }
