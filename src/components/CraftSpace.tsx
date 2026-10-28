@@ -63,6 +63,8 @@ export function CraftSpace() {
   const playfieldRef = useRef<PlayfieldBounds>(defaultPlayfield());
   const elementsRef = useRef<CraftInstance[]>([]);
   const busyRef = useRef(false);
+  /** True while a finger is dragging a piece — suppress shake noise. */
+  const draggingRef = useRef(false);
   const dragOriginRef = useRef<Record<string, { x: number; y: number }>>({});
   const explodeCancelRef = useRef<(() => void) | null>(null);
   const shakeJostleRef = useRef<{
@@ -342,6 +344,7 @@ export function CraftSpace() {
 
   const handleDragStart = useCallback(
     (instanceId: string, origin: { x: number; y: number }) => {
+      draggingRef.current = true;
       dragOriginRef.current[instanceId] = origin;
     },
     [],
@@ -464,10 +467,14 @@ export function CraftSpace() {
 
   useEffect(() => {
     const detach = attachShakeListener({
+      // Ordinary touch-drag must never count as a shake.
+      isSuppressed: () => draggingRef.current || busyRef.current,
       onShakePulse: (intensity) => {
+        // Only re-kick an already-running jostle — never start from noise.
         shakeJostleRef.current?.kick(intensity);
       },
       onShake: () => {
+        if (draggingRef.current) return;
         console.info(
           "[craft-shake]",
           "CraftSpace handling onShake → jostle+reset",
@@ -536,6 +543,7 @@ export function CraftSpace() {
 
   const handleDrop = useCallback(
     (instanceId: string, pos: { x: number; y: number }) => {
+      draggingRef.current = false;
       if (busyRef.current) return;
       clearAppointmentHold();
 

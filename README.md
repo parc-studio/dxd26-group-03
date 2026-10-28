@@ -52,3 +52,15 @@ Chrome DevTools → ⋮ → More tools → Sensors → set Orientation to a pres
 - **iPhone Safari:** still needs `DeviceMotionEvent.requestPermission()` from a user gesture (not wired yet). Use the Shake button / logo long-press for now. Helper: `getDeviceMotionPermissionApi()` in `src/lib/shakeDetect.ts`.
 
 Implementation: `src/lib/shakeDetect.ts`, `src/lib/shakeJostle.ts`, wired in `CraftSpace`.
+
+**Sensitivity (Fotini):** edit the exported constants at the top of `src/lib/shakeDetect.ts`:
+
+| Constant | Default | Meaning |
+|---|---|---|
+| `SHAKE_THRESHOLD` | `14` | Peak linear \|a\| in m/s² (rest noise ~0.5–2; raise if still twitchy) |
+| `SHAKE_COUNT` | `4` | Spikes required inside the window |
+| `SHAKE_WINDOW_MS` | `750` | Multi-peak window |
+| `SHAKE_COOLDOWN_MS` | `3500` | Debounce — one shake → one reset |
+| `SHAKE_MIN_SPIKE_GAP_MS` | `70` | Don’t double-count the same peak |
+
+Touch-dragging a piece suppresses shake detection so board noise from holding the phone doesn’t reset the craft.
