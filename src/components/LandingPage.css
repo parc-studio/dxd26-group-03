@@ -166,7 +166,7 @@
    Fotini: tune --landing-veil-opacity (was 42%, now 28%). */
 .landing__veil {
   --landing-veil-opacity: 28%;
-  --landing-veil-blur: 8px;
+  --landing-veil-blur: .5px;
   position: absolute;
   inset: 0;
   z-index: 2;
@@ -200,7 +200,7 @@
   background: var(--color-brand);
   color: var(--color-on-brand);
   font-family: var(--font-display);
-  font-size: clamp(0.7rem, 2.6vw, 0.95rem);
+  font-size: clamp(0.9rem, 2.6vw, 0.95rem);
   font-weight: var(--weight-medium);
   letter-spacing: 0.01em;
   line-height: 1;
