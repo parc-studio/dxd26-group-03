@@ -1,409 +1,252 @@
 {
   "elements": [
     {
-      "id": "gold_ring_oval_empty",
-      "label": "Gold oval ring (empty)",
+      "id": "chain_gold",
+      "label": "Gold chain",
+      "category": "chains",
+      "shape": "link",
+      "kind": "material",
+      "image": "/textures/chain_gold.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "chain_silver",
+      "label": "Silver chain",
+      "category": "chains",
+      "shape": "link",
+      "kind": "material",
+      "image": "/textures/chain_silver.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "diamond_light_blue",
+      "label": "Light blue diamond",
+      "category": "stones",
+      "shape": "circle",
+      "kind": "material",
+      "image": "/textures/diamond_light_blue.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "diamond_blue",
+      "label": "Blue diamond",
+      "category": "stones",
+      "shape": "circle",
+      "kind": "material",
+      "image": "/textures/diamond_blue.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "diamond_dark_green",
+      "label": "Dark green diamond",
+      "category": "stones",
+      "shape": "circle",
+      "kind": "material",
+      "image": "/textures/diamond_dark_green.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "gem_blue",
+      "label": "Blue gem",
+      "category": "stones",
+      "shape": "oval",
+      "kind": "material",
+      "image": "/textures/gem_blue.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "gem_light_blue",
+      "label": "Light blue gem",
+      "category": "stones",
+      "shape": "oval",
+      "kind": "material",
+      "image": "/textures/gem_light_blue.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "gem_cyan",
+      "label": "Cyan gem",
+      "category": "stones",
+      "shape": "oval",
+      "kind": "material",
+      "image": "/textures/gem_cyan.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "gem_green",
+      "label": "Green gem",
+      "category": "stones",
+      "shape": "circle",
+      "kind": "material",
+      "image": "/textures/gem_green.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "gem_violet",
+      "label": "Violet gem",
+      "category": "stones",
+      "shape": "oval",
+      "kind": "material",
+      "image": "/textures/gem_violet.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "gem_yellow",
+      "label": "Yellow gem",
+      "category": "stones",
+      "shape": "circle",
+      "kind": "material",
+      "image": "/textures/gem_yellow.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "ring_gold",
+      "label": "Gold ring",
       "category": "gold",
       "shape": "ring",
       "kind": "material",
-      "image": "/textures/gold-ring-oval-empty.png"
+      "image": "/textures/ring_gold.png"
     },
     {
-      "id": "silver_ring_filigree_empty",
-      "label": "Silver filigree ring (empty)",
+      "id": "ring_silver",
+      "label": "Silver ring",
       "category": "silver",
       "shape": "ring",
       "kind": "material",
-      "image": "/textures/silver-ring-filigree-empty.png"
+      "image": "/textures/ring_silver.png"
     },
     {
-      "id": "gold_ring_wide_empty",
-      "label": "Gold wide ring (empty)",
+      "id": "ring_thin_gold",
+      "label": "Thin gold ring",
       "category": "gold",
       "shape": "ring",
       "kind": "material",
-      "image": "/textures/gold-ring-wide-empty.png"
+      "image": "/textures/ring_thin_gold.png"
     },
     {
-      "id": "gold_ribbed_bead",
-      "label": "Gold ribbed bead",
-      "category": "beads",
-      "shape": "circle",
+      "id": "ring_thin_silver",
+      "label": "Thin silver ring",
+      "category": "silver",
+      "shape": "ring",
       "kind": "material",
-      "image": "/textures/gold-ribbed-beads.png",
-      "imagePosition": "48% 45%",
-      "imageSize": "160%"
+      "image": "/textures/ring_thin_silver.png"
     },
     {
-      "id": "aqua_oval_bead",
-      "label": "Aqua oval bead",
-      "category": "beads",
-      "shape": "oval",
-      "kind": "material",
-      "image": "/textures/aqua-oval-beads.png",
-      "imagePosition": "28% 48%",
-      "imageSize": "180%"
-    },
-    {
-      "id": "rose_quartz_faceted",
-      "label": "Rose quartz bead",
-      "category": "stones",
-      "shape": "circle",
-      "kind": "material",
-      "image": "/textures/rose-quartz-faceted.png",
-      "imagePosition": "42% 52%",
-      "imageSize": "220%"
-    },
-    {
-      "id": "aqua_ribbed_cluster",
-      "label": "Aqua–ribbed cluster",
-      "category": "beads",
-      "shape": "oval",
+      "id": "necklace_partial_blue",
+      "label": "Gold chain + blue diamond",
+      "category": "chains",
+      "shape": "link",
       "kind": "mid",
-      "image": "/textures/aqua-oval-beads.png",
-      "imagePosition": "55% 48%",
-      "imageSize": "170%",
-      "inset": "/textures/gold-ribbed-beads.png",
-      "insetPosition": "78% 72%",
-      "insetSize": "42%",
-      "insetImagePosition": "48% 45%",
-      "insetImageSize": "200%"
-    },
-    {
-      "id": "rose_gold_accent",
-      "label": "Rose gold accent",
-      "category": "stones",
-      "shape": "circle",
-      "kind": "mid",
-      "image": "/textures/rose-quartz-faceted.png",
-      "imagePosition": "58% 40%",
-      "imageSize": "240%",
-      "inset": "/textures/gold-ribbed-beads.png",
-      "insetPosition": "82% 78%",
+      "image": "/textures/chain_gold.png",
+      "imageSize": "contain",
+      "inset": "/textures/diamond_blue.png",
+      "insetPosition": "72% 68%",
       "insetSize": "38%",
-      "insetImagePosition": "48% 45%",
-      "insetImageSize": "200%"
+      "insetImagePosition": "center",
+      "insetImageSize": "contain"
     },
     {
-      "id": "gold_oval_aqua_ring",
-      "label": "Gold oval aqua ring",
+      "id": "pendant_duo_blue",
+      "label": "Blue diamond pair",
+      "category": "stones",
+      "shape": "circle",
+      "kind": "mid",
+      "image": "/textures/diamond_light_blue.png",
+      "imageSize": "contain",
+      "inset": "/textures/diamond_blue.png",
+      "insetPosition": "78% 72%",
+      "insetSize": "48%",
+      "insetImagePosition": "center",
+      "insetImageSize": "contain"
+    },
+    {
+      "id": "necklace_single",
+      "label": "Single light-blue necklace",
       "category": "jewellery",
       "shape": "ring",
       "kind": "jewellery",
-      "image": "/textures/gold-ring-oval-empty.png",
-      "inset": "/textures/aqua-oval-beads.png",
-      "insetPosition": "50% 40%",
-      "insetSize": "34%",
-      "insetImagePosition": "28% 48%",
-      "insetImageSize": "240%",
-      "description": "An oval gold setting cradling a cool aqua bead — light caught in still water.",
-      "ingredients": [
-        "gold_ring_oval_empty",
-        "aqua_oval_bead"
-      ],
-      "price": 148,
-      "displayName": "Bague 'Athéna'",
-      "materialsLine": "Aqua & or"
-    },
-    {
-      "id": "gold_oval_rose_ring",
-      "label": "Gold oval rose ring",
-      "category": "jewellery",
-      "shape": "ring",
-      "kind": "jewellery",
-      "image": "/textures/gold-ring-oval-empty.png",
-      "inset": "/textures/rose-quartz-faceted.png",
-      "insetPosition": "50% 40%",
-      "insetSize": "34%",
-      "insetImagePosition": "42% 52%",
-      "insetImageSize": "280%",
-      "description": "Soft rose quartz seated in an openwork gold oval — a quiet blush against metal.",
-      "ingredients": [
-        "gold_ring_oval_empty",
-        "rose_quartz_faceted"
-      ],
-      "price": 162,
-      "displayName": "Bague 'Rosée'",
-      "materialsLine": "Quartz rose & or"
-    },
-    {
-      "id": "gold_oval_ribbed_ring",
-      "label": "Gold oval ribbed ring",
-      "category": "jewellery",
-      "shape": "ring",
-      "kind": "jewellery",
-      "image": "/textures/gold-ring-oval-empty.png",
-      "inset": "/textures/gold-ribbed-beads.png",
-      "insetPosition": "50% 40%",
-      "insetSize": "32%",
-      "insetImagePosition": "48% 45%",
-      "insetImageSize": "200%",
-      "description": "A ribbed gold bead nested in the oval mount — texture meeting polish.",
-      "ingredients": [
-        "gold_ring_oval_empty",
-        "gold_ribbed_bead"
-      ],
-      "price": 138,
-      "displayName": "Bague 'Cannelée'",
-      "materialsLine": "Or strié"
-    },
-    {
-      "id": "gold_oval_cluster_ring",
-      "label": "Gold oval cluster ring",
-      "category": "jewellery",
-      "shape": "ring",
-      "kind": "jewellery",
-      "image": "/textures/gold-ring-oval-empty.png",
-      "inset": "/textures/aqua-oval-beads.png",
-      "insetPosition": "50% 40%",
-      "insetSize": "34%",
-      "insetImagePosition": "28% 48%",
-      "insetImageSize": "240%",
-      "description": "Aqua and ribbed gold together in the oval ring — a small constellation of craft.",
-      "ingredients": [
-        "gold_ring_oval_empty",
-        "aqua_oval_bead",
-        "gold_ribbed_bead"
-      ],
-      "price": 178,
-      "displayName": "Bague 'Constellation'",
-      "materialsLine": "Aqua, or strié"
-    },
-    {
-      "id": "silver_filigree_aqua_ring",
-      "label": "Silver filigree aqua ring",
-      "category": "jewellery",
-      "shape": "ring",
-      "kind": "jewellery",
-      "image": "/textures/silver-ring-filigree-empty.png",
-      "inset": "/textures/aqua-oval-beads.png",
-      "insetPosition": "50% 30%",
-      "insetSize": "36%",
-      "insetImagePosition": "28% 48%",
-      "insetImageSize": "240%",
-      "description": "Filigree silver with an aqua centre — cool metal, cooler stone.",
-      "ingredients": [
-        "silver_ring_filigree_empty",
-        "aqua_oval_bead"
-      ],
-      "price": 128,
-      "displayName": "Bague 'Néréide'",
-      "materialsLine": "Aqua & argenté"
-    },
-    {
-      "id": "silver_filigree_rose_ring",
-      "label": "Silver filigree rose ring",
-      "category": "jewellery",
-      "shape": "ring",
-      "kind": "jewellery",
-      "image": "/textures/silver-ring-filigree-empty.png",
-      "inset": "/textures/rose-quartz-faceted.png",
-      "insetPosition": "50% 30%",
-      "insetSize": "36%",
-      "insetImagePosition": "42% 52%",
-      "insetImageSize": "280%",
-      "description": "Rose quartz in a silver filigree bezel — pink light through openwork.",
-      "ingredients": [
-        "silver_ring_filigree_empty",
-        "rose_quartz_faceted"
-      ],
-      "price": 136,
-      "displayName": "Bague 'Aurore'",
-      "materialsLine": "Quartz rose & argenté"
-    },
-    {
-      "id": "silver_rose_accent_ring",
-      "label": "Silver rose accent ring",
-      "category": "jewellery",
-      "shape": "ring",
-      "kind": "jewellery",
-      "image": "/textures/silver-ring-filigree-empty.png",
-      "inset": "/textures/rose-quartz-faceted.png",
-      "insetPosition": "50% 30%",
-      "insetSize": "36%",
-      "insetImagePosition": "42% 52%",
-      "insetImageSize": "280%",
-      "description": "Rose quartz with a gold accent, set in silver filigree — layered and soft.",
-      "ingredients": [
-        "silver_ring_filigree_empty",
-        "rose_quartz_faceted",
-        "gold_ribbed_bead"
-      ],
-      "price": 154,
-      "displayName": "Bague 'Éclat'",
-      "materialsLine": "Quartz rose, or & argenté"
-    },
-    {
-      "id": "gold_wide_aqua_ring",
-      "label": "Gold wide aqua ring",
-      "category": "jewellery",
-      "shape": "ring",
-      "kind": "jewellery",
-      "image": "/textures/gold-ring-wide-empty.png",
-      "inset": "/textures/aqua-oval-beads.png",
-      "insetPosition": "50% 38%",
-      "insetSize": "28%",
-      "insetImagePosition": "28% 48%",
-      "insetImageSize": "240%",
-      "description": "A wide gold band with an aqua stone — bold frame, calm centre.",
-      "ingredients": [
-        "gold_ring_wide_empty",
-        "aqua_oval_bead"
-      ],
+      "image": "/textures/necklase_single_gem_light_blue.png",
+      "description": "A fine gold chain with one light-blue drop — quiet sparkle on a short path.",
+      "ingredients": ["chain_gold", "diamond_light_blue"],
       "price": 168,
-      "displayName": "Bague 'Horizon'",
-      "materialsLine": "Aqua & or large"
+      "displayName": "Collier 'Clair'",
+      "materialsLine": "Or & diamant bleu clair"
     },
     {
-      "id": "gold_wide_rose_ring",
-      "label": "Gold wide rose ring",
+      "id": "necklace_single_blue",
+      "label": "Single blue necklace",
       "category": "jewellery",
       "shape": "ring",
       "kind": "jewellery",
-      "image": "/textures/gold-ring-wide-empty.png",
-      "inset": "/textures/rose-quartz-faceted.png",
-      "insetPosition": "50% 38%",
-      "insetSize": "28%",
-      "insetImagePosition": "42% 52%",
-      "insetImageSize": "280%",
-      "description": "Wide gold and faceted rose quartz — warmth meeting blush.",
-      "ingredients": [
-        "gold_ring_wide_empty",
-        "rose_quartz_faceted"
-      ],
-      "price": 174,
-      "displayName": "Bague 'Blush'",
-      "materialsLine": "Quartz rose & or large"
+      "image": "/textures/necklace_single_blue.png",
+      "description": "The same slender gold chain, finished with a deeper blue gem — a cooler night sky.",
+      "ingredients": ["chain_gold", "gem_blue"],
+      "price": 178,
+      "displayName": "Collier 'Azur'",
+      "materialsLine": "Or & gemme bleue"
     },
     {
-      "id": "gold_wide_ribbed_ring",
-      "label": "Gold wide ribbed ring",
+      "id": "necklace_heart",
+      "label": "Heart necklace",
       "category": "jewellery",
       "shape": "ring",
       "kind": "jewellery",
-      "image": "/textures/gold-ring-wide-empty.png",
-      "inset": "/textures/gold-ribbed-beads.png",
-      "insetPosition": "50% 38%",
-      "insetSize": "26%",
-      "insetImagePosition": "48% 45%",
-      "insetImageSize": "200%",
-      "description": "Ribbed gold bead on a wide engraved band — all metal, all texture.",
-      "ingredients": [
-        "gold_ring_wide_empty",
-        "gold_ribbed_bead"
-      ],
-      "price": 158,
-      "displayName": "Bague 'Texture'",
-      "materialsLine": "Or strié & or large"
+      "image": "/textures/necklase_heart_blue_light_blue.png",
+      "description": "Two blues meeting on a gold chain — light and deep, set as a small heart of light.",
+      "ingredients": ["chain_gold", "diamond_light_blue", "diamond_blue"],
+      "price": 248,
+      "displayName": "Collier 'Cœur'",
+      "materialsLine": "Or, diamant bleu & bleu clair"
     }
   ],
   "recipes": [
     {
-      "a": "gold_ring_oval_empty",
-      "b": "aqua_oval_bead",
-      "result": "gold_oval_aqua_ring"
+      "a": "chain_gold",
+      "b": "diamond_light_blue",
+      "result": "necklace_single"
     },
     {
-      "a": "gold_ring_oval_empty",
-      "b": "rose_quartz_faceted",
-      "result": "gold_oval_rose_ring"
+      "a": "chain_gold",
+      "b": "gem_blue",
+      "result": "necklace_single_blue"
     },
     {
-      "a": "gold_ring_oval_empty",
-      "b": "gold_ribbed_bead",
-      "result": "gold_oval_ribbed_ring"
+      "a": "necklace_single",
+      "b": "diamond_blue",
+      "result": "necklace_heart"
     },
     {
-      "a": "gold_ring_oval_empty",
-      "b": "aqua_ribbed_cluster",
-      "result": "gold_oval_cluster_ring"
+      "a": "chain_gold",
+      "b": "diamond_blue",
+      "result": "necklace_partial_blue"
     },
     {
-      "a": "silver_ring_filigree_empty",
-      "b": "aqua_oval_bead",
-      "result": "silver_filigree_aqua_ring"
+      "a": "necklace_partial_blue",
+      "b": "diamond_light_blue",
+      "result": "necklace_heart"
     },
     {
-      "a": "silver_ring_filigree_empty",
-      "b": "rose_quartz_faceted",
-      "result": "silver_filigree_rose_ring"
+      "a": "diamond_light_blue",
+      "b": "diamond_blue",
+      "result": "pendant_duo_blue"
     },
     {
-      "a": "silver_ring_filigree_empty",
-      "b": "rose_gold_accent",
-      "result": "silver_rose_accent_ring"
-    },
-    {
-      "a": "gold_ring_wide_empty",
-      "b": "aqua_oval_bead",
-      "result": "gold_wide_aqua_ring"
-    },
-    {
-      "a": "gold_ring_wide_empty",
-      "b": "rose_quartz_faceted",
-      "result": "gold_wide_rose_ring"
-    },
-    {
-      "a": "gold_ring_wide_empty",
-      "b": "gold_ribbed_bead",
-      "result": "gold_wide_ribbed_ring"
-    },
-    {
-      "a": "aqua_oval_bead",
-      "b": "gold_ribbed_bead",
-      "result": "aqua_ribbed_cluster"
-    },
-    {
-      "a": "rose_quartz_faceted",
-      "b": "gold_ribbed_bead",
-      "result": "rose_gold_accent"
+      "a": "pendant_duo_blue",
+      "b": "chain_gold",
+      "result": "necklace_heart"
     }
   ],
   "starters": [
-    {
-      "catalogId": "gold_ring_oval_empty",
-      "x": 22,
-      "y": 36
-    },
-    {
-      "catalogId": "silver_ring_filigree_empty",
-      "x": 50,
-      "y": 34
-    },
-    {
-      "catalogId": "gold_ring_wide_empty",
-      "x": 78,
-      "y": 36
-    },
-    {
-      "catalogId": "aqua_oval_bead",
-      "x": 20,
-      "y": 58
-    },
-    {
-      "catalogId": "rose_quartz_faceted",
-      "x": 42,
-      "y": 62
-    },
-    {
-      "catalogId": "gold_ribbed_bead",
-      "x": 64,
-      "y": 58
-    },
-    {
-      "catalogId": "aqua_oval_bead",
-      "x": 82,
-      "y": 64
-    },
-    {
-      "catalogId": "rose_quartz_faceted",
-      "x": 28,
-      "y": 78
-    },
-    {
-      "catalogId": "gold_ribbed_bead",
-      "x": 55,
-      "y": 80
-    }
+    { "catalogId": "chain_gold", "x": 22, "y": 36 },
+    { "catalogId": "chain_gold", "x": 78, "y": 38 },
+    { "catalogId": "chain_silver", "x": 50, "y": 34 },
+    { "catalogId": "diamond_light_blue", "x": 18, "y": 58 },
+    { "catalogId": "diamond_blue", "x": 42, "y": 56 },
+    { "catalogId": "gem_blue", "x": 66, "y": 58 },
+    { "catalogId": "gem_light_blue", "x": 84, "y": 62 },
+    { "catalogId": "diamond_dark_green", "x": 28, "y": 76 },
+    { "catalogId": "gem_cyan", "x": 52, "y": 78 },
+    { "catalogId": "ring_gold", "x": 74, "y": 80 },
+    { "catalogId": "ring_thin_gold", "x": 38, "y": 88 }
   ]
 }
