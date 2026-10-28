@@ -37,7 +37,7 @@ import './CraftSpace.css'
 
 const APPOINTMENT_TOAST_MS = 6000
 /** Hold overlap this long before showing the appointment toast. */
-const APPOINTMENT_HOLD_MS = 400
+const APPOINTMENT_HOLD_MS = 350
 
 export function CraftSpace() {
   const spaceRef = useRef<HTMLDivElement>(null)

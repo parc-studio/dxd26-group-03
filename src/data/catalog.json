@@ -120,7 +120,7 @@
       "shape": "ring",
       "kind": "jewellery",
       "description": "A fine gold chain with one apatite drop — a cool and refreshing stone.",
-      "ingredients": ["chain_gold", "apatite"],
+      "ingredients": ["chain_silver", "apatite"],
       "price": 168,
       "displayName": "Collier 'Apatite'",
       "materialsLine": "Or & apatite",
@@ -144,7 +144,7 @@
   ],
   "recipes": [
     {
-      "a": "chain_gold",
+      "a": "chain_silver",
       "b": "apatite",
       "result": "necklace_apatite"
     },
