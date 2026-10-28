@@ -128,6 +128,8 @@ export function CraftSpace() {
   }, []);
 
   const showAppointmentToast = useCallback(() => {
+    // Never cover the finished-product 3D reveal / focus view.
+    if (jewelleryRevealOpenRef.current) return;
     if (appointmentToastVisibleRef.current) return;
     appointmentToastVisibleRef.current = true;
     setAppointmentToast("on");
@@ -141,6 +143,7 @@ export function CraftSpace() {
   }, []);
 
   const armAppointmentHold = useCallback(() => {
+    if (jewelleryRevealOpenRef.current) return;
     if (appointmentToastVisibleRef.current) return;
     if (appointmentHoldTimerRef.current !== null) return;
     appointmentHoldTimerRef.current = window.setTimeout(() => {
@@ -665,6 +668,8 @@ export function CraftSpace() {
 
       busyRef.current = true;
       explodeDoneRef.current = false;
+      // Slide the appointment CTA away before the big product focus opens.
+      beginAppointmentToastLeave();
 
       setParentMergePhase({
         [parentA]: "converge",
@@ -705,6 +710,7 @@ export function CraftSpace() {
 
           if (detail) {
             jewelleryRevealOpenRef.current = true;
+            beginAppointmentToastLeave();
             setJewelleryReveal(detail);
           }
 
@@ -717,6 +723,7 @@ export function CraftSpace() {
       }, MERGE_CONVERGE_MS);
     },
     [
+      beginAppointmentToastLeave,
       clearAppointmentHold,
       clearBusyIfIdle,
       commitElements,
