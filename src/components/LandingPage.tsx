@@ -122,16 +122,6 @@ export function LandingPage({ onCreateYourOwn }: LandingPageProps) {
           </div>
         </div>
 
-        <div className="landing__toolbar">
-          <button
-            type="button"
-            className="landing__craft-link"
-            onClick={onCreateYourOwn}
-          >
-            Create your own
-          </button>
-        </div>
-
         <section className="landing__products" aria-label="Products">
           {filtered.map((product) => (
             <article key={product.id} className="landing__product">
@@ -153,6 +143,16 @@ export function LandingPage({ onCreateYourOwn }: LandingPageProps) {
           <p className="landing__empty">No products match your search.</p>
         ) : null}
       </main>
+
+      <div className="landing__craft-bar">
+        <button
+          type="button"
+          className="landing__craft-btn"
+          onClick={onCreateYourOwn}
+        >
+          Create your own
+        </button>
+      </div>
     </div>
   )
 }

@@ -42,7 +42,7 @@
   max-width: 100%;
   box-sizing: border-box;
   margin: 0;
-  padding: 8px var(--landing-pad-x) 2.5rem;
+  padding: 8px var(--landing-pad-x) 5.5rem;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -78,7 +78,7 @@
   margin: 0;
   padding: 0.7rem 1rem 0.7rem 2.55rem;
   border: 1px solid color-mix(in srgb, var(--color-brand) 22%, #d8d0c8);
-  border-radius: 0.65rem;
+  border-radius: 0.25rem;
   background: #fff;
   color: var(--color-brand);
   font-family: var(--font-display);
@@ -164,30 +164,55 @@
   pointer-events: none;
 }
 
-.landing__toolbar {
-  display: flex;
-  justify-content: flex-end;
-  margin: 0 0 1.15rem;
-}
-
-.landing__craft-link {
+/* Sticky craft CTA — brand fill, white label (not a light pill) */
+.landing__craft-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 40;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 100%;
   margin: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--color-brand);
-  font-family: var(--font-display);
-  font-size: 0.8125rem;
-  font-weight: var(--weight-medium);
-  line-height: 1.2;
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
-  cursor: pointer;
+  padding: 0.75rem var(--landing-pad-x)
+    calc(0.85rem + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(
+    to top,
+    #fff 55%,
+    color-mix(in srgb, #fff 70%, transparent)
+  );
+  pointer-events: none;
 }
 
-.landing__craft-link:focus-visible {
-  outline: 2px solid var(--color-brand);
+.landing__craft-btn {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 2.85rem;
+  margin: 0;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 0.35rem;
+  background: #472b2b;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(71, 43, 43, 0.22);
+}
+
+.landing__craft-btn:focus-visible {
+  outline: 2px solid #472b2b;
   outline-offset: 3px;
+}
+
+.landing__craft-btn:active {
+  transform: translateY(1px);
 }
 
 /* --- Product grid (boutique mobile: 173 × 173 + 24 gap) --- */
@@ -276,12 +301,23 @@
 @media (min-width: 768px) {
   .landing__main {
     padding-top: 12px;
-    padding-bottom: 3rem;
+    padding-bottom: 6rem;
   }
 
   .landing__products {
     margin-left: 0;
     margin-right: 0;
     justify-content: start;
+  }
+
+  .landing__craft-bar {
+    padding-left: var(--landing-pad-x);
+    padding-right: var(--landing-pad-x);
+  }
+
+  .landing__craft-btn {
+    max-width: 24rem;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
