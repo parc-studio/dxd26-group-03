@@ -3,10 +3,12 @@ import './CelestialHeader.css'
 
 interface CelestialHeaderProps {
   onLogoClick?: () => void
+  /** Items in the bag; a badge shows when above zero. */
+  cartCount?: number
 }
 
 export const CelestialHeader = forwardRef<HTMLElement, CelestialHeaderProps>(
-  function CelestialHeader({ onLogoClick }, ref) {
+  function CelestialHeader({ onLogoClick, cartCount = 0 }, ref) {
     return (
       <header ref={ref} className="celestial-header">
         <h1 className="celestial-header__title">
@@ -35,7 +37,9 @@ export const CelestialHeader = forwardRef<HTMLElement, CelestialHeaderProps>(
         <button
           type="button"
           className="celestial-header__cart"
-          aria-label="Shopping bag"
+          aria-label={
+            cartCount > 0 ? `Shopping bag, ${cartCount} items` : 'Shopping bag'
+          }
         >
           <svg
             className="celestial-header__cart-icon"
@@ -52,6 +56,15 @@ export const CelestialHeader = forwardRef<HTMLElement, CelestialHeaderProps>(
             <path d="M1.5 7.25h16v14.25a1 1 0 0 1-1 1H2.5a1 1 0 0 1-1-1V7.25Z" />
             <path d="M6 7.25V5a3.5 3.5 0 0 1 7 0v2.25" />
           </svg>
+          {cartCount > 0 ? (
+            <span
+              key={cartCount}
+              className="celestial-header__cart-badge"
+              aria-hidden="true"
+            >
+              {cartCount}
+            </span>
+          ) : null}
         </button>
         <button
           type="button"

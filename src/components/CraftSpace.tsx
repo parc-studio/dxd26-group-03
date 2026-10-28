@@ -71,6 +71,7 @@ export function CraftSpace() {
   )
   const [bursts, setBursts] = useState<MergeBurstState[]>([])
   const [sheet, setSheet] = useState<JewelleryDetail | null>(detailFromHash)
+  const [cartCount, setCartCount] = useState(0)
   /** True when the open sheet pushed its own history entry (close → back). */
   const sheetPushedRef = useRef(false)
   const [jewelleryReveal, setJewelleryReveal] =
@@ -568,7 +569,7 @@ export function CraftSpace() {
       className={`craft-space${jewelleryReveal ? ' is-jewellery-revealing' : ''}`}
       ref={spaceRef}
     >
-      <CelestialHeader ref={brandRef} />
+      <CelestialHeader ref={brandRef} cartCount={cartCount} />
 
       {elements.map((el) => (
         <CraftElement
@@ -613,7 +614,11 @@ export function CraftSpace() {
       ) : null}
 
       {sheet ? (
-        <JewellerySheet detail={sheet} onClose={closeJewellery} />
+        <JewellerySheet
+          detail={sheet}
+          onClose={closeJewellery}
+          onAddToCart={(qty) => setCartCount((n) => n + qty)}
+        />
       ) : null}
     </div>
   )

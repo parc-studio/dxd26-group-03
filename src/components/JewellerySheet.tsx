@@ -10,6 +10,8 @@ const HeroModel = lazy(() => import("./HeroModel"));
 interface JewellerySheetProps {
   detail: JewelleryDetail;
   onClose: () => void;
+  /** Called with the chosen quantity; the sheet then closes. */
+  onAddToCart: (qty: number) => void;
 }
 
 // Text for the piece shown by the 3D model, which is the same for every
@@ -89,7 +91,11 @@ const METALS = METAL_OPTIONS.map((option) => option.value);
 
 const swatch = (id: string) => getCatalogElement(id)?.image ?? "";
 
-export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
+export function JewellerySheet({
+  detail,
+  onClose,
+  onAddToCart,
+}: JewellerySheetProps) {
   const piece = { ...SHOWCASE, metals: METALS, ...PIECES[detail.id] };
   const metalOptions = METAL_OPTIONS.filter((o) => piece.metals.includes(o.value));
   const [qty, setQty] = useState(1);
@@ -305,7 +311,8 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
             type="button"
             className="jewellery-sheet__cart"
             onClick={() => {
-              /* prototype placeholder */
+              onAddToCart(qty);
+              requestClose();
             }}
           >
             Add to cart
