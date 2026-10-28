@@ -18,6 +18,7 @@ const HERO_MODEL_URL = `${import.meta.env.BASE_URL}chain1-gold.glb`
 // jewellery result; swatches reuse the closest catalog textures.
 const SHOWCASE = {
   name: 'Necklace Mirror of the Seas',
+  stock: 1,
   description:
     'A fine chain traced like a shoreline, set with peridot and blue apatite ' +
     'that catch the light like sun on shallow and deep water.',
@@ -30,6 +31,18 @@ const SHOWCASE = {
     { id: 'gem_light_blue', label: 'Apatite gem' },
   ],
 }
+
+// Making-of photos for the showcased piece, shown before the price.
+const GALLERY = [
+  {
+    src: `${import.meta.env.BASE_URL}WIP.jfif`,
+    alt: 'Jeweller’s bench with blue apatite and peridot stones, a spool of fine chain and pliers',
+  },
+  {
+    src: `${import.meta.env.BASE_URL}final2.jfif`,
+    alt: 'The finished Mirror of the Seas necklace',
+  },
+]
 
 const METAL_OPTIONS: { value: Metal; label: string }[] = [
   { value: 'gold', label: 'Gold' },
@@ -158,11 +171,8 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
     closing || !entered ? 0 : Math.max(0.2, 1 - dragY / 280)
   const panelTransition = dragY > 0 && !closing ? 'none' : undefined
 
-  const priceLabel = new Intl.NumberFormat('en-CH', {
-    style: 'currency',
-    currency: 'CHF',
-    maximumFractionDigits: 0,
-  }).format(detail.price)
+  // Shop format: "CHF25.00", no space after the currency.
+  const priceLabel = `CHF${detail.price.toFixed(2)}`
 
   const pieceName = SHOWCASE.name
 
@@ -229,7 +239,6 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
             <p className="jewellery-sheet__desc">{SHOWCASE.description}</p>
 
             <section className="jewellery-sheet__section" aria-label="Elements">
-              <h3 className="jewellery-sheet__section-title">Elements</h3>
               <ul className="jewellery-sheet__ingredients">
                 <li className="jewellery-sheet__ingredient">
                   <span
@@ -275,21 +284,34 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
               </ul>
             </section>
 
-            <div className="jewellery-sheet__price">
-              <span className="jewellery-sheet__price-label">Price</span>
-              <span className="jewellery-sheet__price-value">{priceLabel}</span>
-            </div>
+            <section className="jewellery-sheet__section" aria-label="Making of">
+              <div className="jewellery-sheet__gallery">
+                {GALLERY.map((photo) => (
+                  <figure key={photo.src} className="jewellery-sheet__photo">
+                    <img
+                      className="jewellery-sheet__photo-img"
+                      src={photo.src}
+                      alt={photo.alt}
+                      loading="lazy"
+                      decoding="async"
+                      draggable={false}
+                    />
+                  </figure>
+                ))}
+              </div>
+            </section>
 
-            <div className="jewellery-sheet__actions">
-              <div className="jewellery-sheet__qty" aria-label="Quantity">
+            <p className="jewellery-sheet__price">{priceLabel}</p>
+
+            <div className="jewellery-sheet__stock-row">
+              <div className="jewellery-sheet__qty" role="group" aria-label="Quantity">
                 <button
                   type="button"
                   className="jewellery-sheet__qty-btn"
                   aria-label="Decrease quantity"
-                  disabled={qty <= 1}
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
                 >
-                  −
+                  -
                 </button>
                 <span className="jewellery-sheet__qty-value" aria-live="polite">
                   {qty}
@@ -298,22 +320,24 @@ export function JewellerySheet({ detail, onClose }: JewellerySheetProps) {
                   type="button"
                   className="jewellery-sheet__qty-btn"
                   aria-label="Increase quantity"
-                  onClick={() => setQty((q) => Math.min(9, q + 1))}
+                  disabled={qty >= SHOWCASE.stock}
+                  onClick={() => setQty((q) => Math.min(SHOWCASE.stock, q + 1))}
                 >
                   +
                 </button>
               </div>
-
-              <button
-                type="button"
-                className="jewellery-sheet__cart"
-                onClick={() => {
-                  /* prototype placeholder */
-                }}
-              >
-                Add to cart
-              </button>
+              <p className="jewellery-sheet__stock">{SHOWCASE.stock} in stock</p>
             </div>
+
+            <button
+              type="button"
+              className="jewellery-sheet__cart"
+              onClick={() => {
+                /* prototype placeholder */
+              }}
+            >
+              Add to cart
+            </button>
           </div>
         </div>
       </div>
