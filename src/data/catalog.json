@@ -19,15 +19,6 @@
       "imageSize": "contain"
     },
     {
-      "id": "gem_light_blue",
-      "label": "Light blue gem",
-      "category": "stones",
-      "shape": "circle",
-      "kind": "material",
-      "image": "/textures/gem_light_blue.png",
-      "imageSize": "contain"
-    },
-    {
       "id": "green_amethyst",
       "label": "Green Amethyst",
       "category": "stones",
@@ -220,11 +211,6 @@
       "y": 50
     },
     {
-      "catalogId": "gem_light_blue",
-      "x": 18,
-      "y": 68
-    },
-    {
       "catalogId": "green_amethyst",
       "x": 40,
       "y": 70
@@ -273,10 +259,6 @@
   "appointmentPairs": [
     {
       "a": "chain_gold",
-      "b": "gem_light_blue"
-    },
-    {
-      "a": "chain_gold",
       "b": "green_amethyst"
     },
     {
@@ -305,10 +287,6 @@
     },
     {
       "a": "chain_silver",
-      "b": "gem_light_blue"
-    },
-    {
-      "a": "chain_silver",
       "b": "green_amethyst"
     },
     {
@@ -330,10 +308,6 @@
     {
       "a": "chain_silver",
       "b": "rose_quartz"
-    },
-    {
-      "a": "earring-gold",
-      "b": "gem_light_blue"
     },
     {
       "a": "earring-gold",
@@ -365,10 +339,6 @@
     },
     {
       "a": "earring-silver",
-      "b": "gem_light_blue"
-    },
-    {
-      "a": "earring-silver",
       "b": "green_amethyst"
     },
     {
@@ -394,10 +364,6 @@
     {
       "a": "earring-silver",
       "b": "rose_quartz"
-    },
-    {
-      "a": "ring_gold",
-      "b": "gem_light_blue"
     },
     {
       "a": "ring_gold",
@@ -429,10 +395,6 @@
     },
     {
       "a": "ring_silver",
-      "b": "gem_light_blue"
-    },
-    {
-      "a": "ring_silver",
       "b": "green_amethyst"
     },
     {
@@ -461,10 +423,6 @@
     },
     {
       "a": "ring_thin_gold",
-      "b": "gem_light_blue"
-    },
-    {
-      "a": "ring_thin_gold",
       "b": "green_amethyst"
     },
     {
@@ -490,10 +448,6 @@
     {
       "a": "ring_thin_gold",
       "b": "rose_quartz"
-    },
-    {
-      "a": "ring_thin_silver",
-      "b": "gem_light_blue"
     },
     {
       "a": "ring_thin_silver",

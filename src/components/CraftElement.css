@@ -222,7 +222,7 @@
   border-radius: 50%;
 }
 
-/* All stone gems share one visual footprint (blue/light-blue matched to green/yellow). */
+/* All stone gems share one visual footprint. */
 .craft-el--stones.craft-el--photo .craft-el__shape {
   width: calc(3.45rem * var(--craft-scale));
   height: calc(3.45rem * var(--craft-scale));
