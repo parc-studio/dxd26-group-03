@@ -93,7 +93,7 @@
     {
       "id": "earring-gold",
       "label": "Gold earrings",
-      "category": "gold",
+      "category": "earring",
       "shape": "link",
       "kind": "material",
       "image": "/textures/earring-gold.png",
@@ -102,7 +102,7 @@
     {
       "id": "earring-silver",
       "label": "Silver earrings",
-      "category": "silver",
+      "category": "earring",
       "shape": "link",
       "kind": "material",
       "image": "/textures/earring-silver.png",
