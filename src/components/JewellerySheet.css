@@ -390,10 +390,13 @@
   opacity: 1;
 }
 
-/* Spec blocks under making-of photos (Poseidon / two-stone) */
+/* Spec blocks under making-of photos (Poseidon / two-stone).
+   One max-content column (widest line), centered; titles L-aligned inside. */
 .jewellery-sheet__details {
-  margin: var(--space-5) 0 0;
+  margin: var(--space-5) auto 0;
   padding: 0 0 calc(5.75rem + var(--safe-bottom));
+  width: max-content;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: stretch;
