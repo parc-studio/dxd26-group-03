@@ -13,11 +13,11 @@ import type { ElementCategory, ElementKind, ShapeKind } from '../types'
  * Values multiply the CSS shape footprint (`1` = base size in CraftElement.css).
  */
 export const CRAFT_SCALE_DEFAULTS = {
-  default: 0.9,
-  ring: 0.8,
+  default: 0.85,
+  ring: 0.75,
   jewellery: 1.7,
   /** earring-gold / earring-silver — Fotini can edit */
-  earring: 1.1,
+  earring: .75,
 } as const
 
 /** Optional overrides keyed by catalog id (or set `"scale"` in catalog.json). */
