@@ -294,37 +294,25 @@ export function CraftSpace() {
   }, []);
 
   // Measure playfield under the logo/hint and de-overlap starters.
+  // Nothing may touch at first view — not even pieces that combine: the
+  // tilt / shake physics separate every pair, so a touching pair would
+  // visibly jump apart right after the board shows. A few rounds settle
+  // crowded spots fully (one round can leave a bit of overlap).
   useLayoutEffect(() => {
-    const bounds = refreshPlayfield();
-    const { w, h } = spaceSize();
-    const seated = separateAll(
-      elementsRef.current.map((el) => {
-        const c = clampToPlayfield(el.x, el.y, bounds);
+    const seat = (bounds: PlayfieldBounds) => {
+      const { w, h } = spaceSize();
+      let next = elementsRef.current.map((el) => {
+        const c = clampToPlayfield(el.x, el.y, boundsFor(bounds, el.instanceId));
         return { ...el, x: c.x, y: c.y };
-      }),
-      bounds,
-      w,
-      h,
-      allowsCraftOverlap,
-    );
-    commitElements(seated);
-
-    const onResize = () => {
-      const nextBounds = refreshPlayfield();
-      const size = spaceSize();
-      commitElements(
-        separateAll(
-          elementsRef.current.map((el) => {
-            const c = clampToPlayfield(el.x, el.y, nextBounds);
-            return { ...el, x: c.x, y: c.y };
-          }),
-          nextBounds,
-          size.w,
-          size.h,
-          allowsCraftOverlap,
-        ),
-      );
+      });
+      for (let round = 0; round < 4; round++) {
+        next = separateAll(next, bounds, w, h);
+      }
+      commitElements(next);
     };
+    seat(refreshPlayfield());
+
+    const onResize = () => seat(refreshPlayfield());
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [commitElements, refreshPlayfield, spaceSize]);
