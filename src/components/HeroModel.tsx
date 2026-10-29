@@ -23,9 +23,7 @@ const MIN_POLAR = THREE.MathUtils.degToRad(10);
 const MAX_POLAR = THREE.MathUtils.degToRad(88);
 // va-et-vient avant le premier contact : amplitude et vitesse (2 = 30 s par tour)
 const IDLE_SWEEP = THREE.MathUtils.degToRad(30);
-const IDLE_SPEED = 0.5;
-// un peu plus rapide dans le reveal, pour donner de la vie à l'apparition
-const REVEAL_IDLE_SPEED = 0.8;
+const IDLE_SPEED = 0.8;
 // gemmes : plus la valeur est haute, plus la couleur est claire (en tailles de gemme)
 const GEM_CLARITY = 2;
 // lueur propre des gemmes (0 = aucune)
@@ -237,8 +235,7 @@ export default function HeroModel({
 
     // avant le premier contact : lent va-et-vient gauche / droite
     controls.autoRotate = true;
-    const idleSpeed = transparentBackground ? REVEAL_IDLE_SPEED : IDLE_SPEED;
-    controls.autoRotateSpeed = idleSpeed;
+    controls.autoRotateSpeed = IDLE_SPEED;
     // le déplacement reste autour du collier et au-dessus du sol invisible
     const panBounds = new THREE.Box3();
     const keepTargetInBounds = () => {
@@ -387,8 +384,8 @@ export default function HeroModel({
       if (controls.autoRotate) {
         // repart dans l'autre sens aux bords du balayage
         const azimuth = controls.getAzimuthalAngle();
-        if (azimuth > IDLE_SWEEP) controls.autoRotateSpeed = idleSpeed;
-        else if (azimuth < -IDLE_SWEEP) controls.autoRotateSpeed = -idleSpeed;
+        if (azimuth > IDLE_SWEEP) controls.autoRotateSpeed = IDLE_SPEED;
+        else if (azimuth < -IDLE_SWEEP) controls.autoRotateSpeed = -IDLE_SPEED;
       }
       controls.update();
       composer.render();
