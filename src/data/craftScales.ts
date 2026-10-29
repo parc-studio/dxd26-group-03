@@ -15,9 +15,9 @@ import type { ElementCategory, ElementKind, ShapeKind } from '../types'
 export const CRAFT_SCALE_DEFAULTS = {
   default: 0.85,
   ring: 0.75,
-  jewellery: 1.7,
+  jewellery: 1.85,
   /** earring-gold / earring-silver — Fotini can edit */
-  earring: .75,
+  earring: .7,
 } as const
 
 /** Optional overrides keyed by catalog id (or set `"scale"` in catalog.json). */
