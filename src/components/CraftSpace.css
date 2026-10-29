@@ -140,3 +140,8 @@
   );
 }
 
+/* Product sheet open: the wash stops where the sheet starts, not over it */
+.craft-space.is-sheet-open .celestial-header::after {
+  height: var(--celestial-header-sheet-top);
+}
+

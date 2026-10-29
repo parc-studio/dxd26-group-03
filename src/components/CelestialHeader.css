@@ -12,6 +12,11 @@
   );
   /* soft fade below the header: craft header wash + reveal veil share it */
   --celestial-header-fade: calc(var(--celestial-header-offset) * 0.3);
+  /* product sheet top: under the logo row, without the extra bottom space */
+  --celestial-header-sheet-top: calc(
+    var(--celestial-header-offset) - var(--celestial-header-pad-bottom) +
+      var(--celestial-header-pad-y)
+  );
 }
 
 .celestial-header {

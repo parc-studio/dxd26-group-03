@@ -1,7 +1,7 @@
 .jewellery-sheet {
   position: fixed;
-  /* flush under CelestialHeader — same token as JewelleryReveal */
-  inset: var(--celestial-header-offset) 0 0;
+  /* under the logo row (token in CelestialHeader.css) */
+  inset: var(--celestial-header-sheet-top) 0 0;
   z-index: 40;
   pointer-events: none;
 }

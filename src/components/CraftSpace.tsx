@@ -916,7 +916,7 @@ export function CraftSpace() {
         jewelleryReveal && jewelleryRevealShown
           ? " is-jewellery-reveal-shown"
           : ""
-      }`}
+      }${sheet ? " is-sheet-open" : ""}`}
       ref={spaceRef}
     >
       <CelestialHeader
