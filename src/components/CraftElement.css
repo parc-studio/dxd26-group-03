@@ -136,6 +136,16 @@
   transform: translateZ(0);
   /* `rotate` stacks with transform, so animations keep the stone's random tilt. */
   rotate: var(--craft-rotate, 0deg);
+  /* Grab area = the button box (the shape ignores pointers). A hit inset lets
+     the image overflow it, so a sparse cutout isn't grabbable by its empty corners. */
+  margin: calc(-1 * var(--craft-hit-inset-y, 0px))
+    calc(-1 * var(--craft-hit-inset-x, 0px));
+}
+
+/* Thin chain + drop: grab only around the necklace itself */
+.craft-el[data-catalog-id='necklace_apatite'] {
+  --craft-hit-inset-x: 2.5rem;
+  --craft-hit-inset-y: 1.25rem;
 }
 
 .craft-el.is-paint-ready .craft-el__shape {
@@ -185,7 +195,8 @@
 .craft-el__label {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 0.2rem);
+  /* above the image, not the (possibly inset) grab area */
+  bottom: calc(100% + 0.2rem + var(--craft-hit-inset-y, 0px));
   transform: translateX(-50%);
   width: max-content;
   max-width: min(12rem, 80vw);
@@ -359,8 +370,9 @@
   box-shadow: none;
 }
 
+/* stays absolute (base rule): `relative` kept the left: 50% shift and pushed
+   the centred name off to the right */
 .craft-el--jewellery-piece .craft-el__label {
-  position: relative;
   z-index: 2;
 }
 
