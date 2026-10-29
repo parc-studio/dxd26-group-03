@@ -177,6 +177,19 @@
   transition-duration: var(--reveal-exit-ms);
 }
 
+/* Closing: the arrival in reverse — flies back to the piece on the board
+   (--return-x/y/scale set in JewelleryReveal.tsx), easing in and out as it
+   shrinks onto it, and fades out at the end while the board piece fades in (CraftSpace) */
+.jewellery-reveal.is-leaving .jewellery-reveal__stage.is-returning {
+  opacity: 0;
+  transform: translate3d(var(--return-x, 0px), var(--return-y, 0px), 0)
+    scale(var(--return-scale, 0.04));
+  transition:
+    transform var(--reveal-return-ms) cubic-bezier(0.65, 0, 0.35, 1),
+    opacity var(--reveal-land-fade-ms) ease
+      calc(var(--reveal-return-ms) - var(--reveal-land-fade-ms));
+}
+
 .jewellery-reveal__model {
   display: block;
   width: 100%;

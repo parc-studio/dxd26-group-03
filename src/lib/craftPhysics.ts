@@ -3,6 +3,31 @@ import type { CraftInstance } from '../types'
 /** Approx half of a craft element — used for circle collisions (tweak freely). */
 export const ELEMENT_HIT_RADIUS_PX = 34
 
+/** Collision radius (px) per body id; set by the board (necklaces are big). */
+let hitRadiusOf: (id: string) => number = () => ELEMENT_HIT_RADIUS_PX
+
+export function setHitRadiusLookup(lookup: ((id: string) => number) | null) {
+  hitRadiusOf = lookup ?? (() => ELEMENT_HIT_RADIUS_PX)
+}
+
+/**
+ * Extra top inset (% of craft space) per body id, for pieces drawn taller
+ * than the hit radius (finished jewellery): bounds only limit the centre, so
+ * a big piece would otherwise reach up over the logo. Set by the board.
+ */
+let topInsetOf: (id: string) => number = () => 0
+
+export function setTopInsetLookup(lookup: ((id: string) => number) | null) {
+  topInsetOf = lookup ?? (() => 0)
+}
+
+/** Playfield for one piece: its centre stays low enough for its own height. */
+export function boundsFor(bounds: PlayfieldBounds, id: string): PlayfieldBounds {
+  const extra = topInsetOf(id)
+  if (!(extra > 0)) return bounds
+  return { ...bounds, minY: Math.min(bounds.maxY, bounds.minY + extra) }
+}
+
 /** Restitution when bouncing off playfield edges. */
 export const WALL_BOUNCE = 0.62
 
@@ -71,10 +96,15 @@ export function clampToPlayfield(
   }
 }
 
-function radiusPct(spaceWidthPx: number, spaceHeightPx: number) {
+/** Mean radius of a pair (their contact distance is twice this). */
+function radiusPct(
+  radiusPx: number,
+  spaceWidthPx: number,
+  spaceHeightPx: number,
+) {
   return {
-    rx: (ELEMENT_HIT_RADIUS_PX / Math.max(1, spaceWidthPx)) * 100,
-    ry: (ELEMENT_HIT_RADIUS_PX / Math.max(1, spaceHeightPx)) * 100,
+    rx: (radiusPx / Math.max(1, spaceWidthPx)) * 100,
+    ry: (radiusPx / Math.max(1, spaceHeightPx)) * 100,
   }
 }
 
@@ -118,24 +148,25 @@ export function bounceWalls(
   bounds: PlayfieldBounds,
 ): void {
   for (const b of bodies) {
+    const own = boundsFor(bounds, b.id)
     if (b.pinned) {
-      const c = clampToPlayfield(b.x, b.y, bounds)
+      const c = clampToPlayfield(b.x, b.y, own)
       b.x = c.x
       b.y = c.y
       continue
     }
-    if (b.x < bounds.minX) {
-      b.x = bounds.minX
+    if (b.x < own.minX) {
+      b.x = own.minX
       b.vx = Math.abs(b.vx) * WALL_BOUNCE
-    } else if (b.x > bounds.maxX) {
-      b.x = bounds.maxX
+    } else if (b.x > own.maxX) {
+      b.x = own.maxX
       b.vx = -Math.abs(b.vx) * WALL_BOUNCE
     }
-    if (b.y < bounds.minY) {
-      b.y = bounds.minY
+    if (b.y < own.minY) {
+      b.y = own.minY
       b.vy = Math.abs(b.vy) * WALL_BOUNCE
-    } else if (b.y > bounds.maxY) {
-      b.y = bounds.maxY
+    } else if (b.y > own.maxY) {
+      b.y = own.maxY
       b.vy = -Math.abs(b.vy) * WALL_BOUNCE
     }
   }
@@ -151,13 +182,19 @@ export function resolveBodyCollisions(
   spaceHeightPx: number,
   skipPair?: (aId: string, bId: string) => boolean,
 ): void {
-  const { rx, ry } = radiusPct(spaceWidthPx, spaceHeightPx)
+  const radii = bodies.map((b) => hitRadiusOf(b.id))
 
   for (let i = 0; i < bodies.length; i++) {
     for (let j = i + 1; j < bodies.length; j++) {
       const a = bodies[i]
       const b = bodies[j]
       if (skipPair?.(a.id, b.id)) continue
+
+      const { rx, ry } = radiusPct(
+        (radii[i] + radii[j]) / 2,
+        spaceWidthPx,
+        spaceHeightPx,
+      )
 
       const hit = overlapNormal(a.x, a.y, b.x, b.y, rx, ry)
       if (!hit) continue
@@ -211,7 +248,11 @@ export function resolveDragPush(
   spaceHeightPx: number,
   isMergePartner: (otherCatalogId: string) => boolean,
 ): CraftInstance[] {
-  const pinned = clampToPlayfield(draggedPos.x, draggedPos.y, bounds)
+  const pinned = clampToPlayfield(
+    draggedPos.x,
+    draggedPos.y,
+    boundsFor(bounds, draggedId),
+  )
   const bodies: PhysicsBody[] = instances.map((el) => ({
     id: el.instanceId,
     x: el.instanceId === draggedId ? pinned.x : el.x,
@@ -251,7 +292,7 @@ export function resolveDragPush(
   return instances.map((el) => {
     const b = byId.get(el.instanceId)
     if (!b) return el
-    const c = clampToPlayfield(b.x, b.y, bounds)
+    const c = clampToPlayfield(b.x, b.y, boundsFor(bounds, el.instanceId))
     return { ...el, x: c.x, y: c.y }
   })
 }
@@ -302,7 +343,7 @@ export function separateAll(
   return instances.map((el) => {
     const b = byId.get(el.instanceId)
     if (!b) return el
-    const c = clampToPlayfield(b.x, b.y, bounds)
+    const c = clampToPlayfield(b.x, b.y, boundsFor(bounds, el.instanceId))
     return { ...el, x: c.x, y: c.y }
   })
 }

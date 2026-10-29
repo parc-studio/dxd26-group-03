@@ -18,16 +18,21 @@ import {
   type JewelleryDetail,
 } from "../data/catalog";
 import {
+  boundsFor,
   clampToPlayfield,
   defaultPlayfield,
+  ELEMENT_HIT_RADIUS_PX,
   measurePlayfield,
   resolveDragPush,
   separateAll,
+  setHitRadiusLookup,
+  setTopInsetLookup,
   type PlayfieldBounds,
 } from "../lib/craftPhysics";
 import { findDropTarget, findMatchingTarget } from "../lib/hitTest";
 import { opposingExplodeDirs, runParentExplode } from "../lib/mergeExplode";
 import {
+  JEWELLERY_REVEAL_LAND_FADE_MS,
   MERGE_CONVERGE_MS,
   MERGE_PARENT_GAP_PX,
   MERGE_PUNCH_MS,
@@ -52,6 +57,8 @@ import { JewelleryReveal } from "./JewelleryReveal";
 import { JewellerySheet } from "./JewellerySheet";
 
 const APPOINTMENT_TOAST_MS = 6000;
+/** Necklace hit circle as a share of its drawn half-width (1 = whole box). */
+const NECKLACE_HIT_RADIUS_RATIO = 0.9;
 /** Lets the board's own images load first before warming the 3D reveal. */
 const REVEAL_WARMUP_DELAY_MS = 1200;
 /** Hold overlap this long before showing the appointment toast. */
@@ -124,6 +131,10 @@ export function CraftSpace() {
     Record<string, { x: number; y: number }>
   >({});
   const [underFlashId, setUnderFlashId] = useState<string | null>(null);
+  /** Board piece made by the merge behind the open reveal. */
+  const revealResultIdRef = useRef<string | null>(null);
+  /** Board piece fading in as the closing reveal's 3D piece lands on it. */
+  const [returnLandId, setReturnLandId] = useState<string | null>(null);
   const [appointmentToast, setAppointmentToast] = useState<
     "off" | "on" | "leaving"
   >("off");
@@ -184,6 +195,67 @@ export function CraftSpace() {
     }, APPOINTMENT_HOLD_MS);
   }, [showAppointmentToast]);
 
+  /** Extra top inset (px) per catalog piece; cleared when the board resizes. */
+  const topInsetPxRef = useRef(new Map<string, number>());
+
+  // Pieces taller than the hit radius (finished jewellery) keep their top
+  // edge as low as the small pieces' — and their name (shown above them while
+  // dragged) too — never up over the logo. Layout effect, so it is in place
+  // before the starters are seated below.
+  useLayoutEffect(() => {
+    setTopInsetLookup((id) => {
+      const space = spaceRef.current;
+      const el = elementsRef.current.find((e) => e.instanceId === id);
+      if (!space || !el) return 0;
+      let extraPx = topInsetPxRef.current.get(el.catalogId);
+      if (extraPx === undefined) {
+        const piece = space.querySelector<HTMLElement>(
+          `[data-instance-id="${id}"]`,
+        );
+        const shape = piece?.querySelector<HTMLElement>(".craft-el__shape");
+        const label = piece?.querySelector<HTMLElement>(".craft-el__label");
+        if (!piece || !shape) return 0; // not on screen yet: measured next time
+        const overHalf = shape.offsetHeight / 2 - ELEMENT_HIT_RADIUS_PX;
+        // name sits above the piece box (bottom: 100% + gap): negative offsetTop
+        const labelPx = label ? Math.max(0, -label.offsetTop) : 0;
+        extraPx = overHalf > 0 ? overHalf + labelPx : 0;
+        topInsetPxRef.current.set(el.catalogId, extraPx);
+      }
+      return extraPx > 0
+        ? (extraPx / Math.max(1, space.clientHeight)) * 100
+        : 0;
+    });
+    return () => setTopInsetLookup(null);
+  }, []);
+
+  /** Collision radius (px) per necklace; cleared when the board resizes. */
+  const hitRadiusPxRef = useRef(new Map<string, number>());
+
+  // Necklaces are drawn far bigger than the 34px hit circle: give them one
+  // their own size, so they don't lie over each other or over the metals.
+  useLayoutEffect(() => {
+    setHitRadiusLookup((id) => {
+      const el = elementsRef.current.find((e) => e.instanceId === id);
+      if (!el || !el.catalogId.startsWith("necklace")) {
+        return ELEMENT_HIT_RADIUS_PX;
+      }
+      let radius = hitRadiusPxRef.current.get(el.catalogId);
+      if (radius === undefined) {
+        const shape = spaceRef.current?.querySelector<HTMLElement>(
+          `[data-instance-id="${id}"] .craft-el__shape`,
+        );
+        if (!shape) return ELEMENT_HIT_RADIUS_PX; // measured next time
+        radius = Math.max(
+          ELEMENT_HIT_RADIUS_PX,
+          (shape.offsetWidth / 2) * NECKLACE_HIT_RADIUS_RATIO,
+        );
+        hitRadiusPxRef.current.set(el.catalogId, radius);
+      }
+      return radius;
+    });
+    return () => setHitRadiusLookup(null);
+  }, []);
+
   useEffect(() => {
     return () => {
       if (appointmentToastTimerRef.current !== null) {
@@ -200,11 +272,13 @@ export function CraftSpace() {
     if (!space) return playfieldRef.current;
     const next = measurePlayfield(space, brandRef.current);
     playfieldRef.current = next;
+    topInsetPxRef.current.clear();
+    hitRadiusPxRef.current.clear();
     return next;
   }, []);
 
-  const getPlayfield = useCallback(() => {
-    return playfieldRef.current;
+  const getPlayfield = useCallback((id: string) => {
+    return boundsFor(playfieldRef.current, id);
   }, []);
 
   const spaceSize = useCallback(() => {
@@ -624,9 +698,37 @@ export function CraftSpace() {
     setSheet(null);
   }, []);
 
+  // Closing the reveal: its 3D piece flies back onto the new piece on the
+  // board; that piece stays hidden, then fades in as the 3D one fades out.
+  const handleRevealReturn = useCallback(() => {
+    const id = revealResultIdRef.current;
+    if (!id) return null;
+    const shape = spaceRef.current?.querySelector(
+      `[data-instance-id="${id}"] .craft-el__shape`,
+    );
+    if (!shape) return null;
+    // read before hiding: the hidden state scales the piece down
+    const rect = shape.getBoundingClientRect();
+    setUnderFlashId(id);
+    return rect;
+  }, []);
+
+  // ...and fades in over the last beat of the flight
+  const handleRevealReturnFlight = useCallback((ms: number) => {
+    const id = revealResultIdRef.current;
+    if (!id) return;
+    window.setTimeout(() => {
+      setUnderFlashId(null);
+      setReturnLandId(id);
+    }, Math.max(0, ms - JEWELLERY_REVEAL_LAND_FADE_MS));
+  }, []);
+
   const closeJewelleryReveal = useCallback(() => {
     // closed before the blur finished: still put the board back
     handleRevealCovered();
+    setUnderFlashId(null);
+    setReturnLandId(null);
+    revealResultIdRef.current = null;
     jewelleryRevealOpenRef.current = false;
     setJewelleryReveal(null);
     setJewelleryRevealMetal("gold");
@@ -637,6 +739,7 @@ export function CraftSpace() {
     if (!jewelleryReveal) return;
     const detail = jewelleryReveal;
     handleRevealCovered();
+    revealResultIdRef.current = null;
     jewelleryRevealOpenRef.current = false;
     setJewelleryReveal(null);
     setJewelleryRevealMetal("gold");
@@ -651,7 +754,11 @@ export function CraftSpace() {
       clearAppointmentHold();
 
       const bounds = refreshPlayfield();
-      const clamped = clampToPlayfield(pos.x, pos.y, bounds);
+      const clamped = clampToPlayfield(
+        pos.x,
+        pos.y,
+        boundsFor(bounds, instanceId),
+      );
       const placed = elementsRef.current.map((el) =>
         el.instanceId === instanceId
           ? { ...el, x: clamped.x, y: clamped.y }
@@ -736,8 +843,10 @@ export function CraftSpace() {
       );
 
       const origin = dragOriginRef.current[instanceId];
+      // From the target toward the side the dragged piece started on: the
+      // pieces split back along it, so the drop never swaps their order.
       const approach = origin
-        ? { x: clamped.x - origin.x, y: clamped.y - origin.y }
+        ? { x: origin.x - target.x, y: origin.y - target.y }
         : { x: dragged.x - target.x, y: dragged.y - target.y };
 
       const parentA = dragged.instanceId;
@@ -822,6 +931,7 @@ export function CraftSpace() {
         );
         setJewelleryRevealMetal(revealMetal);
         setJewelleryRevealShown(false);
+        revealResultIdRef.current = result.instanceId;
         setJewelleryReveal(detail);
       }
 
@@ -860,10 +970,8 @@ export function CraftSpace() {
           const bounds = refreshPlayfield();
           const size = spaceSize();
           const gap = (MERGE_PARENT_GAP_PX / size.w) * 100;
-          const leftId =
-            (from[parentA]?.x ?? 0) <= (from[parentB]?.x ?? 0)
-              ? parentA
-              : parentB;
+          // each parent comes back on the side it started on
+          const leftId = approach.x <= 0 ? parentA : parentB;
           commitElements(
             separateAll(
               elementsRef.current.map((el) => {
@@ -938,6 +1046,7 @@ export function CraftSpace() {
           mergePhase={parentMergePhase[el.instanceId]}
           mergeFrom={parentMergeFrom[el.instanceId]}
           revealing={underFlashId === el.instanceId}
+          returnLand={returnLandId === el.instanceId}
           onMove={handleMove}
           onDrop={handleDrop}
           onDragStart={handleDragStart}
@@ -960,6 +1069,8 @@ export function CraftSpace() {
           metal={jewelleryRevealMetal}
           shown={jewelleryRevealShown}
           onCovered={handleRevealCovered}
+          onReturn={handleRevealReturn}
+          onReturnFlight={handleRevealReturnFlight}
           origin={jewelleryRevealOrigin}
           onClose={closeJewelleryReveal}
           onViewProduct={viewProductFromReveal}

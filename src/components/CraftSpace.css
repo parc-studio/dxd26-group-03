@@ -89,7 +89,8 @@
 }
 
 /* While the finished-product reveal is up, freeze craft pointer input */
-.craft-space.is-jewellery-revealing .craft-el {
+.craft-space.is-jewellery-revealing .craft-el,
+.craft-space.is-jewellery-revealing .craft-el::after {
   pointer-events: none;
 }
 

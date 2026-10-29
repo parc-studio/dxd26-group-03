@@ -9,7 +9,12 @@ import {
 } from 'react'
 import type { JewelleryDetail } from '../data/catalog'
 import { jewelleryHeroModelUrl } from '../lib/jewelleryModel'
-import { JEWELLERY_REVEAL_EXIT_MS } from '../lib/mergeTiming'
+import {
+  JEWELLERY_REVEAL_EXIT_MS,
+  JEWELLERY_REVEAL_LAND_FADE_MS,
+  JEWELLERY_REVEAL_RETURN_MIN_MS,
+  jewelleryRevealReturnMs,
+} from '../lib/mergeTiming'
 import type { Metal } from './HeroModel'
 import './JewelleryReveal.css'
 
@@ -39,6 +44,14 @@ interface JewelleryRevealProps {
   shown?: boolean
   /** The blur has fully faded in over the board (safe to change the board). */
   onCovered?: () => void
+  /**
+   * Closing (×, Escape, "Continue to discover"): where the piece sits on the
+   * board (screen rect of its image). The 3D piece shrinks back onto it — the
+   * opening in reverse — and fades into it. null → plain fade out.
+   */
+  onReturn?: () => DOMRect | null
+  /** The flight back has started; it lasts this long (depends on distance). */
+  onReturnFlight?: (ms: number) => void
   onClose: () => void
   onViewProduct: () => void
 }
@@ -49,6 +62,8 @@ export function JewelleryReveal({
   origin,
   shown = true,
   onCovered,
+  onReturn,
+  onReturnFlight,
   onClose,
   onViewProduct,
 }: JewelleryRevealProps) {
@@ -89,10 +104,41 @@ export function JewelleryReveal({
     onClose()
   }, [onClose])
 
-  const requestClose = useCallback(() => {
+  const closingRef = useRef(false)
+  const fadeOut = useCallback(() => {
     setPhase('leaving')
     window.setTimeout(finishClose, JEWELLERY_REVEAL_EXIT_MS)
   }, [finishClose])
+
+  // the opening in reverse: the 3D piece flies back to its spot on the board,
+  // shrinking to the size of the piece there
+  const [returning, setReturning] = useState(false)
+  const [returnMs, setReturnMs] = useState(JEWELLERY_REVEAL_RETURN_MIN_MS)
+  const requestClose = useCallback(() => {
+    if (closingRef.current) return
+    closingRef.current = true
+    const stage = stageRef.current
+    const target = onReturn?.()
+    if (!stage || !target) {
+      fadeOut()
+      return
+    }
+    const rect = stage.getBoundingClientRect()
+    const dx = target.left + target.width / 2 - (rect.left + rect.width / 2)
+    const dy = target.top + target.height / 2 - (rect.top + rect.height / 2)
+    stage.style.setProperty('--return-x', `${dx}px`)
+    stage.style.setProperty('--return-y', `${dy}px`)
+    stage.style.setProperty(
+      '--return-scale',
+      String(Math.min(1, target.height / Math.max(1, rect.height))),
+    )
+    const ms = jewelleryRevealReturnMs(Math.hypot(dx, dy))
+    setReturnMs(ms)
+    setReturning(true)
+    setPhase('leaving')
+    onReturnFlight?.(ms)
+    window.setTimeout(finishClose, ms)
+  }, [onReturn, onReturnFlight, fadeOut, finishClose])
 
   useEffect(() => {
     if (!shown) return
@@ -117,7 +163,15 @@ export function JewelleryReveal({
   }, [arrived, onCovered])
 
   const stateClass = `${shown ? '' : ' is-pending'}${open ? ' is-open' : ''}${arrived || leaving ? ' is-arrived' : ''}${leaving ? ' is-leaving' : ''}`
-  const arriveVar = { ['--reveal-arrive-ms' as string]: `${ARRIVE_MS}ms` }
+  const arriveVar = {
+    ['--reveal-arrive-ms' as string]: `${ARRIVE_MS}ms`,
+    ['--reveal-return-ms' as string]: `${returnMs}ms`,
+    ['--reveal-land-fade-ms' as string]: `${JEWELLERY_REVEAL_LAND_FADE_MS}ms`,
+    // the blur and UI clear within the (faster) flight back
+    ...(returning
+      ? { ['--reveal-exit-ms' as string]: `${returnMs}ms` }
+      : null),
+  }
 
   return (
     <>
@@ -157,7 +211,7 @@ export function JewelleryReveal({
 
       <div
         ref={stageRef}
-        className={`jewellery-reveal__stage${arrived ? ' is-arrived' : ''}`}
+        className={`jewellery-reveal__stage${arrived ? ' is-arrived' : ''}${returning ? ' is-returning' : ''}`}
       >
         <Suspense fallback={null}>
           <HeroModel

@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useState,
   type CSSProperties,
   type RefObject,
@@ -10,6 +11,7 @@ import { resolveCraftScale } from '../data/craftScales'
 import { usePointerDrag } from '../hooks/usePointerDrag'
 import type { PlayfieldBounds } from '../lib/craftPhysics'
 import {
+  JEWELLERY_REVEAL_LAND_FADE_MS,
   MERGE_CONVERGE_MS,
   MERGE_PUNCH_MS,
   MERGE_REVEAL_MS,
@@ -69,7 +71,8 @@ function useTexturePaintReady(src: string | undefined): boolean {
 interface CraftElementProps {
   data: CraftInstance
   boundsRef: RefObject<HTMLElement | null>
-  getPlayfield?: () => PlayfieldBounds
+  /** Playfield for this piece (by instance id: tall pieces sit lower). */
+  getPlayfield?: (instanceId: string) => PlayfieldBounds
   zIndex: number
   mergePhase?: ParentMergePhase
   /** Suck-in start, in px from the merge point (element is already there). */
@@ -78,6 +81,8 @@ interface CraftElementProps {
   revealing?: boolean
   /** Soft entrance once the flash eases. */
   revealAnim?: boolean
+  /** Fades in as the closing reveal's 3D piece lands on it. */
+  returnLand?: boolean
   onMove: (instanceId: string, next: { x: number; y: number }) => void
   onDrop: (instanceId: string, next: { x: number; y: number }) => void
   onDragStart?: (instanceId: string, origin: { x: number; y: number }) => void
@@ -95,6 +100,7 @@ export function CraftElement({
   mergeFrom,
   revealing = false,
   revealAnim = false,
+  returnLand = false,
   onMove,
   onDrop,
   onDragStart,
@@ -125,6 +131,11 @@ export function CraftElement({
     return true
   }, [data.kind, data.catalogId, onOpenJewellery])
 
+  const ownPlayfield = useMemo(
+    () => (getPlayfield ? () => getPlayfield(data.instanceId) : undefined),
+    [getPlayfield, data.instanceId],
+  )
+
   const { dragging, handlers } = usePointerDrag({
     position: { x: data.x, y: data.y },
     onMove: handleMove,
@@ -132,7 +143,7 @@ export function CraftElement({
     onDragStart: handleDragStart,
     onTap: handleTap,
     boundsRef,
-    getPlayfield,
+    getPlayfield: ownPlayfield,
   })
 
   const kindClass =
@@ -186,11 +197,19 @@ export function CraftElement({
   return (
     <button
       type="button"
-      className={`craft-el craft-el--${data.category} craft-el--${data.shape}${kindClass}${hasPhoto ? ' craft-el--photo' : ''}${paintReady ? ' is-paint-ready' : ''}${dragging ? ' is-dragging' : ''}${phaseClass}${revealing ? ' is-under-flash' : ''}${revealAnim ? ' is-merge-reveal' : ''}`}
+      className={`craft-el craft-el--${data.category} craft-el--${data.shape}${kindClass}${hasPhoto ? ' craft-el--photo' : ''}${paintReady ? ' is-paint-ready' : ''}${dragging ? ' is-dragging' : ''}${phaseClass}${revealing ? ' is-under-flash' : ''}${revealAnim ? ' is-merge-reveal' : ''}${returnLand ? ' is-return-land' : ''}`}
       style={{
         left: `${data.x}%`,
         top: `${data.y}%`,
-        zIndex: dragging || mergePhase ? 1100 : revealing || revealAnim ? 1150 : zIndex,
+        // merging pieces lift above the board but keep their stacking order
+        // (the dragged gem stays in front of the chain it lands on)
+        zIndex: dragging
+          ? 1100
+          : mergePhase
+            ? 1000 + zIndex
+            : revealing || revealAnim || returnLand
+              ? 1150
+              : zIndex,
         backgroundColor: 'transparent',
         ['--craft-scale' as string]: String(craftScale),
         ['--craft-rotate' as string]: `${data.rotation ?? 0}deg`,
@@ -199,6 +218,7 @@ export function CraftElement({
         ['--merge-from-y' as string]: `${mergeFrom?.y ?? 0}px`,
         ['--merge-punch-ms' as string]: `${MERGE_PUNCH_MS}ms`,
         ['--merge-reveal-ms' as string]: `${MERGE_REVEAL_MS}ms`,
+        ['--return-land-ms' as string]: `${JEWELLERY_REVEAL_LAND_FADE_MS}ms`,
       }}
       data-instance-id={data.instanceId}
       data-catalog-id={data.catalogId}
