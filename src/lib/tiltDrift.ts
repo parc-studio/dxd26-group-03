@@ -34,8 +34,17 @@ export interface TiltDriftOptions {
   onFrame: (positions: Record<string, { x: number; y: number }>) => void
 }
 
+/** iOS WebKit (Safari, Chrome, every iOS browser) reports gravity with the opposite sign to Android. */
+const IOS_SIGN =
+  /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    ? -1
+    : 1
+
 /** Screen-space slide direction (right, down) from a device gravity reading. */
 function screenSlide(ax: number, ay: number): { x: number; y: number } {
+  ax *= IOS_SIGN
+  ay *= IOS_SIGN
   const angle = ((screen.orientation?.angle ?? 0) * Math.PI) / 180
   const sx = ax * Math.cos(angle) + ay * Math.sin(angle)
   const sy = -ax * Math.sin(angle) + ay * Math.cos(angle)
