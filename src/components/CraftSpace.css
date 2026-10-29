@@ -121,6 +121,13 @@
   pointer-events: none;
 }
 
+/* "View product": they come back as the product page slides in */
+.craft-space:has(.jewellery-reveal.is-handoff) .celestial-header__cart,
+.craft-space:has(.jewellery-reveal.is-handoff) .celestial-header__burger {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* Fade veil under logo/icons, dissolving into craft linen */
 .craft-space .celestial-header::after {
   content: '';

@@ -28,6 +28,16 @@
   transform: translate3d(0, 0, 0);
 }
 
+/* mounted early to warm its 3D (the canvas still renders while hidden) */
+.jewellery-sheet.is-held {
+  visibility: hidden;
+}
+
+/* from the reveal: a slower push in over it */
+.jewellery-sheet.is-from-reveal .jewellery-sheet__panel {
+  transition: transform var(--sheet-reveal-enter-ms, 480ms) ease-in-out;
+}
+
 /* floats over the 3D view so the model starts at the top edge */
 .jewellery-sheet__bar {
   position: absolute;
@@ -318,6 +328,7 @@
   }
 
   .jewellery-sheet__panel,
+  .jewellery-sheet.is-from-reveal .jewellery-sheet__panel,
   .jewellery-sheet__photo-img {
     transition: none;
   }

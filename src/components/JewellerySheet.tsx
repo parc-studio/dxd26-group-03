@@ -20,7 +20,24 @@ interface JewellerySheetProps {
   onClose: () => void;
   /** Called with the chosen quantity; the sheet then closes. */
   onAddToCart: (qty: number) => void;
+  /**
+   * Opened from the finished-product reveal: waits off-screen for its 3D view
+   * (no first-load hitch mid-slide), then slides in slower over the reveal.
+   */
+  fromReveal?: boolean;
+  /**
+   * Mounted ahead of time, hidden off-screen, so its 3D view is warm by the
+   * time it is asked for; slides in when this turns false.
+   */
+  held?: boolean;
+  /** fromReveal: the slide-in is over and the sheet covers the screen. */
+  onEntered?: () => void;
 }
+
+/** Slide-in over the reveal (the closing slide stays at 280ms). */
+const REVEAL_ENTER_MS = 480;
+/** Longest wait for a cold 3D view before sliding in regardless. */
+const MODEL_WAIT_MAX_MS = 400;
 
 // Text for the piece shown by the 3D model, which is the same for every
 // jewellery result; swatches reuse the closest catalog textures.
@@ -182,6 +199,9 @@ export function JewellerySheet({
   detail,
   onClose,
   onAddToCart,
+  fromReveal = false,
+  held = false,
+  onEntered,
 }: JewellerySheetProps) {
   const piece = { ...SHOWCASE, metals: METALS, ...PIECES[detail.id] };
   const metalOptions = METAL_OPTIONS.filter((o) => piece.metals.includes(o.value));
@@ -197,10 +217,30 @@ export function JewellerySheet({
   // Element whose name bubble is showing after a tap on its swatch.
   const [shownElement, setShownElement] = useState<string | null>(null);
 
+  // fromReveal: slide in only once the 3D view is compiled and in the scene
+  const [modelReady, setModelReady] = useState(!fromReveal);
+  const onModelReady = useCallback(() => setModelReady(true), []);
   useEffect(() => {
+    if (modelReady || held) return;
+    const id = window.setTimeout(onModelReady, MODEL_WAIT_MAX_MS);
+    return () => window.clearTimeout(id);
+  }, [modelReady, held, onModelReady]);
+
+  useEffect(() => {
+    if (!modelReady || held) return;
     const id = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(id);
-  }, []);
+  }, [modelReady, held]);
+
+  // fromReveal: the init-time flag, so the callback fires once
+  const fromRevealRef = useRef(fromReveal);
+  const onEnteredRef = useRef(onEntered);
+  onEnteredRef.current = onEntered;
+  useEffect(() => {
+    if (!entered || !fromRevealRef.current) return;
+    const id = window.setTimeout(() => onEnteredRef.current?.(), REVEAL_ENTER_MS);
+    return () => window.clearTimeout(id);
+  }, [entered]);
 
   // fetch every metal's glb up front so the switch swaps without a reload
   const metalsKey = piece.metals.join();
@@ -241,12 +281,13 @@ export function JewellerySheet({
   }, [flying]);
 
   useEffect(() => {
+    if (held) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") requestClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [requestClose]);
+  }, [held, requestClose]);
 
   // Shop format: "CHF25.00", no space after the currency.
   const priceLabel = `CHF${detail.price.toFixed(2)}`;
@@ -255,7 +296,9 @@ export function JewellerySheet({
 
   return (
     <div
-      className={`jewellery-sheet${entered && !closing ? " is-open" : ""}${closing ? " is-closing" : ""}${flying !== null ? " is-flying" : ""}`}
+      className={`jewellery-sheet${entered && !closing ? " is-open" : ""}${closing ? " is-closing" : ""}${flying !== null ? " is-flying" : ""}${fromRevealRef.current && !closing ? " is-from-reveal" : ""}${held ? " is-held" : ""}`}
+      style={{ ["--sheet-reveal-enter-ms" as string]: `${REVEAL_ENTER_MS}ms` }}
+      aria-hidden={held || undefined}
       role="dialog"
       aria-modal="true"
       aria-labelledby="jewellery-sheet-title"
@@ -305,6 +348,7 @@ export function JewellerySheet({
                   src={jewelleryHeroModelUrl(detail.id, metal)}
                   metal={metal}
                   freeOrbit={false}
+                  onReady={onModelReady}
                 />
               </Suspense>
             </div>

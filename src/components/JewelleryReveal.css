@@ -17,6 +17,25 @@
   touch-action: none;
 }
 
+/* fading out: let taps through to whatever is underneath (product page) */
+.jewellery-reveal.is-leaving {
+  pointer-events: none;
+}
+
+/* "View product": under the product page (40) so it slides in over the
+   reveal, which stays as is until covered */
+.jewellery-reveal.is-handoff,
+.jewellery-reveal__veil.is-handoff {
+  z-index: 39;
+  pointer-events: none;
+}
+
+/* its × sits in the header row, which the product page doesn't cover */
+.jewellery-reveal.is-handoff .jewellery-reveal__close {
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+
 /* mounted during the merge to warm the 3D, not yet shown (the canvas still
    renders while hidden, so its shaders are compiled by the time it opens) */
 .jewellery-reveal.is-pending {

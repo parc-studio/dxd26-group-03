@@ -53,6 +53,7 @@ interface JewelleryRevealProps {
   /** The flight back has started; it lasts this long (depends on distance). */
   onReturnFlight?: (ms: number) => void
   onClose: () => void
+  /** Opens the product page over the reveal; the parent then unmounts it. */
   onViewProduct: () => void
 }
 
@@ -140,6 +141,17 @@ export function JewelleryReveal({
     window.setTimeout(finishClose, ms)
   }, [onReturn, onReturnFlight, fadeOut, finishClose])
 
+  // "View product": the reveal drops under the product page, which slides in
+  // over it from the right (its closing slide in reverse); the parent
+  // unmounts the reveal once covered — no fade, no return flight to the board
+  const [handoff, setHandoff] = useState(false)
+  const viewProduct = useCallback(() => {
+    if (closingRef.current) return
+    closingRef.current = true
+    setHandoff(true)
+    onViewProduct()
+  }, [onViewProduct])
+
   useEffect(() => {
     if (!shown) return
     const onKey = (e: KeyboardEvent) => {
@@ -162,7 +174,7 @@ export function JewelleryReveal({
     return () => window.clearTimeout(id)
   }, [arrived, onCovered])
 
-  const stateClass = `${shown ? '' : ' is-pending'}${open ? ' is-open' : ''}${arrived || leaving ? ' is-arrived' : ''}${leaving ? ' is-leaving' : ''}`
+  const stateClass = `${shown ? '' : ' is-pending'}${open ? ' is-open' : ''}${arrived || leaving ? ' is-arrived' : ''}${leaving ? ' is-leaving' : ''}${handoff ? ' is-handoff' : ''}`
   const arriveVar = {
     ['--reveal-arrive-ms' as string]: `${ARRIVE_MS}ms`,
     ['--reveal-return-ms' as string]: `${returnMs}ms`,
@@ -228,7 +240,7 @@ export function JewelleryReveal({
         <button
           type="button"
           className="jewellery-reveal__cta"
-          onClick={onViewProduct}
+          onClick={viewProduct}
         >
           View product
         </button>

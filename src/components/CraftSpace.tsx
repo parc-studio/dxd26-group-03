@@ -60,6 +60,25 @@ import { JewellerySheet } from "./JewellerySheet";
 const isRecipePair = (a: string, b: string) =>
   Boolean(findRecipeResult(a, b));
 
+/**
+ * Nothing touches — not even pieces that combine: the tilt / shake physics
+ * separate every pair, so a touching pair would visibly jump apart once the
+ * board is live again. A few rounds settle crowded spots fully (one round can
+ * leave a bit of overlap).
+ */
+function seatApart(
+  instances: CraftInstance[],
+  bounds: PlayfieldBounds,
+  w: number,
+  h: number,
+): CraftInstance[] {
+  let next = instances;
+  for (let round = 0; round < 4; round++) {
+    next = separateAll(next, bounds, w, h);
+  }
+  return next;
+}
+
 const APPOINTMENT_TOAST_MS = 6000;
 /** Necklace hit circle as a share of its drawn half-width (1 = whole box). */
 const NECKLACE_HIT_RADIUS_RATIO = 0.9;
@@ -103,6 +122,8 @@ export function CraftSpace() {
     elementsRef.current.map((el) => el.instanceId),
   );
   const [sheet, setSheet] = useState<JewelleryDetail | null>(detailFromHash);
+  /** The open sheet was opened by the reveal's "View product". */
+  const [sheetFromReveal, setSheetFromReveal] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   /** True when the open sheet pushed its own history entry (close → back). */
   const sheetPushedRef = useRef(false);
@@ -120,6 +141,15 @@ export function CraftSpace() {
     revealCoveredRef.current = null;
     settle?.();
   }, []);
+  /**
+   * The reveal has fully arrived: its product page may now mount (held) to
+   * warm up — not earlier, so its 3D setup doesn't stutter the fly-in.
+   */
+  const [revealArrived, setRevealArrived] = useState(false);
+  const handleRevealArrived = useCallback(() => {
+    handleRevealCovered();
+    setRevealArrived(true);
+  }, [handleRevealCovered]);
   /** Screen point where the parents were sucked in — the reveal's 3D piece grows from it. */
   const [jewelleryRevealOrigin, setJewelleryRevealOrigin] = useState<{
     x: number;
@@ -294,21 +324,15 @@ export function CraftSpace() {
   }, []);
 
   // Measure playfield under the logo/hint and de-overlap starters.
-  // Nothing may touch at first view — not even pieces that combine: the
-  // tilt / shake physics separate every pair, so a touching pair would
-  // visibly jump apart right after the board shows. A few rounds settle
-  // crowded spots fully (one round can leave a bit of overlap).
+  // Nothing may touch at first view (seatApart).
   useLayoutEffect(() => {
     const seat = (bounds: PlayfieldBounds) => {
       const { w, h } = spaceSize();
-      let next = elementsRef.current.map((el) => {
+      const clamped = elementsRef.current.map((el) => {
         const c = clampToPlayfield(el.x, el.y, boundsFor(bounds, el.instanceId));
         return { ...el, x: c.x, y: c.y };
       });
-      for (let round = 0; round < 4; round++) {
-        next = separateAll(next, bounds, w, h);
-      }
-      commitElements(next);
+      commitElements(seatApart(clamped, bounds, w, h));
     };
     seat(refreshPlayfield());
 
@@ -609,6 +633,10 @@ export function CraftSpace() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
+  useEffect(() => {
+    if (!sheet) setSheetFromReveal(false);
+  }, [sheet]);
+
   const showSheet = useCallback((detail: JewelleryDetail) => {
     if (readProductFromHash() === detail.id) return;
     sheetPushedRef.current = true;
@@ -675,17 +703,18 @@ export function CraftSpace() {
     clearBusyIfIdle();
   }, [clearBusyIfIdle, handleRevealCovered]);
 
+  // The product page slides in over the still-open reveal, which unmounts
+  // once covered (sheet onEntered → closeJewelleryReveal): the board never shows.
   const viewProductFromReveal = useCallback(() => {
     if (!jewelleryReveal) return;
     const detail = jewelleryReveal;
     handleRevealCovered();
     revealResultIdRef.current = null;
-    jewelleryRevealOpenRef.current = false;
-    setJewelleryReveal(null);
-    setJewelleryRevealMetal("gold");
+    setSheetFromReveal(true);
+    // mount the sheet now, not on the async hashchange
+    setSheet(detail);
     showSheet(detail);
-    clearBusyIfIdle();
-  }, [jewelleryReveal, clearBusyIfIdle, handleRevealCovered, showSheet]);
+  }, [jewelleryReveal, handleRevealCovered, showSheet]);
 
   const handleDrop = useCallback(
     (instanceId: string, pos: { x: number; y: number }) => {
@@ -852,6 +881,7 @@ export function CraftSpace() {
         );
         setJewelleryRevealMetal(revealMetal);
         setJewelleryRevealShown(false);
+        setRevealArrived(false);
         revealResultIdRef.current = result.instanceId;
         setJewelleryReveal(detail);
       }
@@ -891,10 +921,11 @@ export function CraftSpace() {
           const bounds = refreshPlayfield();
           const size = spaceSize();
           const gap = (MERGE_PARENT_GAP_PX / size.w) * 100;
-          // each parent comes back on the side it started on
+          // each parent comes back on the side it started on; nothing left
+          // touching (seatApart), or it jumps once the board is live again
           const leftId = approach.x <= 0 ? parentA : parentB;
           commitElements(
-            separateAll(
+            seatApart(
               elementsRef.current.map((el) => {
                 if (el.instanceId !== parentA && el.instanceId !== parentB) {
                   return el;
@@ -903,14 +934,13 @@ export function CraftSpace() {
                 const spot = clampToPlayfield(
                   mid.x + side * gap,
                   mid.y,
-                  bounds,
+                  boundsFor(bounds, el.instanceId),
                 );
                 return { ...el, x: spot.x, y: spot.y };
               }),
               bounds,
               size.w,
               size.h,
-              allowsCraftOverlap,
             ),
           );
           setParentMergePhase({});
@@ -992,7 +1022,7 @@ export function CraftSpace() {
           detail={jewelleryReveal}
           metal={jewelleryRevealMetal}
           shown={jewelleryRevealShown}
-          onCovered={handleRevealCovered}
+          onCovered={handleRevealArrived}
           onReturn={handleRevealReturn}
           onReturnFlight={handleRevealReturnFlight}
           origin={jewelleryRevealOrigin}
@@ -1001,9 +1031,15 @@ export function CraftSpace() {
         />
       ) : null}
 
-      {sheet ? (
+      {/* while the reveal is up, its product page waits mounted (held) so
+          "View product" slides it in at once, its 3D already warm */}
+      {sheet || (jewelleryReveal && revealArrived) ? (
         <JewellerySheet
-          detail={sheet}
+          key={(sheet ?? jewelleryReveal)!.id}
+          detail={(sheet ?? jewelleryReveal)!}
+          fromReveal={!sheet || sheetFromReveal}
+          held={!sheet}
+          onEntered={closeJewelleryReveal}
           onClose={closeJewellery}
           onAddToCart={(qty) => setCartCount((n) => n + qty)}
         />
