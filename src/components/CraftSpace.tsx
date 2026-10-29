@@ -912,7 +912,11 @@ export function CraftSpace() {
 
   return (
     <div
-      className={`craft-space${jewelleryReveal ? " is-jewellery-revealing" : ""}`}
+      className={`craft-space${jewelleryReveal ? " is-jewellery-revealing" : ""}${
+        jewelleryReveal && jewelleryRevealShown
+          ? " is-jewellery-reveal-shown"
+          : ""
+      }`}
       ref={spaceRef}
     >
       <CelestialHeader

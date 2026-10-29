@@ -5,7 +5,8 @@
   position: fixed;
   /* flush under CelestialHeader — same token as JewellerySheet */
   inset: var(--celestial-header-offset) 0 0;
-  z-index: 40;
+  /* above the header (45) so the close button can sit in its icon row */
+  z-index: 46;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -33,9 +34,17 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: color-mix(in srgb, #fff 56%, transparent);
+  /* linen at the top like the craft header's fade (CraftSpace.css), then white */
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--linen-tint, #f2ede2) 78%, transparent) 0%,
+    color-mix(in srgb, #fff 56%, transparent) 60%
+  );
   backdrop-filter: blur(14px) saturate(1.05);
   -webkit-backdrop-filter: blur(14px) saturate(1.05);
+  /* fades the tint + blur out toward the top: no hard edge under the header */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 64px);
+  mask-image: linear-gradient(180deg, transparent 0, #000 64px);
   opacity: 0;
   transition: opacity var(--reveal-arrive-ms) cubic-bezier(0.34, 1, 0.64, 1);
 }
@@ -50,10 +59,15 @@
   transition: opacity var(--reveal-exit-ms) ease 0ms;
 }
 
+/* sits in the header's icon row, where the cart + menu were (hidden during
+   the reveal in CraftSpace.css); centred on the logo line like those icons */
 .jewellery-reveal__close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
+  position: fixed;
+  top: calc(
+    var(--safe-top) + var(--celestial-header-pad-y) +
+      var(--celestial-header-logo-h) / 2 - 1.375rem
+  );
+  right: 10px;
   z-index: 3;
   display: inline-flex;
   align-items: center;
@@ -63,16 +77,14 @@
   margin: 0;
   padding: 0;
   border: none;
-  border-radius: 50%;
-  background: color-mix(in srgb, #fff 72%, transparent);
+  background: transparent;
   color: var(--color-ink);
   cursor: pointer;
   opacity: 0;
   transform: translate3d(0, -6px, 0);
   transition:
     opacity var(--reveal-ui-ms) ease var(--reveal-ui-delay),
-    transform var(--reveal-ui-ms) ease var(--reveal-ui-delay),
-    background 160ms ease;
+    transform var(--reveal-ui-ms) ease var(--reveal-ui-delay);
   -webkit-appearance: none;
   appearance: none;
 }
@@ -92,10 +104,6 @@
 .jewellery-reveal__close:focus-visible {
   outline: 2px solid var(--color-brand);
   outline-offset: 3px;
-}
-
-.jewellery-reveal__close:active {
-  background: #fff;
 }
 
 /* piece name above the model; side padding clears the close button */
