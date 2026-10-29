@@ -116,18 +116,25 @@ export function JewelleryReveal({
     return () => window.clearTimeout(id)
   }, [arrived, onCovered])
 
+  const stateClass = `${shown ? '' : ' is-pending'}${open ? ' is-open' : ''}${arrived || leaving ? ' is-arrived' : ''}${leaving ? ' is-leaving' : ''}`
+  const arriveVar = { ['--reveal-arrive-ms' as string]: `${ARRIVE_MS}ms` }
+
   return (
+    <>
+    {/* full page, under the header (logo stays sharp), over every craft piece */}
     <div
-      className={`jewellery-reveal${shown ? '' : ' is-pending'}${open ? ' is-open' : ''}${arrived || leaving ? ' is-arrived' : ''}${leaving ? ' is-leaving' : ''}`}
+      className={`jewellery-reveal__veil${stateClass}`}
+      style={arriveVar}
+      aria-hidden="true"
+    />
+    <div
+      className={`jewellery-reveal${stateClass}`}
       aria-hidden={!shown}
-      style={{
-        ['--reveal-arrive-ms' as string]: `${ARRIVE_MS}ms`,
-      }}
+      style={arriveVar}
       role="dialog"
       aria-modal="true"
       aria-label={detail.displayName}
     >
-      <div className="jewellery-reveal__veil" aria-hidden="true" />
 
       <button
         type="button"
@@ -180,5 +187,6 @@ export function JewelleryReveal({
         </button>
       </div>
     </div>
+    </>
   )
 }

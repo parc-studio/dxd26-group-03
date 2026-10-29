@@ -127,7 +127,8 @@
   left: 0;
   right: 0;
   top: 0;
-  height: calc(100% + 32px);
+  /* scales with the header (logo size, safe area) instead of a fixed px tail */
+  height: calc(100% + var(--celestial-header-fade));
   z-index: -1;
   pointer-events: none;
   background: linear-gradient(

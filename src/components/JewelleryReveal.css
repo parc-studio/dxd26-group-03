@@ -25,15 +25,19 @@
 }
 
 /*
- * Craft stays visible: soft dim + blur, not an opaque curtain. Fades in
- * together with the 3D piece growing: same start, same duration
+ * Covers the whole page, under the CelestialHeader (45) so the logo and close
+ * stay sharp, above the craft pieces, so nothing on the board shows through,
+ * even right under the header.
+ * Fades in together with the 3D piece growing: same start, same duration
  * (ARRIVE_MS in JewelleryReveal.tsx), same curve.
  * Only opacity animates: the blur radius stays fixed (animating it glitched).
  */
 .jewellery-reveal__veil {
-  position: absolute;
+  --reveal-exit-ms: 700ms;
+  position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: 44;
+  pointer-events: none;
   /* linen at the top like the craft header's fade (CraftSpace.css), then white */
   background: linear-gradient(
     180deg,
@@ -42,19 +46,20 @@
   );
   backdrop-filter: blur(14px) saturate(1.05);
   -webkit-backdrop-filter: blur(14px) saturate(1.05);
-  /* fades the tint + blur out toward the top: no hard edge under the header */
-  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 64px);
-  mask-image: linear-gradient(180deg, transparent 0, #000 64px);
   opacity: 0;
   transition: opacity var(--reveal-arrive-ms) cubic-bezier(0.34, 1, 0.64, 1);
 }
 
-.jewellery-reveal.is-arrived .jewellery-reveal__veil {
+.jewellery-reveal__veil.is-pending {
+  visibility: hidden;
+}
+
+.jewellery-reveal__veil.is-arrived {
   opacity: 1;
 }
 
 /* closing: plain fade only (the blur itself is never animated) */
-.jewellery-reveal.is-leaving .jewellery-reveal__veil {
+.jewellery-reveal__veil.is-leaving {
   opacity: 0;
   transition: opacity var(--reveal-exit-ms) ease 0ms;
 }

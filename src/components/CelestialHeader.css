@@ -1,13 +1,17 @@
 /* Shared by JewellerySheet / JewelleryReveal so both sit flush under the bar */
 :root {
   --celestial-header-pad-y: 24px;
+  /* extra room under the logo (logo size unchanged) */
+  --celestial-header-pad-bottom: 40px;
   --celestial-header-logo-w: 130px;
   --celestial-header-logo-h: 51px;
   --celestial-header-burger-w: 18px;
   --celestial-header-offset: calc(
     var(--celestial-header-pad-y) + var(--celestial-header-logo-h) +
-      var(--celestial-header-pad-y) + var(--safe-top)
+      var(--celestial-header-pad-bottom) + var(--safe-top)
   );
+  /* soft fade below the header: craft header wash + reveal veil share it */
+  --celestial-header-fade: calc(var(--celestial-header-offset) * 0.3);
 }
 
 .celestial-header {
@@ -27,7 +31,8 @@
   max-width: 100%;
   box-sizing: border-box;
   margin: 0;
-  padding: var(--celestial-header-pad-y) 16px;
+  padding: var(--celestial-header-pad-y) 16px
+    var(--celestial-header-pad-bottom);
   padding-top: calc(var(--celestial-header-pad-y) + var(--safe-top));
   border: 0;
   background: var(--background-color);
