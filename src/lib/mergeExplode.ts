@@ -1,23 +1,10 @@
 import {
   bounceWalls,
-  clampToPlayfield,
   resolveBodyCollisions,
   type PhysicsBody,
   type PlayfieldBounds,
 } from './craftPhysics'
-import {
-  MERGE_EXPLODE_DAMPING,
-  MERGE_EXPLODE_MAX_MS,
-  MERGE_EXPLODE_SPEED_PX,
-  MERGE_EXPLODE_STOP_SPEED_PX,
-  MERGE_PARENT_SPLIT_PX,
-} from './mergeTiming'
-
-export interface ExplodeBody {
-  id: string
-  /** Unit direction of travel. */
-  dir: { x: number; y: number }
-}
+import { MERGE_BURST_MS } from './mergeTiming'
 
 function normalize(x: number, y: number): { x: number; y: number } {
   const len = Math.hypot(x, y)
@@ -47,151 +34,134 @@ export function opposingExplodeDirs(
   return [a, { x: -a.x, y: -a.y }]
 }
 
+/** Cubic ease-in-out: slow start, quick middle, soft landing. */
+function easeInOut(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2
+}
+
+type Positions = Record<string, { x: number; y: number }>
+
+/** Grow-in start size: matches craft-explode-grow in CraftElement.css. */
+const GROW_FROM = 0.15
+
+/** Collision passes per frame, and on the last frame to leave nothing touching. */
+const PUSH_PASSES = 2
+const FINAL_PASSES = 10
+
 /**
- * Integrate exploding parents + the rest of the board with velocity, damping,
- * wall bounce, and element collisions. Positions are craft-space percents.
+ * The merge burst as one smooth move: the parents glide from the merge point
+ * to their spot (`to`) on an ease-in-out curve, growing meanwhile, and push
+ * the other pieces aside as they reach them, frame by frame. They pass
+ * through the new piece they burst out of (`sourceId`), which can grow in at
+ * the same pace (`growSource`) and push its neighbours away too. Hit radii
+ * grow with the pieces (same curve as the CSS grow), so a push starts when
+ * the pieces visibly touch. Positions are craft-space percents. Returns a
+ * cancel function.
  */
-export function runParentExplode(options: {
+export function runParentBurst(options: {
   mid: { x: number; y: number }
-  /** Parents that receive the initial outward impulse. */
-  bodies: ExplodeBody[]
-  /** Other elements currently on the board (start at rest, can be pushed). */
-  others?: { id: string; x: number; y: number; pinned?: boolean }[]
+  parents: { id: string; to: { x: number; y: number } }[]
+  /** Everything else on the board; pinned pieces stay put. */
+  others: { id: string; x: number; y: number; pinned?: boolean }[]
+  sourceId?: string
+  /** The new piece grows in with the parents (not when it shows later). */
+  growSource?: boolean
   spaceWidthPx: number
   spaceHeightPx: number
   playfield: PlayfieldBounds
-  /** 1 = full burst; use ~0.35–0.45 under JewelleryReveal. */
-  impulseScale?: number
-  onFrame: (positions: Record<string, { x: number; y: number }>) => void
+  durationMs?: number
+  onFrame: (positions: Positions) => void
   onDone: () => void
 }): () => void {
   const {
     mid,
-    bodies,
-    others = [],
-    spaceWidthPx,
-    spaceHeightPx,
+    parents,
+    others,
+    sourceId,
+    growSource = false,
+    spaceWidthPx: w,
+    spaceHeightPx: h,
     playfield,
-    impulseScale = 1,
+    durationMs = MERGE_BURST_MS,
     onFrame,
     onDone,
   } = options
 
-  const w = Math.max(1, spaceWidthPx)
-  const h = Math.max(1, spaceHeightPx)
-  const speedScale = (MERGE_PARENT_SPLIT_PX / 100) * impulseScale
-  const speed0 = MERGE_EXPLODE_SPEED_PX * speedScale
-  const maxMs = MERGE_EXPLODE_MAX_MS * Math.min(1, 0.55 + impulseScale * 0.45)
-  const impulseIds = new Set(bodies.map((b) => b.id))
+  const parentIds = new Set(parents.map((p) => p.id))
+  const burstIds = new Set(parentIds)
+  if (sourceId) burstIds.add(sourceId)
+  const passThrough = (aId: string, bId: string) =>
+    burstIds.has(aId) && burstIds.has(bId)
 
+  // parents are driven along their path (pinned: they push, aren't pushed)
+  const parentBodies: PhysicsBody[] = parents.map((p) => ({
+    id: p.id,
+    x: mid.x,
+    y: mid.y,
+    vx: 0,
+    vy: 0,
+    pinned: true,
+  }))
   const state: PhysicsBody[] = [
-    ...bodies.map((body) => ({
-      id: body.id,
-      x: mid.x,
-      y: mid.y,
-      vx: ((body.dir.x * speed0) / w) * 100,
-      vy: ((body.dir.y * speed0) / h) * 100,
-    })),
+    ...parentBodies,
     ...others
-      .filter((o) => !impulseIds.has(o.id))
+      .filter((o) => !parentIds.has(o.id))
       .map((o) => ({
         id: o.id,
         x: o.x,
         y: o.y,
         vx: 0,
         vy: 0,
-        pinned: Boolean(o.pinned),
+        pinned: Boolean(o.pinned) || o.id === sourceId,
       })),
   ]
 
-  // Seat at mid / clamp before the first tick.
-  for (const s of state) {
-    if (impulseIds.has(s.id)) {
-      const c = clampToPlayfield(mid.x, mid.y, playfield)
-      s.x = c.x
-      s.y = c.y
-    } else {
-      const c = clampToPlayfield(s.x, s.y, playfield)
-      s.x = c.x
-      s.y = c.y
+  const source =
+    growSource && sourceId ? state.find((s) => s.id === sourceId) : undefined
+
+  const settle = (passes: number) => {
+    for (let i = 0; i < passes; i++) {
+      resolveBodyCollisions(state, w, h, passThrough)
+      bounceWalls(state, playfield)
     }
-  }
-
-  let raf = 0
-  let last = performance.now()
-  const started = last
-  let finished = false
-
-  const emit = () => {
-    const positions: Record<string, { x: number; y: number }> = {}
+    // pushes are positional only: no velocity carried between frames
     for (const s of state) {
-      positions[s.id] = { x: s.x, y: s.y }
-    }
-    onFrame(positions)
-  }
-
-  const finish = () => {
-    if (finished) return
-    finished = true
-    cancelAnimationFrame(raf)
-    for (const s of state) {
-      const c = clampToPlayfield(s.x, s.y, playfield)
-      s.x = c.x
-      s.y = c.y
       s.vx = 0
       s.vy = 0
     }
-    // Final separation so nothing rests overlapping.
-    for (let i = 0; i < 4; i++) {
-      resolveBodyCollisions(state, w, h)
-      bounceWalls(state, playfield)
-    }
-    emit()
-    onDone()
   }
+
+  const emit = () => {
+    const positions: Positions = {}
+    for (const s of state) positions[s.id] = { x: s.x, y: s.y }
+    onFrame(positions)
+  }
+
+  let raf = 0
+  let finished = false
+  const started = performance.now()
 
   const tick = (now: number) => {
     if (finished) return
-    const dt = Math.min(0.032, Math.max(0.001, (now - last) / 1000))
-    last = now
-
-    const damp = Math.exp(-MERGE_EXPLODE_DAMPING * dt)
-    let maxSpeedPx = 0
-
-    for (const s of state) {
-      if (s.pinned) {
-        s.vx = 0
-        s.vy = 0
-        continue
-      }
-      s.vx *= damp
-      s.vy *= damp
-      s.x += s.vx * dt
-      s.y += s.vy * dt
-    }
-
-    resolveBodyCollisions(state, w, h)
-    bounceWalls(state, playfield)
-
-    for (const s of state) {
-      const speedPx = Math.hypot((s.vx / 100) * w, (s.vy / 100) * h)
-      maxSpeedPx = Math.max(maxSpeedPx, speedPx)
-    }
-
+    const t = Math.min(1, (now - started) / durationMs)
+    const k = easeInOut(t)
+    const scale = GROW_FROM + (1 - GROW_FROM) * k
+    parents.forEach((p, i) => {
+      parentBodies[i].x = mid.x + (p.to.x - mid.x) * k
+      parentBodies[i].y = mid.y + (p.to.y - mid.y) * k
+      parentBodies[i].scale = scale
+    })
+    if (source) source.scale = scale
+    settle(t < 1 ? PUSH_PASSES : FINAL_PASSES)
     emit()
-
-    if (
-      maxSpeedPx < MERGE_EXPLODE_STOP_SPEED_PX ||
-      now - started > maxMs
-    ) {
-      finish()
+    if (t < 1) {
+      raf = requestAnimationFrame(tick)
       return
     }
-
-    raf = requestAnimationFrame(tick)
+    finished = true
+    onDone()
   }
 
-  emit()
   raf = requestAnimationFrame(tick)
 
   return () => {

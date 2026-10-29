@@ -12,6 +12,7 @@ import { usePointerDrag } from '../hooks/usePointerDrag'
 import type { PlayfieldBounds } from '../lib/craftPhysics'
 import {
   JEWELLERY_REVEAL_LAND_FADE_MS,
+  MERGE_BURST_MS,
   MERGE_CONVERGE_MS,
   MERGE_PUNCH_MS,
   MERGE_REVEAL_MS,
@@ -214,6 +215,7 @@ export function CraftElement({
         ['--craft-scale' as string]: String(craftScale),
         ['--craft-rotate' as string]: `${data.rotation ?? 0}deg`,
         ['--merge-converge-ms' as string]: `${MERGE_CONVERGE_MS}ms`,
+        ['--merge-burst-ms' as string]: `${MERGE_BURST_MS}ms`,
         ['--merge-from-x' as string]: `${mergeFrom?.x ?? 0}px`,
         ['--merge-from-y' as string]: `${mergeFrom?.y ?? 0}px`,
         ['--merge-punch-ms' as string]: `${MERGE_PUNCH_MS}ms`,

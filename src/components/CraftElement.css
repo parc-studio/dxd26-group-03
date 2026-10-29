@@ -98,12 +98,29 @@
 
 .craft-el.is-merge-explode {
   pointer-events: none;
-  animation: none;
+  /* grows from small to full size while the burst carries it to the side of
+     the new piece: same length and ease-in-out as that move (MERGE_BURST_MS) */
+  animation: craft-explode-grow var(--merge-burst-ms, 1400ms)
+    cubic-bezier(0.65, 0, 0.35, 1) both;
   /* Position driven every frame by explode physics — no CSS teleport. */
   transition: none;
   transform: translate3d(-50%, -50%, 0) scale(1);
   filter: drop-shadow(0 8px 16px rgba(71, 43, 43, 0.18));
   z-index: 1100;
+}
+
+@keyframes craft-explode-grow {
+  from {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) scale(0.15);
+  }
+  25% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+  }
 }
 
 .craft-el.is-under-flash {
@@ -115,7 +132,9 @@
 
 .craft-el.is-merge-reveal {
   pointer-events: none;
-  animation: jewellery-reveal var(--merge-reveal-ms, 800ms) ease-out both;
+  /* slow, even grow from small (same as the burst's, over MERGE_REVEAL_MS) */
+  animation: craft-explode-grow var(--merge-reveal-ms, 1800ms)
+    cubic-bezier(0.65, 0, 0.35, 1) both;
 }
 
 .craft-el__shape {
@@ -446,21 +465,6 @@
   }
 }
 
-@keyframes jewellery-reveal {
-  0% {
-    opacity: 0;
-    transform: translate3d(-50%, -50%, 0) scale(0.62);
-  }
-  55% {
-    opacity: 1;
-    transform: translate3d(-50%, -50%, 0) scale(1.06);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(-50%, -50%, 0) scale(1);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .craft-el {
     animation: none;
@@ -468,6 +472,7 @@
 
   .craft-el.is-merge-converge,
   .craft-el.is-merge-vanish,
+  .craft-el.is-merge-explode,
   .craft-el.is-merge-reveal {
     transition-duration: 1ms;
     animation-duration: 1ms;

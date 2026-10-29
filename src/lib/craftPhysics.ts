@@ -50,6 +50,8 @@ export interface PhysicsBody {
   vy: number
   /** When true, position is pinned (e.g. finger-dragged); others bounce off it. */
   pinned?: boolean
+  /** Hit radius factor while the piece grows in (merge burst); default 1. */
+  scale?: number
 }
 
 export function defaultPlayfield(): PlayfieldBounds {
@@ -182,7 +184,7 @@ export function resolveBodyCollisions(
   spaceHeightPx: number,
   skipPair?: (aId: string, bId: string) => boolean,
 ): void {
-  const radii = bodies.map((b) => hitRadiusOf(b.id))
+  const radii = bodies.map((b) => hitRadiusOf(b.id) * (b.scale ?? 1))
 
   for (let i = 0; i < bodies.length; i++) {
     for (let j = i + 1; j < bodies.length; j++) {
@@ -308,6 +310,8 @@ export function separateAll(
   spaceWidthPx: number,
   spaceHeightPx: number,
   allowsOverlap?: (catalogA: string, catalogB: string) => boolean,
+  /** Pieces that stay put; the others make room around them. */
+  isPinned?: (el: CraftInstance) => boolean,
 ): CraftInstance[] {
   const bodies: PhysicsBody[] = instances.map((el) => ({
     id: el.instanceId,
@@ -315,6 +319,7 @@ export function separateAll(
     y: el.y,
     vx: 0,
     vy: 0,
+    pinned: isPinned?.(el) ?? false,
   }))
 
   const catalogByInstance = new Map(

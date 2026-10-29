@@ -34,12 +34,13 @@ import {
   jewelleryHeroModelUrl,
   resolveJewelleryMetal,
 } from "../lib/jewelleryModel";
-import { opposingExplodeDirs, runParentExplode } from "../lib/mergeExplode";
+import { opposingExplodeDirs, runParentBurst } from "../lib/mergeExplode";
 import {
   JEWELLERY_REVEAL_LAND_FADE_MS,
   MERGE_CONVERGE_MS,
-  MERGE_PARENT_GAP_PX,
+  MERGE_PARENT_SPLIT_PX,
   MERGE_PUNCH_MS,
+  MERGE_REVEAL_MS,
 } from "../lib/mergeTiming";
 import {
   attachShakeListener,
@@ -71,10 +72,11 @@ function seatApart(
   bounds: PlayfieldBounds,
   w: number,
   h: number,
+  isPinned?: (el: CraftInstance) => boolean,
 ): CraftInstance[] {
   let next = instances;
   for (let round = 0; round < 4; round++) {
-    next = separateAll(next, bounds, w, h);
+    next = separateAll(next, bounds, w, h, undefined, isPinned);
   }
   return next;
 }
@@ -134,11 +136,11 @@ export function CraftSpace() {
     useState<Metal>("gold");
   /** Reveal is mounted early (hidden) to warm its 3D; true once it should show. */
   const [jewelleryRevealShown, setJewelleryRevealShown] = useState(false);
-  /** Board changes to run once the reveal's blur fully covers the board. */
-  const revealCoveredRef = useRef<(() => void) | null>(null);
-  const handleRevealCovered = useCallback(() => {
-    const settle = revealCoveredRef.current;
-    revealCoveredRef.current = null;
+  /** Board changes to run mid-opening, once the reveal's blur is mostly in. */
+  const revealArriveRef = useRef<(() => void) | null>(null);
+  const handleRevealArrive = useCallback(() => {
+    const settle = revealArriveRef.current;
+    revealArriveRef.current = null;
     settle?.();
   }, []);
   /**
@@ -146,10 +148,25 @@ export function CraftSpace() {
    * warm up — not earlier, so its 3D setup doesn't stutter the fly-in.
    */
   const [revealArrived, setRevealArrived] = useState(false);
-  const handleRevealArrived = useCallback(() => {
-    handleRevealCovered();
+  /** New piece slowly growing in on the board under the reveal's blur. */
+  const [growInId, setGrowInId] = useState<string | null>(null);
+  const growInTimerRef = useRef<number | null>(null);
+  const handleRevealCovered = useCallback(() => {
+    // the new piece shows on the board only once the blur fully covers it,
+    // and grows in slowly (MERGE_REVEAL_MS)
+    setUnderFlashId(null);
     setRevealArrived(true);
-  }, [handleRevealCovered]);
+    const id = revealResultIdRef.current;
+    if (!id) return;
+    setGrowInId(id);
+    if (growInTimerRef.current !== null) {
+      window.clearTimeout(growInTimerRef.current);
+    }
+    growInTimerRef.current = window.setTimeout(() => {
+      growInTimerRef.current = null;
+      setGrowInId((cur) => (cur === id ? null : cur));
+    }, MERGE_REVEAL_MS);
+  }, []);
   /** Screen point where the parents were sucked in — the reveal's 3D piece grows from it. */
   const [jewelleryRevealOrigin, setJewelleryRevealOrigin] = useState<{
     x: number;
@@ -359,7 +376,10 @@ export function CraftSpace() {
       parentB: string,
       approach: { x: number; y: number },
       onDone: () => void,
-      impulseScale = 1,
+      /** The new piece the parents burst out of. */
+      sourceId?: string,
+      /** It grows in with them (it is on show, not hidden under the reveal). */
+      growSource = false,
     ) => {
       explodeCancelRef.current?.();
 
@@ -371,55 +391,75 @@ export function CraftSpace() {
       setParentMergePhase({
         [parentA]: "explode",
         [parentB]: "explode",
+        ...(growSource && sourceId ? { [sourceId]: "explode" as const } : null),
       });
 
-      // Seat parents at the merge point before the impulse so motion is visible.
-      // Keep the new result (if any) where it is — other pieces can be nudged.
-      commitElements(
-        elementsRef.current.map((el) =>
-          el.instanceId === parentA || el.instanceId === parentB
-            ? { ...el, x: midClamped.x, y: midClamped.y }
-            : el,
-        ),
+      // Parents start on the merge point (and grow out of it).
+      const start = elementsRef.current.map((el) =>
+        el.instanceId === parentA || el.instanceId === parentB
+          ? { ...el, x: midClamped.x, y: midClamped.y }
+          : el,
       );
+      commitElements(start);
 
-      const others = elementsRef.current
-        .filter((el) => el.instanceId !== parentA && el.instanceId !== parentB)
-        .map((el) => ({
-          id: el.instanceId,
-          x: el.x,
-          y: el.y,
-          // Finished jewellery stays put; materials get knocked around.
-          pinned: el.kind === "jewellery",
-        }));
+      // Each parent's spot: out on its side, clear of the new piece and of
+      // pieces that stay put (finished jewellery) — worked out with the
+      // whole board spread (seatApart); only the parents' spots are kept.
+      const stays = (el: CraftInstance) =>
+        el.kind === "jewellery" || el.instanceId === sourceId;
+      const split = (dir: { x: number; y: number }) => ({
+        x: midClamped.x + ((dir.x * MERGE_PARENT_SPLIT_PX) / w) * 100,
+        y: midClamped.y + ((dir.y * MERGE_PARENT_SPLIT_PX) / h) * 100,
+      });
+      const ends = { [parentA]: split(dirA), [parentB]: split(dirB) };
+      const spots = seatApart(
+        start.map((el) => {
+          const end = ends[el.instanceId];
+          if (!end) return el;
+          const c = clampToPlayfield(
+            end.x,
+            end.y,
+            boundsFor(bounds, el.instanceId),
+          );
+          return { ...el, x: c.x, y: c.y };
+        }),
+        bounds,
+        w,
+        h,
+        stays,
+      );
+      const spotOf = (id: string) => {
+        const el = spots.find((e) => e.instanceId === id);
+        return { x: el?.x ?? midClamped.x, y: el?.y ?? midClamped.y };
+      };
 
-      explodeCancelRef.current = runParentExplode({
+      // One smooth move: the parents glide out (growing, in CSS) and push
+      // the other pieces aside as they reach them.
+      explodeCancelRef.current = runParentBurst({
         mid: midClamped,
-        bodies: [
-          { id: parentA, dir: dirA },
-          { id: parentB, dir: dirB },
+        parents: [
+          { id: parentA, to: spotOf(parentA) },
+          { id: parentB, to: spotOf(parentB) },
         ],
-        others,
+        others: start
+          .filter(
+            (el) => el.instanceId !== parentA && el.instanceId !== parentB,
+          )
+          .map((el) => ({
+            id: el.instanceId,
+            x: el.x,
+            y: el.y,
+            pinned: stays(el),
+          })),
+        sourceId,
+        growSource,
         spaceWidthPx: w,
         spaceHeightPx: h,
         playfield: bounds,
-        impulseScale,
         onFrame: applyExplodePositions,
         onDone: () => {
           explodeCancelRef.current = null;
           setParentMergePhase({});
-          // Final board-wide separation after the burst settles.
-          const size = spaceSize();
-          const pf = refreshPlayfield();
-          commitElements(
-            separateAll(
-              elementsRef.current,
-              pf,
-              size.w,
-              size.h,
-              allowsCraftOverlap,
-            ),
-          );
           onDone();
         },
       });
@@ -474,7 +514,7 @@ export function CraftSpace() {
   const resetCraftToStarters = useCallback(() => {
     explodeCancelRef.current?.();
     explodeCancelRef.current = null;
-    revealCoveredRef.current = null;
+    revealArriveRef.current = null;
     shakeJostleRef.current?.cancel();
     shakeJostleRef.current = null;
 
@@ -514,7 +554,7 @@ export function CraftSpace() {
   const startShakeJostle = useCallback(() => {
     explodeCancelRef.current?.();
     explodeCancelRef.current = null;
-    revealCoveredRef.current = null;
+    revealArriveRef.current = null;
     shakeJostleRef.current?.cancel();
 
     busyRef.current = true;
@@ -674,6 +714,7 @@ export function CraftSpace() {
     if (!shape) return null;
     // read before hiding: the hidden state scales the piece down
     const rect = shape.getBoundingClientRect();
+    setGrowInId(null);
     setUnderFlashId(id);
     return rect;
   }, []);
@@ -693,7 +734,7 @@ export function CraftSpace() {
 
   const closeJewelleryReveal = useCallback(() => {
     // closed before the blur finished: still put the board back
-    handleRevealCovered();
+    handleRevealArrive();
     setUnderFlashId(null);
     setReturnLandId(null);
     revealResultIdRef.current = null;
@@ -701,20 +742,20 @@ export function CraftSpace() {
     setJewelleryReveal(null);
     setJewelleryRevealMetal("gold");
     clearBusyIfIdle();
-  }, [clearBusyIfIdle, handleRevealCovered]);
+  }, [clearBusyIfIdle, handleRevealArrive]);
 
   // The product page slides in over the still-open reveal, which unmounts
   // once covered (sheet onEntered → closeJewelleryReveal): the board never shows.
   const viewProductFromReveal = useCallback(() => {
     if (!jewelleryReveal) return;
     const detail = jewelleryReveal;
-    handleRevealCovered();
+    handleRevealArrive();
     revealResultIdRef.current = null;
     setSheetFromReveal(true);
     // mount the sheet now, not on the async hashchange
     setSheet(detail);
     showSheet(detail);
-  }, [jewelleryReveal, handleRevealCovered, showSheet]);
+  }, [jewelleryReveal, handleRevealArrive, showSheet]);
 
   const handleDrop = useCallback(
     (instanceId: string, pos: { x: number; y: number }) => {
@@ -822,10 +863,18 @@ export function CraftSpace() {
           result.instanceId,
         ]);
 
-        startParentExplode(mid, parentA, parentB, approach, () => {
-          busyRef.current = false;
-          delete dragOriginRef.current[instanceId];
-        });
+        startParentExplode(
+          mid,
+          parentA,
+          parentB,
+          approach,
+          () => {
+            busyRef.current = false;
+            delete dragOriginRef.current[instanceId];
+          },
+          result.instanceId,
+          true,
+        );
         return;
       }
 
@@ -913,47 +962,32 @@ export function CraftSpace() {
         ]);
         setUnderFlashId(result.instanceId);
 
-        // The board under the reveal settles once the blur fully covers it:
-        // the new piece shows and the parents come back either side of it
-        // (on the side each came from) — no explosion, never seen unblurred.
+        // The board under the reveal settles mid-opening, once its blur is
+        // mostly in: the parents burst slowly back out of the merge
+        // point, growing as they glide out on the side each came from (same
+        // burst as a material merge, MERGE_BURST_MS). The new piece
+        // itself shows once the blur fully covers the board.
         const settleBoard = () => {
-          setUnderFlashId(null);
-          const bounds = refreshPlayfield();
-          const size = spaceSize();
-          const gap = (MERGE_PARENT_GAP_PX / size.w) * 100;
-          // each parent comes back on the side it started on; nothing left
-          // touching (seatApart), or it jumps once the board is live again
-          const leftId = approach.x <= 0 ? parentA : parentB;
-          commitElements(
-            seatApart(
-              elementsRef.current.map((el) => {
-                if (el.instanceId !== parentA && el.instanceId !== parentB) {
-                  return el;
-                }
-                const side = el.instanceId === leftId ? -1 : 1;
-                const spot = clampToPlayfield(
-                  mid.x + side * gap,
-                  mid.y,
-                  boundsFor(bounds, el.instanceId),
-                );
-                return { ...el, x: spot.x, y: spot.y };
-              }),
-              bounds,
-              size.w,
-              size.h,
-            ),
+          if (!detail) setUnderFlashId(null);
+          startParentExplode(
+            mid,
+            parentA,
+            parentB,
+            approach,
+            () => {
+              explodeDoneRef.current = true;
+              delete dragOriginRef.current[instanceId];
+              clearBusyIfIdle();
+            },
+            result.instanceId,
           );
-          setParentMergePhase({});
-          explodeDoneRef.current = true;
-          delete dragOriginRef.current[instanceId];
-          clearBusyIfIdle();
         };
 
         window.setTimeout(() => {
           if (detail) {
             beginAppointmentToastLeave();
-            // the reveal calls this back once its blur fully covers the board
-            revealCoveredRef.current = settleBoard;
+            // the reveal calls this back once its blur is mostly in
+            revealArriveRef.current = settleBoard;
             setJewelleryRevealShown(true);
           } else {
             settleBoard();
@@ -1000,6 +1034,7 @@ export function CraftSpace() {
           mergePhase={parentMergePhase[el.instanceId]}
           mergeFrom={parentMergeFrom[el.instanceId]}
           revealing={underFlashId === el.instanceId}
+          revealAnim={growInId === el.instanceId}
           returnLand={returnLandId === el.instanceId}
           onMove={handleMove}
           onDrop={handleDrop}
@@ -1022,7 +1057,8 @@ export function CraftSpace() {
           detail={jewelleryReveal}
           metal={jewelleryRevealMetal}
           shown={jewelleryRevealShown}
-          onCovered={handleRevealArrived}
+          onBlurIn={handleRevealArrive}
+          onCovered={handleRevealCovered}
           onReturn={handleRevealReturn}
           onReturnFlight={handleRevealReturnFlight}
           origin={jewelleryRevealOrigin}

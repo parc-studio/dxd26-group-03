@@ -6,12 +6,10 @@ export const MERGE_CONVERGE_MS = 450
 /** Beat between the parents vanishing and the new piece leaving that point. */
 export const MERGE_PUNCH_MS = 60
 /**
- * After a jewellery merge the parents come back (no explosion) this far (px)
- * either side of the new piece, as the reveal opens over them.
+ * The new jewellery piece slowly grows in on the board, under the reveal's
+ * blur, once that blur fully covers the board.
  */
-export const MERGE_PARENT_GAP_PX = 90
-/** Flash eases out while the new jewellery reveals (longer = smoother fade). */
-export const MERGE_REVEAL_MS = 960
+export const MERGE_REVEAL_MS = 1800
 
 export const MERGE_JEWELLERY_MS =
   MERGE_CONVERGE_MS + MERGE_PUNCH_MS + MERGE_REVEAL_MS
@@ -40,19 +38,13 @@ export function jewelleryRevealReturnMs(distancePx: number): number {
 export const JEWELLERY_REVEAL_LAND_FADE_MS = 200
 
 /**
- * Approx travel of each parent from the merge point after the explode
- * (~80–120px+). Used to scale initial velocity; settle is physics-driven.
+ * Travel of each parent from the merge point in the burst (px); pieces in
+ * the way, or a bigger new piece, can push them a bit farther.
  */
 export const MERGE_PARENT_SPLIT_PX = 80
 
-/** Initial outward speed (px / second) at the explode start. */
-export const MERGE_EXPLODE_SPEED_PX = 500
-
-/** Velocity retention per second (friction). Lower = stops sooner. */
-export const MERGE_EXPLODE_DAMPING = 7
-
-/** Stop integrating when speed falls below this (px / second). */
-export const MERGE_EXPLODE_STOP_SPEED_PX = 14
-
-/** Safety cap so a soft explode cannot hang the board. */
-export const MERGE_EXPLODE_MAX_MS = 900
+/**
+ * The burst: parents grow out of the merge point and glide to their side
+ * while the board makes room, all in one ease-in-out move.
+ */
+export const MERGE_BURST_MS = 1400

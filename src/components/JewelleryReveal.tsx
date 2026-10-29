@@ -32,6 +32,12 @@ const MODEL_WAIT_MAX_MS = 700
  */
 const ARRIVE_MS = 1100
 
+/**
+ * The blur's fade-in front-loads its opacity (JewelleryReveal.css curve):
+ * by this point it is ~85% in, enough to hide the board starting to move.
+ */
+const BLUR_MOSTLY_IN_MS = 450
+
 interface JewelleryRevealProps {
   detail: JewelleryDetail
   metal?: Metal
@@ -42,6 +48,8 @@ interface JewelleryRevealProps {
    * (during the merge); the reveal opens when this turns true.
    */
   shown?: boolean
+  /** Mid-opening: the blur is mostly in, the board behind it may move. */
+  onBlurIn?: () => void
   /** The blur has fully faded in over the board (safe to change the board). */
   onCovered?: () => void
   /**
@@ -62,6 +70,7 @@ export function JewelleryReveal({
   metal = 'gold',
   origin,
   shown = true,
+  onBlurIn,
   onCovered,
   onReturn,
   onReturnFlight,
@@ -170,9 +179,13 @@ export function JewelleryReveal({
   useEffect(() => {
     if (!arrived || coveredOnce.current) return
     coveredOnce.current = true
+    const blurId = window.setTimeout(() => onBlurIn?.(), BLUR_MOSTLY_IN_MS)
     const id = window.setTimeout(() => onCovered?.(), ARRIVE_MS)
-    return () => window.clearTimeout(id)
-  }, [arrived, onCovered])
+    return () => {
+      window.clearTimeout(blurId)
+      window.clearTimeout(id)
+    }
+  }, [arrived, onBlurIn, onCovered])
 
   const stateClass = `${shown ? '' : ' is-pending'}${open ? ' is-open' : ''}${arrived || leaving ? ' is-arrived' : ''}${leaving ? ' is-leaving' : ''}${handoff ? ' is-handoff' : ''}`
   const arriveVar = {
