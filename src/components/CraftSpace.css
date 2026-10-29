@@ -23,10 +23,10 @@
    * Per-piece: CRAFT_SCALE_BY_ID or catalog.json "scale".
    */
   /* Doc mirrors of craftScales.ts — CraftElement sets --craft-scale from TS. */
-  --craft-scale-default: 0.9;
-  --craft-scale-ring: 0.8;
+  --craft-scale-default: 0.85;
+  --craft-scale-ring: 0.75;
   --craft-scale-jewellery: 1.7;
-  --craft-scale-earring: 1.1;
+  --craft-scale-earring: 0.75;
 }
 
 /* While the finished-product reveal is up, freeze craft pointer input */
