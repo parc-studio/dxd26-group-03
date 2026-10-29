@@ -40,11 +40,18 @@ const SHOWCASE = {
   ],
 };
 
+/** Spec block under making-of photos (Poseidon / two-stone). */
+type PieceDetail =
+  | { label: string; value: string }
+  | { label: string; items: string[] };
+
 type Piece = Partial<Pick<typeof SHOWCASE, "name" | "stock" | "description" | "gems">> & {
   /** Metals the piece is made in (default: all); one hides the switch. */
   metals?: Metal[];
   /** Finished-piece photo, shared by every metal. */
   finalPhoto?: string;
+  /** Spec lines under the photos (two-stone / Poseidon, etc.). */
+  details?: PieceDetail[];
 };
 
 // Per-piece overrides of the showcase.
@@ -70,6 +77,13 @@ const PIECES: Record<string, Piece> = {
       { id: "apatite", label: "Apatite" },
     ],
     metals: ["silver", "gold"],
+    details: [
+      {
+        label: "Fine stone",
+        items: ["Apatite (Brazil)", "Peridot (Arizona, US)"],
+      },
+      { label: "Chain & Wire", items: ["Stainless steel"] },
+    ],
   },
 };
 
@@ -386,6 +400,38 @@ export function JewellerySheet({
                 ))}
               </div>
             </section>
+
+            {piece.details && piece.details.length > 0 && (
+              <dl className="jewellery-sheet__details" aria-label="Details">
+                {piece.details.map((block) => (
+                  <div key={block.label} className="jewellery-sheet__detail">
+                    {"items" in block ? (
+                      <>
+                        <dt className="jewellery-sheet__detail-label">
+                          {block.label}:
+                        </dt>
+                        <dd className="jewellery-sheet__detail-body">
+                          <ul className="jewellery-sheet__detail-items">
+                            {block.items.map((item) => (
+                              <li key={item}>{item}</li>
+                            ))}
+                          </ul>
+                        </dd>
+                      </>
+                    ) : (
+                      <div className="jewellery-sheet__detail-line">
+                        <dt className="jewellery-sheet__detail-label">
+                          {block.label}:
+                        </dt>{" "}
+                        <dd className="jewellery-sheet__detail-value">
+                          {block.value}
+                        </dd>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </dl>
+            )}
           </div>
         </div>
 

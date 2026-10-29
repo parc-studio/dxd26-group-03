@@ -390,3 +390,73 @@
   opacity: 1;
 }
 
+/* Spec blocks under making-of photos (Poseidon / two-stone).
+   Max-content column flush left with body; titles L-aligned inside. */
+.jewellery-sheet__details {
+  margin: var(--space-5) 0 0;
+  padding: 0 0 calc(5.75rem + var(--safe-bottom));
+  width: max-content;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  letter-spacing: 0.01em;
+  color: var(--color-brand-warm);
+  text-align: left;
+}
+
+.jewellery-sheet__detail {
+  margin: 0;
+  width: 100%;
+  text-align: left;
+}
+
+.jewellery-sheet__detail-label,
+.jewellery-sheet__detail-value,
+.jewellery-sheet__detail-body {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.jewellery-sheet__detail-label {
+  font-weight: var(--weight-semibold);
+}
+
+/* Stacked: label, then indented values */
+.jewellery-sheet__detail > .jewellery-sheet__detail-label {
+  display: block;
+}
+
+.jewellery-sheet__detail-body {
+  display: block;
+}
+
+/* Single line: Label: value */
+.jewellery-sheet__detail-line {
+  display: block;
+}
+
+.jewellery-sheet__detail-line .jewellery-sheet__detail-label,
+.jewellery-sheet__detail-line .jewellery-sheet__detail-value {
+  display: inline;
+}
+
+.jewellery-sheet__detail-items {
+  list-style: none;
+  margin: var(--space-1) 0 0;
+  padding: 0 0 0 1.15em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+}
+
+.jewellery-sheet__detail-items li {
+  margin: 0;
+}
+
