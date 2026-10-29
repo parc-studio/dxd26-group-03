@@ -45,6 +45,8 @@ type Piece = Partial<Pick<typeof SHOWCASE, "name" | "stock" | "description" | "g
   metals?: Metal[];
   /** Finished-piece photo, shared by every metal. */
   finalPhoto?: string;
+  /** Spec lines under the photos (two-stone / Poseidon, etc.). */
+  details?: string[];
 };
 
 // Per-piece overrides of the showcase.
@@ -70,6 +72,10 @@ const PIECES: Record<string, Piece> = {
       { id: "apatite", label: "Apatite" },
     ],
     metals: ["silver", "gold"],
+    details: [
+      "Fine stone: Apatite (Brazil) & Peridot (Arizona, US)",
+      "Chain & Wire: Stainless steel",
+    ],
   },
 };
 
@@ -386,6 +392,14 @@ export function JewellerySheet({
                 ))}
               </div>
             </section>
+
+            {piece.details && piece.details.length > 0 && (
+              <ul className="jewellery-sheet__details" aria-label="Details">
+                {piece.details.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 

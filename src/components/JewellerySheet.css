@@ -390,3 +390,26 @@
   opacity: 1;
 }
 
+/* Spec lines under making-of photos (Poseidon / two-stone) */
+.jewellery-sheet__details {
+  list-style: none;
+  margin: var(--space-5) 0 0;
+  padding: 0 0 calc(5.75rem + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  letter-spacing: 0.01em;
+  color: var(--color-brand-warm);
+}
+
+.jewellery-sheet__details li {
+  margin: 0;
+  max-width: 22rem;
+}
+
