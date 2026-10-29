@@ -82,7 +82,7 @@ const PIECES: Record<string, Piece> = {
         label: "Fine stone",
         items: ["Apatite (Brazil)", "Peridot (Arizona, US)"],
       },
-      { label: "Chain & Wire", value: "Stainless steel" },
+      { label: "Chain & Wire", items: ["Stainless steel"] },
     ],
   },
 };
