@@ -54,8 +54,6 @@ import { JewellerySheet } from "./JewellerySheet";
 const APPOINTMENT_TOAST_MS = 6000;
 /** Lets the board's own images load first before warming the 3D reveal. */
 const REVEAL_WARMUP_DELAY_MS = 1200;
-/** Hold overlap this long before showing the appointment toast. */
-const APPOINTMENT_HOLD_MS = 350;
 
 const CRAFT_HASH = "/craft";
 
@@ -129,7 +127,6 @@ export function CraftSpace() {
   >("off");
   const appointmentToastVisibleRef = useRef(false);
   const appointmentToastTimerRef = useRef<number | null>(null);
-  const appointmentHoldTimerRef = useRef<number | null>(null);
   const jewelleryRevealOpenRef = useRef(false);
   const explodeDoneRef = useRef(true);
 
@@ -138,21 +135,13 @@ export function CraftSpace() {
     setElements(next);
   }, []);
 
-  const clearAppointmentHold = useCallback(() => {
-    if (appointmentHoldTimerRef.current !== null) {
-      window.clearTimeout(appointmentHoldTimerRef.current);
-      appointmentHoldTimerRef.current = null;
-    }
-  }, []);
-
   const beginAppointmentToastLeave = useCallback(() => {
-    clearAppointmentHold();
     if (appointmentToastTimerRef.current !== null) {
       window.clearTimeout(appointmentToastTimerRef.current);
       appointmentToastTimerRef.current = null;
     }
     setAppointmentToast((phase) => (phase === "on" ? "leaving" : phase));
-  }, [clearAppointmentHold]);
+  }, []);
 
   const finishAppointmentToastLeave = useCallback(() => {
     appointmentToastVisibleRef.current = false;
@@ -174,23 +163,10 @@ export function CraftSpace() {
     }, APPOINTMENT_TOAST_MS);
   }, []);
 
-  const armAppointmentHold = useCallback(() => {
-    if (jewelleryRevealOpenRef.current) return;
-    if (appointmentToastVisibleRef.current) return;
-    if (appointmentHoldTimerRef.current !== null) return;
-    appointmentHoldTimerRef.current = window.setTimeout(() => {
-      appointmentHoldTimerRef.current = null;
-      showAppointmentToast();
-    }, APPOINTMENT_HOLD_MS);
-  }, [showAppointmentToast]);
-
   useEffect(() => {
     return () => {
       if (appointmentToastTimerRef.current !== null) {
         window.clearTimeout(appointmentToastTimerRef.current);
-      }
-      if (appointmentHoldTimerRef.current !== null) {
-        window.clearTimeout(appointmentHoldTimerRef.current);
       }
     };
   }, []);
@@ -383,29 +359,8 @@ export function CraftSpace() {
       );
       commitElements(pushed);
 
-      const draggedNow = pushed.find((el) => el.instanceId === instanceId);
-      if (!draggedNow) return;
-      const appointmentTarget = findMatchingTarget(
-        pushed,
-        instanceId,
-        draggedNow.x,
-        draggedNow.y,
-        (otherCatalogId) =>
-          isAppointmentPair(draggedNow.catalogId, otherCatalogId),
-      );
-      if (appointmentTarget) {
-        armAppointmentHold();
-      } else {
-        clearAppointmentHold();
-      }
     },
-    [
-      armAppointmentHold,
-      clearAppointmentHold,
-      commitElements,
-      refreshPlayfield,
-      spaceSize,
-    ],
+    [commitElements, refreshPlayfield, spaceSize],
   );
 
   const bringFront = useCallback((instanceId: string) => {
@@ -441,7 +396,6 @@ export function CraftSpace() {
     setUnderFlashId(null);
     dragOriginRef.current = {};
     explodeDoneRef.current = true;
-    clearAppointmentHold();
     beginAppointmentToastLeave();
 
     sheetPushedRef.current = false;
@@ -468,7 +422,6 @@ export function CraftSpace() {
     busyRef.current = false;
   }, [
     beginAppointmentToastLeave,
-    clearAppointmentHold,
     commitElements,
     refreshPlayfield,
     spaceSize,
@@ -486,7 +439,6 @@ export function CraftSpace() {
     setJewelleryRevealMetal("gold");
     setParentMergePhase({});
     setUnderFlashId(null);
-    clearAppointmentHold();
     beginAppointmentToastLeave();
     sheetPushedRef.current = false;
     if (readProductFromHash()) {
@@ -523,7 +475,6 @@ export function CraftSpace() {
   }, [
     applyExplodePositions,
     beginAppointmentToastLeave,
-    clearAppointmentHold,
     commitElements,
     refreshPlayfield,
     resetCraftToStarters,
@@ -648,7 +599,6 @@ export function CraftSpace() {
     (instanceId: string, pos: { x: number; y: number }) => {
       draggingRef.current.delete(instanceId);
       if (busyRef.current) return;
-      clearAppointmentHold();
 
       const bounds = refreshPlayfield();
       const clamped = clampToPlayfield(pos.x, pos.y, bounds);
@@ -675,8 +625,8 @@ export function CraftSpace() {
         ? findRecipeResult(dragged.catalogId, target.catalogId)
         : null;
 
-      // A real recipe on the nearest piece still crafts. Otherwise a thin
-      // ring + any stone books an appointment instead of bouncing silently.
+      // Recipe still crafts. Else show appointment toast only on pointer release
+      // while overlapping a ring / chain / earring partner (not while dragging).
       if (!recipeCatalogId && appointmentTarget) {
         showAppointmentToast();
         const { w, h } = spaceSize();
@@ -900,7 +850,6 @@ export function CraftSpace() {
     },
     [
       beginAppointmentToastLeave,
-      clearAppointmentHold,
       clearBusyIfIdle,
       commitElements,
       refreshPlayfield,
