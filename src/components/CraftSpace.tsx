@@ -31,7 +31,10 @@ import {
   MERGE_PUNCH_MS,
 } from "../lib/mergeTiming";
 import { resolveJewelleryMetal } from "../lib/jewelleryModel";
-import { attachShakeListener } from "../lib/shakeDetect";
+import {
+  attachShakeListener,
+  requestMotionPermissionOnFirstTap,
+} from "../lib/shakeDetect";
 import { runShakeJostle } from "../lib/shakeJostle";
 import { attachTiltDrift } from "../lib/tiltDrift";
 import type {
@@ -513,6 +516,9 @@ export function CraftSpace() {
   // startShakeJostle is read via ref so the listener is attached once.
   const startShakeJostleRef = useRef(startShakeJostle);
   startShakeJostleRef.current = startShakeJostle;
+
+  // iPhone: shake and tilt only get motion events after this permission.
+  useEffect(() => requestMotionPermissionOnFirstTap(), []);
 
   useEffect(() => {
     const detach = attachShakeListener({

@@ -7,7 +7,7 @@
  *
  * iOS follow-up: Safari 13+ needs `DeviceMotionEvent.requestPermission()`
  * from a user gesture before events fire. `getDeviceMotionPermissionApi()`
- * is ready for an “Enable shake” control; we do not prompt on load yet.
+ * is asked on the first tap via `requestMotionPermissionOnFirstTap()`.
  */
 
 export interface ShakeDetectOptions {
@@ -182,4 +182,28 @@ export function getDeviceMotionPermissionApi():
   return typeof Ctor.requestPermission === 'function'
     ? () => Ctor.requestPermission!()
     : null
+}
+
+/**
+ * iPhone Safari only sends `devicemotion` once the user allows it, and the
+ * prompt may only be opened from a tap. Asks on the first tap anywhere; the
+ * listeners already on `window` start receiving events once it's granted.
+ */
+export function requestMotionPermissionOnFirstTap(): () => void {
+  const request = getDeviceMotionPermissionApi()
+  if (!request) return () => {}
+
+  const onTap = () => {
+    detach()
+    request()
+      .then((state) => console.info(LOG, 'iOS motion permission:', state))
+      .catch((err) => console.warn(LOG, 'iOS motion permission failed', err))
+  }
+  const detach = () => {
+    window.removeEventListener('touchend', onTap, true)
+    window.removeEventListener('click', onTap, true)
+  }
+  window.addEventListener('touchend', onTap, true)
+  window.addEventListener('click', onTap, true)
+  return detach
 }
