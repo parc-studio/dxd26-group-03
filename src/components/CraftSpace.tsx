@@ -34,7 +34,7 @@ import {
 import { resolveJewelleryMetal } from "../lib/jewelleryModel";
 import {
   attachShakeListener,
-  requestMotionPermissionOnFirstTap,
+  requestMotionPermissionOnTap,
 } from "../lib/shakeDetect";
 import { runShakeJostle } from "../lib/shakeJostle";
 import { attachTiltDrift } from "../lib/tiltDrift";
@@ -524,7 +524,7 @@ export function CraftSpace() {
   startShakeJostleRef.current = startShakeJostle;
 
   // iPhone: shake and tilt only get motion events after this permission.
-  useEffect(() => requestMotionPermissionOnFirstTap(), []);
+  useEffect(() => requestMotionPermissionOnTap(), []);
 
   useEffect(() => {
     const detach = attachShakeListener({

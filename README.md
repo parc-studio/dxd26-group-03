@@ -49,6 +49,6 @@ Chrome DevTools → ⋮ → More tools → Sensors → set Orientation to a pres
 ### Android vs iPhone
 
 - **Android Chrome (target):** motion should work on the **HTTPS** LAN URL after accepting the cert. Watch console: if you never see `first devicemotion event`, sensors are blocked or off.
-- **iPhone Safari:** the first tap anywhere opens the iOS motion prompt (`requestMotionPermissionOnFirstTap()` in `src/lib/shakeDetect.ts`); tilt and shake work once it is allowed. Needs HTTPS.
+- **iPhone (Safari, Chrome, home-screen app):** a tap opens the iOS motion prompt (`requestMotionPermissionOnTap()` in `src/lib/shakeDetect.ts`, retried on each tap until allowed); tilt and shake work once it is allowed. Needs HTTPS.
 
 Implementation: `src/lib/shakeDetect.ts`, `src/lib/shakeJostle.ts`, wired in `CraftSpace`.

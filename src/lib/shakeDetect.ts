@@ -7,7 +7,7 @@
  *
  * iOS follow-up: Safari 13+ needs `DeviceMotionEvent.requestPermission()`
  * from a user gesture before events fire. `getDeviceMotionPermissionApi()`
- * is asked on the first tap via `requestMotionPermissionOnFirstTap()`.
+ * is asked on tap via `requestMotionPermissionOnTap()`.
  */
 
 export interface ShakeDetectOptions {
@@ -185,19 +185,29 @@ export function getDeviceMotionPermissionApi():
 }
 
 /**
- * iPhone Safari only sends `devicemotion` once the user allows it, and the
- * prompt may only be opened from a tap. Asks on the first tap anywhere; the
- * listeners already on `window` start receiving events once it's granted.
+ * iOS (Safari, Chrome and home-screen web apps — all WebKit) only sends
+ * `devicemotion` once the user allows it, and the prompt may only be opened
+ * from a tap. A drag's touchend doesn't count, and a home-screen app has its
+ * own permission, so keep asking on each tap until it's granted. The
+ * listeners already on `window` start receiving events once it is.
  */
-export function requestMotionPermissionOnFirstTap(): () => void {
+export function requestMotionPermissionOnTap(): () => void {
   const request = getDeviceMotionPermissionApi()
   if (!request) return () => {}
 
+  let pending = false
   const onTap = () => {
-    detach()
+    if (pending) return
+    pending = true
     request()
-      .then((state) => console.info(LOG, 'iOS motion permission:', state))
+      .then((state) => {
+        console.info(LOG, 'iOS motion permission:', state)
+        if (state === 'granted') detach()
+      })
       .catch((err) => console.warn(LOG, 'iOS motion permission failed', err))
+      .finally(() => {
+        pending = false
+      })
   }
   const detach = () => {
     window.removeEventListener('touchend', onTap, true)
