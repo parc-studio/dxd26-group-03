@@ -3,6 +3,7 @@ export type ElementCategory =
   | 'stones'
   | 'gold'
   | 'silver'
+  | 'earring'
   | 'chains'
   | 'jewellery'
 

@@ -28,21 +28,12 @@
   -webkit-user-select: none;
   color: var(--ink-soft);
   font: inherit;
-  animation: craft-float 5.5s ease-in-out infinite;
+  /* No idle float bob when still — motion comes from drag / physics / shake. */
+  animation: none;
   /* Avoid idle will-change: left/top — it can box transparent PNG filters on first paint. */
   -webkit-tap-highlight-color: transparent;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-}
-
-.craft-el:nth-child(3n) {
-  animation-duration: 6.4s;
-  animation-delay: -1.2s;
-}
-
-.craft-el:nth-child(3n + 1) {
-  animation-duration: 4.8s;
-  animation-delay: -0.6s;
 }
 
 .craft-el:focus-visible {
@@ -404,16 +395,6 @@
     width: calc(var(--jewellery-shadow-width) * 0.92);
     height: calc(var(--jewellery-shadow-height) * 1.12);
     opacity: calc(var(--jewellery-shadow-opacity) * 0.85);
-  }
-}
-
-@keyframes craft-float {
-  0%,
-  100% {
-    transform: translate3d(-50%, -50%, 0);
-  }
-  50% {
-    transform: translate3d(-50%, calc(-50% - 3px), 0);
   }
 }
 

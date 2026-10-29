@@ -82,6 +82,33 @@
       "imageSize": "contain"
     },
     {
+      "id": "rose_quartz",
+      "label": "Rose quartz",
+      "category": "stones",
+      "shape": "circle",
+      "kind": "material",
+      "image": "/textures/rose_quartz.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "earring-gold",
+      "label": "Gold earrings",
+      "category": "earring",
+      "shape": "link",
+      "kind": "material",
+      "image": "/textures/earring-gold.png",
+      "imageSize": "contain"
+    },
+    {
+      "id": "earring-silver",
+      "label": "Silver earrings",
+      "category": "earring",
+      "shape": "link",
+      "kind": "material",
+      "image": "/textures/earring-silver.png",
+      "imageSize": "contain"
+    },
+    {
       "id": "ring_gold",
       "label": "Gold ring",
       "category": "gold",
@@ -226,6 +253,21 @@
       "catalogId": "peridot",
       "x": 72,
       "y": 86
+    },
+    {
+      "catalogId": "rose_quartz",
+      "x": 88,
+      "y": 62
+    },
+    {
+      "catalogId": "earring-gold",
+      "x": 12,
+      "y": 48
+    },
+    {
+      "catalogId": "earring-silver",
+      "x": 90,
+      "y": 48
     }
   ],
   "appointmentPairs": [
@@ -258,6 +300,10 @@
       "b": "peridot"
     },
     {
+      "a": "ring_thin_silver",
+      "b": "rose_quartz"
+    },
+    {
       "a": "ring_thin_gold",
       "b": "gem_light_blue"
     },
@@ -284,6 +330,10 @@
     {
       "a": "ring_thin_gold",
       "b": "peridot"
+    },
+    {
+      "a": "ring_thin_gold",
+      "b": "rose_quartz"
     }
   ]
 }

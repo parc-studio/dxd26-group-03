@@ -1,4 +1,4 @@
-import type { ElementKind, ShapeKind } from '../types'
+import type { ElementCategory, ElementKind, ShapeKind } from '../types'
 
 /**
  * Craft-board image scale (Fotini).
@@ -13,24 +13,29 @@ import type { ElementKind, ShapeKind } from '../types'
  * Values multiply the CSS shape footprint (`1` = base size in CraftElement.css).
  */
 export const CRAFT_SCALE_DEFAULTS = {
-  /** Beads, stones, chains, mids */
-  default: 1,
-  /** Material rings */
-  ring: 0.9,
-  /** Finished jewellery products (PNG cutouts run small) */
-  jewellery: 1.6,
+  default: 0.85,
+  ring: 0.75,
+  jewellery: 1.7,
+  /** earring-gold / earring-silver — Fotini can edit */
+  earring: .75,
 } as const
 
-/** Optional overrides keyed by catalog id. */
+/** Optional overrides keyed by catalog id (or set `"scale"` in catalog.json). */
 export const CRAFT_SCALE_BY_ID: Record<string, number> = {
   // necklace_apatite: 1.35,
   // necklace_peridot: 1.25,
+  // rose_quartz: 1.1,
+}
+
+function isEarring(el: { catalogId: string; category?: ElementCategory }): boolean {
+  return el.category === 'earring' || el.catalogId.startsWith('earring')
 }
 
 export function resolveCraftScale(el: {
   catalogId: string
   kind: ElementKind
   shape: ShapeKind
+  category?: ElementCategory
   /** From catalog.json `"scale"` when set. */
   scale?: number
 }): number {
@@ -43,5 +48,6 @@ export function resolveCraftScale(el: {
   }
   if (el.kind === 'jewellery') return CRAFT_SCALE_DEFAULTS.jewellery
   if (el.shape === 'ring') return CRAFT_SCALE_DEFAULTS.ring
+  if (isEarring(el)) return CRAFT_SCALE_DEFAULTS.earring
   return CRAFT_SCALE_DEFAULTS.default
 }
