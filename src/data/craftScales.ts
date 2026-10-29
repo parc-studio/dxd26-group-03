@@ -21,10 +21,13 @@ export const CRAFT_SCALE_DEFAULTS = {
   jewellery: 1.6,
 } as const
 
-/** Optional overrides keyed by catalog id. */
+/** Optional overrides keyed by catalog id (or set `"scale"` in catalog.json). */
 export const CRAFT_SCALE_BY_ID: Record<string, number> = {
   // necklace_apatite: 1.35,
   // necklace_peridot: 1.25,
+  // 'earring-gold': 1.15,
+  // 'earring-silver': 1.15,
+  // rose_quartz: 1.1,
 }
 
 export function resolveCraftScale(el: {
