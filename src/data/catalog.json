@@ -19,15 +19,6 @@
       "imageSize": "contain"
     },
     {
-      "id": "gem_light_blue",
-      "label": "Light blue gem",
-      "category": "stones",
-      "shape": "circle",
-      "kind": "material",
-      "image": "/textures/gem_light_blue.png",
-      "imageSize": "contain"
-    },
-    {
       "id": "green_amethyst",
       "label": "Green Amethyst",
       "category": "stones",
@@ -220,11 +211,6 @@
       "y": 50
     },
     {
-      "catalogId": "gem_light_blue",
-      "x": 18,
-      "y": 68
-    },
-    {
       "catalogId": "green_amethyst",
       "x": 40,
       "y": 70
@@ -272,43 +258,171 @@
   ],
   "appointmentPairs": [
     {
-      "a": "ring_thin_silver",
-      "b": "gem_light_blue"
-    },
-    {
-      "a": "ring_thin_silver",
+      "a": "chain_gold",
       "b": "green_amethyst"
     },
     {
-      "a": "ring_thin_silver",
+      "a": "chain_gold",
       "b": "amethyst"
     },
     {
-      "a": "ring_thin_silver",
+      "a": "chain_gold",
       "b": "gem_yellow"
     },
     {
-      "a": "ring_thin_silver",
+      "a": "chain_gold",
       "b": "labradorite"
     },
     {
-      "a": "ring_thin_silver",
+      "a": "chain_gold",
       "b": "apatite"
     },
     {
-      "a": "ring_thin_silver",
+      "a": "chain_gold",
       "b": "peridot"
     },
     {
-      "a": "ring_thin_silver",
+      "a": "chain_gold",
+      "b": "rose_quartz"
+    },
+    {
+      "a": "chain_silver",
+      "b": "green_amethyst"
+    },
+    {
+      "a": "chain_silver",
+      "b": "amethyst"
+    },
+    {
+      "a": "chain_silver",
+      "b": "gem_yellow"
+    },
+    {
+      "a": "chain_silver",
+      "b": "labradorite"
+    },
+    {
+      "a": "chain_silver",
+      "b": "peridot"
+    },
+    {
+      "a": "chain_silver",
+      "b": "rose_quartz"
+    },
+    {
+      "a": "earring-gold",
+      "b": "green_amethyst"
+    },
+    {
+      "a": "earring-gold",
+      "b": "amethyst"
+    },
+    {
+      "a": "earring-gold",
+      "b": "gem_yellow"
+    },
+    {
+      "a": "earring-gold",
+      "b": "labradorite"
+    },
+    {
+      "a": "earring-gold",
+      "b": "apatite"
+    },
+    {
+      "a": "earring-gold",
+      "b": "peridot"
+    },
+    {
+      "a": "earring-gold",
+      "b": "rose_quartz"
+    },
+    {
+      "a": "earring-silver",
+      "b": "green_amethyst"
+    },
+    {
+      "a": "earring-silver",
+      "b": "amethyst"
+    },
+    {
+      "a": "earring-silver",
+      "b": "gem_yellow"
+    },
+    {
+      "a": "earring-silver",
+      "b": "labradorite"
+    },
+    {
+      "a": "earring-silver",
+      "b": "apatite"
+    },
+    {
+      "a": "earring-silver",
+      "b": "peridot"
+    },
+    {
+      "a": "earring-silver",
+      "b": "rose_quartz"
+    },
+    {
+      "a": "ring_gold",
+      "b": "green_amethyst"
+    },
+    {
+      "a": "ring_gold",
+      "b": "amethyst"
+    },
+    {
+      "a": "ring_gold",
+      "b": "gem_yellow"
+    },
+    {
+      "a": "ring_gold",
+      "b": "labradorite"
+    },
+    {
+      "a": "ring_gold",
+      "b": "apatite"
+    },
+    {
+      "a": "ring_gold",
+      "b": "peridot"
+    },
+    {
+      "a": "ring_gold",
+      "b": "rose_quartz"
+    },
+    {
+      "a": "ring_silver",
+      "b": "green_amethyst"
+    },
+    {
+      "a": "ring_silver",
+      "b": "amethyst"
+    },
+    {
+      "a": "ring_silver",
+      "b": "gem_yellow"
+    },
+    {
+      "a": "ring_silver",
+      "b": "labradorite"
+    },
+    {
+      "a": "ring_silver",
+      "b": "apatite"
+    },
+    {
+      "a": "ring_silver",
+      "b": "peridot"
+    },
+    {
+      "a": "ring_silver",
       "b": "rose_quartz"
     },
     {
       "a": "ring_thin_gold",
-      "b": "gem_light_blue"
-    },
-    {
-      "a": "ring_thin_gold",
       "b": "green_amethyst"
     },
     {
@@ -333,6 +447,34 @@
     },
     {
       "a": "ring_thin_gold",
+      "b": "rose_quartz"
+    },
+    {
+      "a": "ring_thin_silver",
+      "b": "green_amethyst"
+    },
+    {
+      "a": "ring_thin_silver",
+      "b": "amethyst"
+    },
+    {
+      "a": "ring_thin_silver",
+      "b": "gem_yellow"
+    },
+    {
+      "a": "ring_thin_silver",
+      "b": "labradorite"
+    },
+    {
+      "a": "ring_thin_silver",
+      "b": "apatite"
+    },
+    {
+      "a": "ring_thin_silver",
+      "b": "peridot"
+    },
+    {
+      "a": "ring_thin_silver",
       "b": "rose_quartz"
     }
   ]
