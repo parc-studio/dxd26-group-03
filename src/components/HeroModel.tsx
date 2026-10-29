@@ -23,7 +23,7 @@ const MIN_POLAR = THREE.MathUtils.degToRad(10);
 const MAX_POLAR = THREE.MathUtils.degToRad(88);
 // va-et-vient avant le premier contact : amplitude et vitesse (2 = 30 s par tour)
 const IDLE_SWEEP = THREE.MathUtils.degToRad(30);
-const IDLE_SPEED = 0.8;
+const IDLE_SPEED = 2;
 // gemmes : plus la valeur est haute, plus la couleur est claire (en tailles de gemme)
 const GEM_CLARITY = 2;
 // lueur propre des gemmes (0 = aucune)

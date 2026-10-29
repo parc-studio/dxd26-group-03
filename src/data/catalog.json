@@ -38,7 +38,7 @@
     },
     {
       "id": "gem_yellow",
-      "label": "Yellow gem",
+      "label": "Citrine",
       "category": "stones",
       "shape": "circle",
       "kind": "material",
