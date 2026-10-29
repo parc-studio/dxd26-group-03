@@ -1,0 +1,513 @@
+.craft-el {
+  /* Visual scale from craftScales.ts (rings 0.9, jewellery 1.2, else 1) */
+  --craft-scale: 1;
+  position: absolute;
+  /* 3d translate promotes a compositor layer on first paint (iOS WebKit). */
+  transform: translate3d(-50%, -50%, 0);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-width: 3.25rem;
+  min-height: 3.25rem;
+  margin: 0;
+  padding: 0.35rem 0.4rem;
+  border: none;
+  /* iOS Chrome paints a default button plate unless appearance is cleared. */
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  background-color: transparent;
+  background-image: none;
+  box-shadow: none;
+  cursor: grab;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+  color: var(--ink-soft);
+  font: inherit;
+  animation: craft-float 5.5s ease-in-out infinite;
+  /* Avoid idle will-change: left/top — it can box transparent PNG filters on first paint. */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.craft-el:nth-child(3n) {
+  animation-duration: 6.4s;
+  animation-delay: -1.2s;
+}
+
+.craft-el:nth-child(3n + 1) {
+  animation-duration: 4.8s;
+  animation-delay: -0.6s;
+}
+
+.craft-el:focus-visible {
+  outline: 1px solid var(--gold);
+  outline-offset: 6px;
+}
+
+.craft-el.is-dragging {
+  cursor: grabbing;
+  animation: none;
+  transform: translate3d(-50%, -50%, 0) scale(1.08);
+  /* Soft lift only — no rectangular border/frame */
+  filter: drop-shadow(0 14px 22px rgba(71, 43, 43, 0.28));
+  outline: none;
+  z-index: 1000;
+}
+
+.craft-el.is-merge-converge {
+  pointer-events: none;
+  animation: none;
+  z-index: 1100;
+  transition:
+    left var(--merge-converge-ms, 320ms) ease-out,
+    top var(--merge-converge-ms, 320ms) ease-out,
+    transform var(--merge-converge-ms, 320ms) ease-out;
+  transform: translate3d(-50%, -50%, 0) scale(1.42);
+  filter: drop-shadow(0 10px 20px rgba(71, 43, 43, 0.22));
+}
+
+.craft-el.is-merge-vanish {
+  pointer-events: none;
+  animation: none;
+  opacity: 0;
+  transform: translate3d(-50%, -50%, 0) scale(0.12);
+  transition:
+    opacity 140ms ease-in,
+    transform 180ms ease-in;
+  filter: none;
+}
+
+.craft-el.is-merge-explode {
+  pointer-events: none;
+  animation: none;
+  /* Position driven every frame by explode physics — no CSS teleport. */
+  transition: none;
+  transform: translate3d(-50%, -50%, 0) scale(1);
+  filter: drop-shadow(0 8px 16px rgba(71, 43, 43, 0.18));
+  z-index: 1100;
+}
+
+.craft-el.is-under-flash {
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(-50%, -50%, 0) scale(0.55);
+  animation: none;
+}
+
+.craft-el.is-merge-reveal {
+  pointer-events: none;
+  animation: jewellery-reveal var(--merge-reveal-ms, 800ms) ease-out both;
+}
+
+.craft-el__shape {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  overflow: hidden;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  box-shadow: none;
+  /* No filter until texture alpha is ready — avoids WebKit plate on first paint. */
+  filter: none;
+  transition: filter 160ms ease, transform 160ms ease;
+  pointer-events: none;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.craft-el.is-paint-ready .craft-el__shape {
+  filter: drop-shadow(0 6px 14px rgba(71, 43, 43, 0.16));
+}
+
+/* Photo cuts: no card frame — shadow follows alpha via drop-shadow */
+.craft-el--photo .craft-el__shape {
+  overflow: visible;
+  box-shadow: none;
+  background-color: transparent;
+  border: none;
+}
+
+.craft-el--photo.craft-el--circle .craft-el__shape,
+.craft-el--photo.craft-el--oval .craft-el__shape {
+  box-shadow: none;
+}
+
+.craft-el--circle .craft-el__shape::after,
+.craft-el--oval .craft-el__shape::after {
+  display: none;
+}
+
+.craft-el--ring .craft-el__shape::after {
+  display: none;
+}
+
+.craft-el.is-dragging .craft-el__shape {
+  box-shadow: none;
+  border: none;
+  outline: none;
+  filter: drop-shadow(0 16px 26px rgba(71, 43, 43, 0.3));
+}
+
+.craft-el__inset {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  z-index: 2;
+}
+
+.craft-el__label {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.2rem);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(12rem, 80vw);
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  text-transform: uppercase;
+  color: var(--color-brand-warm);
+  text-align: center;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
+  word-break: normal;
+  overflow-wrap: normal;
+  pointer-events: none;
+  text-shadow: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 120ms ease;
+}
+
+/* Name only while selecting / dragging — above the piece, never under by default */
+.craft-el.is-dragging .craft-el__label {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* --- shapes (mobile-first finger sizes × --craft-scale) --- */
+
+.craft-el--circle .craft-el__shape {
+  width: calc(3.1rem * var(--craft-scale));
+  height: calc(3.1rem * var(--craft-scale));
+  border-radius: 50%;
+}
+
+/* All stone gems share one visual footprint (blue/light-blue matched to green/yellow). */
+.craft-el--stones.craft-el--photo .craft-el__shape {
+  width: calc(3.45rem * var(--craft-scale));
+  height: calc(3.45rem * var(--craft-scale));
+  border-radius: 50%;
+}
+
+.craft-el--oval .craft-el__shape {
+  width: calc(3.6rem * var(--craft-scale));
+  height: calc(2.35rem * var(--craft-scale));
+  border-radius: 50%;
+}
+
+.craft-el--rect .craft-el__shape {
+  width: calc(3.2rem * var(--craft-scale));
+  height: calc(1.85rem * var(--craft-scale));
+  border-radius: 0.35rem;
+}
+
+/* Rect gem photos: no short card frame — square-ish cutout footprint. */
+.craft-el--stones.craft-el--rect.craft-el--photo .craft-el__shape {
+  width: calc(3.7rem * var(--craft-scale));
+  height: calc(3.3rem * var(--craft-scale));
+  border-radius: 0.4rem;
+  background-color: transparent;
+  overflow: visible;
+}
+
+.craft-el--diamond .craft-el__shape {
+  width: calc(2.35rem * var(--craft-scale));
+  height: calc(2.35rem * var(--craft-scale));
+  border-radius: 0.2rem;
+  transform: rotate(45deg);
+}
+
+.craft-el--link .craft-el__shape {
+  width: calc(5.6rem * var(--craft-scale));
+  height: calc(5.6rem * var(--craft-scale));
+  border-radius: 0.75rem;
+  overflow: visible;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* Chains read large on the board (mobile-first finger target) */
+.craft-el--chains.craft-el--link .craft-el__shape {
+  width: calc(6.4rem * var(--craft-scale));
+  height: calc(6.4rem * var(--craft-scale));
+}
+
+.craft-el--ring .craft-el__shape {
+  width: calc(4.6rem * var(--craft-scale));
+  height: calc(4.6rem * var(--craft-scale));
+  border-radius: 0.55rem;
+  background-color: transparent;
+  overflow: visible;
+  filter: none;
+  box-shadow: none;
+}
+
+.craft-el.is-paint-ready.craft-el--ring .craft-el__shape {
+  filter: drop-shadow(0 6px 12px rgba(71, 43, 43, 0.18));
+}
+
+.craft-el--jewellery .craft-el__label,
+.craft-el--jewellery-piece .craft-el__label {
+  color: var(--color-brand);
+  font-weight: 600;
+}
+
+.craft-el--mid .craft-el__shape {
+  box-shadow: none;
+  filter: none;
+}
+
+.craft-el.is-paint-ready.craft-el--mid .craft-el__shape {
+  filter: drop-shadow(0 8px 16px rgba(71, 43, 43, 0.16));
+}
+
+/*
+ * Finished-product under-shine (CodePen-style soft oval shadow + light pool).
+ * Tweak: --jewellery-glow-*, --jewellery-shadow-*
+ */
+.craft-el--jewellery-piece {
+  /* Keep under-plate subtle on white so only the jewellery cutout reads. */
+  --jewellery-glow-size: calc(5.8rem * var(--craft-scale));
+  --jewellery-glow-cream: color-mix(in srgb, var(--color-cream) 28%, transparent);
+  --jewellery-glow-soft: color-mix(in srgb, var(--color-cream) 12%, transparent);
+  --jewellery-glow-blur: 22px;
+  --jewellery-glow-opacity: 0.35;
+  --jewellery-shadow-width: calc(5.2rem * var(--craft-scale));
+  --jewellery-shadow-height: calc(0.7rem * var(--craft-scale));
+  --jewellery-shadow-opacity: 0.12;
+}
+
+/* Soft light pool under the piece — only after texture paint is ready */
+.craft-el--jewellery-piece.is-paint-ready::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 1.35rem);
+  width: var(--jewellery-glow-size);
+  height: calc(var(--jewellery-glow-size) * 0.42);
+  transform: translate3d(-50%, -50%, 0);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 72% 58% at 50% 40%,
+    color-mix(in srgb, var(--jewellery-glow-cream) 90%, white) 0%,
+    var(--jewellery-glow-cream) 34%,
+    var(--jewellery-glow-soft) 62%,
+    transparent 82%
+  );
+  filter: blur(var(--jewellery-glow-blur));
+  opacity: var(--jewellery-glow-opacity);
+  animation: jewellery-under-glow 5.5s ease-in-out infinite;
+}
+
+/* Contact shadow oval — soft, wide, grounded under the piece */
+.craft-el--jewellery-piece.is-paint-ready::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 2.15rem);
+  width: var(--jewellery-shadow-width);
+  height: var(--jewellery-shadow-height);
+  transform: translate3d(-50%, -50%, 0);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(71, 43, 43, 0.42) 0%,
+    rgba(71, 43, 43, 0.16) 42%,
+    rgba(71, 43, 43, 0.05) 68%,
+    transparent 78%
+  );
+  opacity: var(--jewellery-shadow-opacity);
+  filter: blur(4px);
+  animation: jewellery-under-shadow 5.5s ease-in-out infinite;
+}
+
+.craft-el--jewellery-piece .craft-el__shape {
+  position: relative;
+  z-index: 1;
+  filter: none;
+  box-shadow: none;
+}
+
+.craft-el.is-paint-ready.craft-el--jewellery-piece .craft-el__shape,
+.craft-el.is-paint-ready.craft-el--jewellery-piece.craft-el--ring .craft-el__shape {
+  filter: drop-shadow(0 10px 18px rgba(71, 43, 43, 0.12));
+}
+
+.craft-el--jewellery-piece.craft-el--ring .craft-el__shape {
+  /* Size comes from ring footprint × --craft-scale (jewellery default 1.2). */
+  box-shadow: none;
+}
+
+.craft-el--jewellery-piece .craft-el__label {
+  position: relative;
+  z-index: 2;
+}
+
+/* Soft shadow stays grounded while dragging — don't double with lift drop-shadow */
+.craft-el--jewellery-piece.is-dragging::before,
+.craft-el--jewellery-piece.is-dragging::after {
+  opacity: 0;
+  animation: none;
+}
+
+@keyframes jewellery-under-glow {
+  0%,
+  100% {
+    opacity: var(--jewellery-glow-opacity);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: calc(var(--jewellery-glow-opacity) * 0.86);
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+}
+
+@keyframes jewellery-under-shadow {
+  0%,
+  100% {
+    width: var(--jewellery-shadow-width);
+    height: var(--jewellery-shadow-height);
+    opacity: var(--jewellery-shadow-opacity);
+  }
+  50% {
+    width: calc(var(--jewellery-shadow-width) * 0.92);
+    height: calc(var(--jewellery-shadow-height) * 1.12);
+    opacity: calc(var(--jewellery-shadow-opacity) * 0.85);
+  }
+}
+
+@keyframes craft-float {
+  0%,
+  100% {
+    transform: translate3d(-50%, -50%, 0);
+  }
+  50% {
+    transform: translate3d(-50%, calc(-50% - 3px), 0);
+  }
+}
+
+@keyframes jewellery-reveal {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) scale(0.62);
+  }
+  55% {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .craft-el {
+    animation: none;
+  }
+
+  .craft-el.is-merge-converge,
+  .craft-el.is-merge-vanish,
+  .craft-el.is-merge-reveal {
+    transition-duration: 1ms;
+    animation-duration: 1ms;
+  }
+
+  .craft-el--jewellery-piece::before,
+  .craft-el--jewellery-piece::after {
+    animation: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .craft-el {
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    gap: 0;
+  }
+
+  .craft-el__label {
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    max-width: min(14rem, 40vw);
+  }
+
+  .craft-el--circle .craft-el__shape {
+    width: calc(2.85rem * var(--craft-scale));
+    height: calc(2.85rem * var(--craft-scale));
+  }
+
+  .craft-el--stones.craft-el--photo .craft-el__shape {
+    width: calc(3.35rem * var(--craft-scale));
+    height: calc(3.35rem * var(--craft-scale));
+  }
+
+  .craft-el--oval .craft-el__shape {
+    width: calc(3.3rem * var(--craft-scale));
+    height: calc(2.1rem * var(--craft-scale));
+  }
+
+  .craft-el--rect .craft-el__shape {
+    width: calc(2.95rem * var(--craft-scale));
+    height: calc(1.65rem * var(--craft-scale));
+  }
+
+  .craft-el--stones.craft-el--rect.craft-el--photo .craft-el__shape {
+    width: calc(3.5rem * var(--craft-scale));
+    height: calc(3.1rem * var(--craft-scale));
+  }
+
+  .craft-el--diamond .craft-el__shape {
+    width: calc(2.15rem * var(--craft-scale));
+    height: calc(2.15rem * var(--craft-scale));
+  }
+
+  .craft-el--link .craft-el__shape {
+    width: calc(6rem * var(--craft-scale));
+    height: calc(6rem * var(--craft-scale));
+  }
+
+  .craft-el--chains.craft-el--link .craft-el__shape {
+    width: calc(7rem * var(--craft-scale));
+    height: calc(7rem * var(--craft-scale));
+  }
+
+  .craft-el--ring .craft-el__shape {
+    width: calc(5.2rem * var(--craft-scale));
+    height: calc(5.2rem * var(--craft-scale));
+  }
+
+  .craft-el--jewellery-piece {
+    --jewellery-glow-size: calc(6.5rem * var(--craft-scale));
+    --jewellery-shadow-width: calc(5.8rem * var(--craft-scale));
+  }
+}

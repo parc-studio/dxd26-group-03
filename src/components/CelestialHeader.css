@@ -1,0 +1,188 @@
+/* Shared by JewellerySheet / JewelleryReveal so both sit flush under the bar */
+:root {
+  --celestial-header-pad-y: 24px;
+  --celestial-header-logo-w: 130px;
+  --celestial-header-logo-h: 51px;
+  --celestial-header-burger-w: 18px;
+  --celestial-header-offset: calc(
+    var(--celestial-header-pad-y) + var(--celestial-header-logo-h) +
+      var(--celestial-header-pad-y) + var(--safe-top)
+  );
+}
+
+.celestial-header {
+  --background-color: rgb(255, 255, 255);
+  --v72ca93ba: 32px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr) auto auto;
+  align-items: center;
+  justify-items: stretch;
+  column-gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: var(--celestial-header-pad-y) 16px;
+  padding-top: calc(var(--celestial-header-pad-y) + var(--safe-top));
+  border: 0;
+  background: var(--background-color);
+  box-shadow: none;
+  pointer-events: none;
+  color: var(--color-brand);
+  overflow: hidden;
+}
+
+.celestial-header__title {
+  margin: 0;
+  min-width: 0;
+  max-width: 100%;
+  line-height: 0;
+  justify-self: start;
+}
+
+.celestial-header__logo-btn {
+  display: block;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  line-height: 0;
+}
+
+.celestial-header__logo-btn:focus-visible {
+  outline: 1px solid var(--color-brand);
+  outline-offset: 4px;
+}
+
+.celestial-header__logo {
+  display: block;
+  width: min(var(--celestial-header-logo-w), 100%);
+  height: auto;
+  max-height: var(--celestial-header-logo-h);
+  object-fit: contain;
+  object-position: left center;
+  filter: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.celestial-header__spacer {
+  min-width: 0;
+  pointer-events: none;
+}
+
+.celestial-header__cart {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  flex-shrink: 0;
+  width: var(--v72ca93ba);
+  height: var(--v72ca93ba);
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.celestial-header__cart:focus-visible {
+  outline: 1px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.celestial-header__cart-icon {
+  display: block;
+  width: 19px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+/* count sits on the bag's lower-right corner, inside the button box */
+.celestial-header__cart-badge {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: rgb(224, 224, 224);
+  color: var(--color-brand);
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 15px;
+  text-align: center;
+  animation: celestial-header-badge-pop 0.35s ease-out;
+}
+
+@keyframes celestial-header-badge-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celestial-header__cart-badge {
+    animation: none;
+  }
+}
+
+.celestial-header__burger {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  flex-shrink: 0;
+  gap: 5px;
+  box-sizing: border-box;
+  width: var(--v72ca93ba);
+  height: var(--v72ca93ba);
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.celestial-header__burger:focus-visible {
+  outline: 1px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
+.celestial-header__burger-bun,
+.celestial-header__burger-meat {
+  display: block;
+  width: var(--celestial-header-burger-w);
+  height: 1.5px;
+  background: currentColor;
+  border-radius: 1px;
+}
+
+@media (max-width: 390px) {
+  :root {
+    --celestial-header-logo-w: min(130px, 34vw);
+    --celestial-header-logo-h: 44px;
+  }
+
+  .celestial-header {
+    column-gap: 4px;
+  }
+}

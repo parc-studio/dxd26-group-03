@@ -1,0 +1,120 @@
+import { forwardRef, useCallback, useRef } from "react";
+import "./CelestialHeader.css";
+
+const LOGO_LONG_PRESS_MS = 650;
+
+interface CelestialHeaderProps {
+  onLogoClick?: () => void;
+  /** Items in the bag; a badge shows when above zero. */
+  cartCount?: number;
+  /** Temporary craft debug: long-press logo → same path as shake reset. */
+  onLogoLongPress?: () => void;
+}
+
+export const CelestialHeader = forwardRef<HTMLElement, CelestialHeaderProps>(
+  function CelestialHeader(
+    { onLogoClick, onLogoLongPress, cartCount = 0 },
+    ref,
+  ) {
+    const longPressTimerRef = useRef<number | null>(null);
+    const longPressFiredRef = useRef(false);
+
+    const clearLongPress = useCallback(() => {
+      if (longPressTimerRef.current !== null) {
+        window.clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+    }, []);
+
+    const handleLogoPointerDown = useCallback(() => {
+      if (!onLogoLongPress) return;
+      longPressFiredRef.current = false;
+      clearLongPress();
+      longPressTimerRef.current = window.setTimeout(() => {
+        longPressTimerRef.current = null;
+        longPressFiredRef.current = true;
+        onLogoLongPress();
+      }, LOGO_LONG_PRESS_MS);
+    }, [clearLongPress, onLogoLongPress]);
+
+    const handleLogoClick = useCallback(() => {
+      if (longPressFiredRef.current) {
+        longPressFiredRef.current = false;
+        return;
+      }
+      if (onLogoClick) {
+        onLogoClick();
+        return;
+      }
+      window.location.hash = "/";
+    }, [onLogoClick]);
+
+    return (
+      <header ref={ref} className="celestial-header">
+        <h1 className="celestial-header__title">
+          <button
+            type="button"
+            className="celestial-header__logo-btn"
+            aria-label="Go to celestial home"
+            onPointerDown={handleLogoPointerDown}
+            onPointerUp={clearLongPress}
+            onPointerLeave={clearLongPress}
+            onPointerCancel={clearLongPress}
+            onClick={handleLogoClick}
+          >
+            <img
+              className="celestial-header__logo"
+              src="/celestial-logo-new.png"
+              alt="celestial Switzerland"
+              width={130}
+              height={51}
+              draggable={false}
+            />
+          </button>
+        </h1>
+        <div className="celestial-header__spacer" aria-hidden="true" />
+        <button
+          type="button"
+          className="celestial-header__cart"
+          aria-label={
+            cartCount > 0 ? `Shopping bag, ${cartCount} items` : "Shopping bag"
+          }
+        >
+          <svg
+            className="celestial-header__cart-icon"
+            viewBox="0 0 19 24"
+            width={19}
+            height={24}
+            aria-hidden="true"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.25"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M1.5 7.25h16v14.25a1 1 0 0 1-1 1H2.5a1 1 0 0 1-1-1V7.25Z" />
+            <path d="M6 7.25V5a3.5 3.5 0 0 1 7 0v2.25" />
+          </svg>
+          {cartCount > 0 ? (
+            <span
+              key={cartCount}
+              className="celestial-header__cart-badge"
+              aria-hidden="true"
+            >
+              {cartCount}
+            </span>
+          ) : null}
+        </button>
+        <button
+          type="button"
+          className="celestial-header__burger"
+          aria-label="Menu"
+        >
+          <span className="celestial-header__burger-bun" aria-hidden="true" />
+          <span className="celestial-header__burger-meat" aria-hidden="true" />
+          <span className="celestial-header__burger-bun" aria-hidden="true" />
+        </button>
+      </header>
+    );
+  },
+);

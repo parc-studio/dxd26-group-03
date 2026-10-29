@@ -1,0 +1,157 @@
+.merge-burst {
+  position: absolute;
+  z-index: 1200;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+/* Soft ambient wash only — sparks carry the flash, not a flat white disc */
+.merge-burst__bloom {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(4.2rem * var(--merge-flash-scale, 1));
+  height: calc(4.2rem * var(--merge-flash-scale, 1));
+  margin-left: calc(-2.1rem * var(--merge-flash-scale, 1));
+  margin-top: calc(-2.1rem * var(--merge-flash-scale, 1));
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-cream) 42%, transparent) 0%,
+    color-mix(in srgb, var(--color-cream) 16%, transparent) 48%,
+    transparent 78%
+  );
+  filter: blur(8px);
+  animation: merge-bloom var(--merge-flash-ms, 1260ms)
+    cubic-bezier(0.22, 0.55, 0.28, 1) both;
+}
+
+.merge-burst__spark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: #fff8e8;
+  box-shadow:
+    0 0 6px 1px color-mix(in srgb, var(--color-cream) 90%, white),
+    0 0 14px color-mix(in srgb, var(--color-cream) 55%, transparent);
+  transform: rotate(var(--a)) translateY(0) scale(0.35);
+  animation: merge-spark-fly var(--merge-flash-ms, 1260ms)
+    cubic-bezier(0.18, 0.7, 0.25, 1) both;
+}
+
+.merge-burst__spark:nth-child(3n) {
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  background: color-mix(in srgb, var(--color-cream) 70%, white);
+}
+
+.merge-burst__spark:nth-child(4n) {
+  background: color-mix(in srgb, var(--color-cream-soft) 80%, #fff);
+  box-shadow:
+    0 0 5px 1px #fff,
+    0 0 12px color-mix(in srgb, var(--color-brand-soft) 35%, transparent);
+}
+
+/* Cross-flare sparkle (jewellery glitter) */
+.merge-burst__spark--star {
+  width: 2px;
+  height: 2px;
+  margin: -1px 0 0 -1px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-cream) 80%, white),
+    0 -7px 0 -1px #fff,
+    0 7px 0 -1px #fff,
+    -7px 0 0 -1px #fff,
+    7px 0 0 -1px #fff,
+    0 0 10px 2px color-mix(in srgb, var(--color-cream) 70%, white);
+}
+
+.merge-burst__glint {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 8px 2px color-mix(in srgb, var(--color-cream) 85%, white);
+  transform: translate(var(--gx), var(--gy)) scale(0);
+  animation: merge-glint-twinkle var(--merge-flash-ms, 1260ms) ease-out both;
+}
+
+@keyframes merge-bloom {
+  0% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  16% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.22;
+    transform: scale(1.45);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+@keyframes merge-spark-fly {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateY(0) scale(0.2);
+  }
+  12% {
+    opacity: 1;
+    transform: rotate(var(--a)) translateY(calc(var(--d) * -0.25)) scale(1.15);
+  }
+  55% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateY(calc(var(--d) * -1.55)) scale(0.15);
+  }
+}
+
+@keyframes merge-glint-twinkle {
+  0% {
+    opacity: 0;
+    transform: translate(var(--gx), var(--gy)) scale(0);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(var(--gx), var(--gy)) scale(1.4);
+  }
+  45% {
+    opacity: 0.4;
+    transform: translate(var(--gx), var(--gy)) scale(0.6);
+  }
+  65% {
+    opacity: 1;
+    transform: translate(var(--gx), var(--gy)) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--gx), var(--gy)) scale(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .merge-burst__bloom,
+  .merge-burst__spark,
+  .merge-burst__glint {
+    animation-duration: 220ms;
+  }
+}

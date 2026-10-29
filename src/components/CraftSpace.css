@@ -1,0 +1,45 @@
+.craft-space {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: 100vw;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  overflow-x: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  /* Content aligns with header’s 16px sides; header stays full-bleed */
+  padding: 0 16px;
+  box-sizing: border-box;
+  /* Pure white craft surface (Celestial header/page) */
+  background: #fff;
+
+  /*
+   * Craft image scale defaults (Fotini) — keep in sync with
+   * src/data/craftScales.ts (authoritative; applied as --craft-scale).
+   * Per-piece: CRAFT_SCALE_BY_ID or catalog.json "scale".
+   */
+  --craft-scale-default: 1;
+  --craft-scale-ring: 0.9;
+  --craft-scale-jewellery: 1.2;
+}
+
+/* While the finished-product reveal is up, freeze craft pointer input */
+.craft-space.is-jewellery-revealing .craft-el {
+  pointer-events: none;
+}
+
+.craft-space .celestial-header {
+  /* Full-bleed header; craft body keeps 16px side pad */
+  left: 50%;
+  right: auto;
+  width: 100vw;
+  max-width: 100vw;
+  margin: 0;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+}
+
