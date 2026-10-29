@@ -3,7 +3,7 @@
   "short_name": "Celestial",
   "start_url": "./",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait",
   "background_color": "#f7f3ec",
   "theme_color": "#f7f3ec",
