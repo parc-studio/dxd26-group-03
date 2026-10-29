@@ -94,21 +94,6 @@
   pointer-events: none;
 }
 
-/* ...and the parents bursting back out, and the new piece growing in, stay
-   under its blur (veil 44): the merge lift (inline 1000+ z-index) would draw
-   them sharp on top of it */
-.craft-space.is-jewellery-revealing .craft-el.is-merge-explode,
-.craft-space.is-jewellery-revealing .craft-el.is-merge-reveal {
-  z-index: 30 !important;
-}
-
-/* Product page open (40): every board piece stays under it — a burst or
-   grow-in still running (1000+ lift) or a long stacking order would draw
-   over the page */
-.craft-space.is-sheet-open .craft-el {
-  z-index: 30 !important;
-}
-
 .craft-space .celestial-header {
   /* Full-bleed header; craft body keeps 16px side pad */
   left: 50%;

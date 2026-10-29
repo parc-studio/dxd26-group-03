@@ -1031,6 +1031,9 @@ export function CraftSpace() {
           boundsRef={spaceRef}
           getPlayfield={getPlayfield}
           zIndex={10 + Math.max(0, order.indexOf(el.instanceId))}
+          underOverlay={
+            (jewelleryReveal !== null && jewelleryRevealShown) || sheet !== null
+          }
           mergePhase={parentMergePhase[el.instanceId]}
           mergeFrom={parentMergeFrom[el.instanceId]}
           revealing={underFlashId === el.instanceId}

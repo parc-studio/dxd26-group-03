@@ -84,6 +84,11 @@ interface CraftElementProps {
   revealAnim?: boolean
   /** Fades in as the closing reveal's 3D piece lands on it. */
   returnLand?: boolean
+  /**
+   * The reveal or the product page is over the board: no merge lift above
+   * them, and stays under them (UNDER_OVERLAY_MAX_Z) in its stacking order.
+   */
+  underOverlay?: boolean
   onMove: (instanceId: string, next: { x: number; y: number }) => void
   onDrop: (instanceId: string, next: { x: number; y: number }) => void
   onDragStart?: (instanceId: string, origin: { x: number; y: number }) => void
@@ -91,6 +96,9 @@ interface CraftElementProps {
   /** Tap a finished jewellery piece to open its detail sheet. */
   onOpenJewellery?: (catalogId: string) => void
 }
+
+/** Just under the product page (40) and the reveal's blur (44). */
+const UNDER_OVERLAY_MAX_Z = 39
 
 export function CraftElement({
   data,
@@ -102,6 +110,7 @@ export function CraftElement({
   revealing = false,
   revealAnim = false,
   returnLand = false,
+  underOverlay = false,
   onMove,
   onDrop,
   onDragStart,
@@ -203,14 +212,17 @@ export function CraftElement({
         left: `${data.x}%`,
         top: `${data.y}%`,
         // merging pieces lift above the board but keep their stacking order
-        // (the dragged gem stays in front of the chain it lands on)
+        // (the dragged gem stays in front of the chain it lands on); under
+        // the reveal / product page they keep that order below them instead
         zIndex: dragging
           ? 1100
-          : mergePhase
-            ? 1000 + zIndex
-            : revealing || revealAnim || returnLand
-              ? 1150
-              : zIndex,
+          : underOverlay && !revealing && !returnLand
+            ? Math.min(zIndex, UNDER_OVERLAY_MAX_Z)
+            : mergePhase
+              ? 1000 + zIndex
+              : revealing || revealAnim || returnLand
+                ? 1150
+                : zIndex,
         backgroundColor: 'transparent',
         ['--craft-scale' as string]: String(craftScale),
         ['--craft-rotate' as string]: `${data.rotation ?? 0}deg`,
