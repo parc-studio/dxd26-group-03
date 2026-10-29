@@ -56,6 +56,10 @@ import type { Metal } from "./HeroModel";
 import { JewelleryReveal } from "./JewelleryReveal";
 import { JewellerySheet } from "./JewellerySheet";
 
+/** Only pieces that really combine may rest on each other after a drop. */
+const isRecipePair = (a: string, b: string) =>
+  Boolean(findRecipeResult(a, b));
+
 const APPOINTMENT_TOAST_MS = 6000;
 /** Necklace hit circle as a share of its drawn half-width (1 = whole box). */
 const NECKLACE_HIT_RADIUS_RATIO = 0.9;
@@ -734,9 +738,9 @@ export function CraftSpace() {
       if (!recipeCatalogId && appointmentTarget) {
         showAppointmentToast();
         const { w, h } = spaceSize();
-        // Keep appointment pairs stacked; only separate unrelated overlaps.
+        // No combination: the pieces split apart (only real recipes may stack).
         commitElements(
-          separateAll(elementsRef.current, bounds, w, h, allowsCraftOverlap),
+          separateAll(elementsRef.current, bounds, w, h, isRecipePair),
         );
         delete dragOriginRef.current[instanceId];
         return;
