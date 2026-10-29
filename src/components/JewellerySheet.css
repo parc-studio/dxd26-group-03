@@ -424,6 +424,10 @@
   color: inherit;
 }
 
+.jewellery-sheet__detail-label {
+  font-weight: var(--weight-semibold);
+}
+
 /* Stacked: label, then indented values */
 .jewellery-sheet__detail > .jewellery-sheet__detail-label {
   display: block;
