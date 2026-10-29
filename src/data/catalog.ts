@@ -99,6 +99,7 @@ export function spawnInstance(
     insetSize: def.insetSize,
     insetImagePosition: def.insetImagePosition,
     insetImageSize: def.insetImageSize,
+    rotation: def.category === 'stones' ? Math.random() * 360 : undefined,
     x,
     y,
   }

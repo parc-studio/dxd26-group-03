@@ -79,6 +79,8 @@ export interface CraftInstance {
   insetSize?: string
   insetImagePosition?: string
   insetImageSize?: string
+  /** Random tilt in degrees given to stones when they spawn. */
+  rotation?: number
   x: number
   y: number
 }

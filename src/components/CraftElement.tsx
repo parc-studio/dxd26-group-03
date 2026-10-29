@@ -190,6 +190,7 @@ export function CraftElement({
         zIndex: dragging || mergePhase ? 1100 : revealing || revealAnim ? 1150 : zIndex,
         backgroundColor: 'transparent',
         ['--craft-scale' as string]: String(craftScale),
+        ['--craft-rotate' as string]: `${data.rotation ?? 0}deg`,
         ['--merge-converge-ms' as string]: `${MERGE_CONVERGE_MS}ms`,
         ['--merge-punch-ms' as string]: `${MERGE_PUNCH_MS}ms`,
         ['--merge-reveal-ms' as string]: `${MERGE_REVEAL_MS}ms`,

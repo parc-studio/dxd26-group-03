@@ -120,6 +120,8 @@
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   transform: translateZ(0);
+  /* `rotate` stacks with transform, so animations keep the stone's random tilt. */
+  rotate: var(--craft-rotate, 0deg);
 }
 
 .craft-el.is-paint-ready .craft-el__shape {
