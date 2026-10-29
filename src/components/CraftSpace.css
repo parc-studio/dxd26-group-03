@@ -14,8 +14,38 @@
   /* Content aligns with header’s 16px sides; header stays full-bleed */
   padding: 0 16px;
   box-sizing: border-box;
-  /* Pure white craft surface (Celestial header/page) */
-  background: #fff;
+
+  /*
+   * Trial: craft linen background (Fotini) — UNPUSHED / local only.
+   * Source: media/craft-linen/ref-clean-folds-v2.png → /textures/craft-linen.jpg
+   * Discard: restore `background: #fff;`, remove ::before linen layer + vars.
+   *
+   * Tweak knobs (edit these vars on .craft-space):
+   *   --linen-url         texture url
+   *   --linen-size        cover (no tile seams)
+   *   --linen-position    framing (center | 40% 55% …)
+   *   --linen-repeat      keep no-repeat with cover
+   *   --linen-brightness  soft light (try 1.02–1.1)
+   *   --linen-contrast    weave punch (1 = true; try 0.95–1.08)
+   *   --linen-veil        cream color wash 0–1 (0 = raw photo)
+   *   --linen-fade        white/cream fade overlay 0–1 (Fotini tweak)
+   *   --linen-tint        veil / fade / fallback tint color
+   *   --linen-softness    blur in px (0 = sharp weave; keep low)
+   */
+  --linen-url: url('/textures/craft-linen.jpg');
+
+  --linen-size: cover; /* one big plate — no tile seams */
+  --linen-position: center;
+  --linen-repeat: no-repeat;
+  --linen-brightness: 1.08; /* soft light */
+  --linen-contrast: 1;
+  --linen-veil: 0.08;
+  --linen-fade: 0.35; /* 0 = no fade … higher = more fade — Fotini tweak */
+  --linen-tint: #f2ede2;
+  --linen-softness: 0px;
+
+  background: var(--linen-tint);
+  isolation: isolate;
 
   /*
    * Craft image scale defaults (Fotini) — keep in sync with
@@ -27,6 +57,35 @@
   --craft-scale-ring: 0.75;
   --craft-scale-jewellery: 1.85;
   --craft-scale-earring: 0.7;
+}
+
+/* Linen plate behind craft pieces (filter knobs don’t wash jewellery) */
+.craft-space::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--linen-tint);
+  background-image:
+    /* fade overlay (tweak --linen-fade) — sits above veil + photo */
+    linear-gradient(
+      color-mix(in srgb, var(--linen-tint) calc(var(--linen-fade) * 100%), transparent),
+      color-mix(in srgb, var(--linen-tint) calc(var(--linen-fade) * 100%), transparent)
+    ),
+    /* soft cream veil (tweak --linen-veil) */
+    linear-gradient(
+      color-mix(in srgb, var(--linen-tint) calc(var(--linen-veil) * 100%), transparent),
+      color-mix(in srgb, var(--linen-tint) calc(var(--linen-veil) * 100%), transparent)
+    ),
+    var(--linen-url);
+  background-size: var(--linen-size);
+  background-position: var(--linen-position);
+  background-repeat: var(--linen-repeat);
+  filter:
+    brightness(var(--linen-brightness))
+    contrast(var(--linen-contrast))
+    blur(var(--linen-softness));
 }
 
 /* While the finished-product reveal is up, freeze craft pointer input */
@@ -43,5 +102,28 @@
   margin: 0;
   transform: translateX(-50%);
   box-sizing: border-box;
+  /* Soft blend into linen — no hard white/cream bar edge (landing keeps solid) */
+  --background-color: transparent;
+  background: transparent;
+  overflow: visible;
+}
+
+/* Fade veil under logo/icons, dissolving into craft linen */
+.craft-space .celestial-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: calc(100% + 32px);
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--linen-tint) 78%, transparent) 0%,
+    color-mix(in srgb, var(--linen-tint) 42%, transparent) 55%,
+    color-mix(in srgb, var(--linen-tint) 12%, transparent) 82%,
+    transparent 100%
+  );
 }
 
