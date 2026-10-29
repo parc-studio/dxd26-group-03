@@ -188,6 +188,21 @@ export function JewellerySheet({
     return () => cancelAnimationFrame(id);
   }, []);
 
+  // fetch every metal's glb up front so the switch swaps without a reload
+  const metalsKey = piece.metals.join();
+  useEffect(() => {
+    let cancelled = false;
+    import("./HeroModel").then(({ preloadHeroModel }) => {
+      if (cancelled) return;
+      for (const m of metalsKey.split(",") as Metal[]) {
+        preloadHeroModel(jewelleryHeroModelUrl(detail.id, m));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [detail.id, metalsKey]);
+
   useEffect(() => {
     if (!shownElement) return;
     const id = window.setTimeout(() => setShownElement(null), 2000);

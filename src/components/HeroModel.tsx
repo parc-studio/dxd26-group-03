@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { GLTFLoader, type GLTF } from "three/addons/loaders/GLTFLoader.js";
 import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
@@ -30,6 +30,37 @@ const GEM_CLARITY = 2;
 const GEM_GLOW = 0.15;
 
 export type Metal = "gold" | "silver";
+
+// glb et HDRI chargés une seule fois par session : changer de métal ou
+// rouvrir une fiche ne refait pas le téléchargement ni le décodage
+const models = new Map<string, Promise<GLTF>>();
+let environment: Promise<THREE.Texture> | null = null;
+
+function loadModel(url: string): Promise<GLTF> {
+  let model = models.get(url);
+  if (!model) {
+    model = new GLTFLoader().loadAsync(url);
+    // un échec n'est pas gardé : le prochain affichage réessaie
+    model.catch(() => models.delete(url));
+    models.set(url, model);
+  }
+  return model;
+}
+
+function loadEnvironment(): Promise<THREE.Texture> {
+  environment ??= new HDRLoader().loadAsync(ENVIRONMENT_URL).then((hdr) => {
+    hdr.mapping = THREE.EquirectangularReflectionMapping;
+    return hdr;
+  });
+  environment.catch(() => (environment = null));
+  return environment;
+}
+
+/** Starts downloading a glb (and the studio HDRI) before it is shown. */
+export function preloadHeroModel(url: string) {
+  loadModel(url).catch(() => {});
+  loadEnvironment().catch(() => {});
+}
 
 const METALS: Record<Metal, () => THREE.MeshPhysicalMaterial> = {
   // or 18 carats poli : réflectance mesurée de l'or, un peu éclaircie, sans
@@ -143,11 +174,22 @@ export default function HeroModel({
   const metalRef = useRef(metal);
   const applyMetalRef = useRef<((metal: Metal) => void) | null>(null);
 
+  const srcRef = useRef(src);
+  const showRef = useRef<((url: string) => void) | null>(null);
+
   // changer de métal ne recharge pas le modèle : on échange le matériau
   useEffect(() => {
     metalRef.current = metal;
     applyMetalRef.current?.(metal);
   }, [metal]);
+
+  // nouveau glb (or / argent) : échangé dans la scène existante, sans
+  // recréer le rendu ni recadrer la caméra
+  useEffect(() => {
+    if (srcRef.current === src) return;
+    srcRef.current = src;
+    showRef.current?.(src);
+  }, [src]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -180,7 +222,6 @@ export default function HeroModel({
       );
     }
     // les métaux et les gemmes ont besoin d'un environnement à refléter
-    let envMap: THREE.Texture | null = null;
     scene.environmentIntensity = 0.9;
 
     // lumière de face, en hauteur : étincelles sur les arêtes et ombre au sol
@@ -271,61 +312,69 @@ export default function HeroModel({
 
     let disposed = false;
     let model: THREE.Object3D | null = null;
-    const load = async () => {
+    // le dernier src demandé gagne si deux chargements se croisent
+    let request = 0;
+    const show = async (url: string) => {
+      const ticket = ++request;
       const [hdr, gltf] = await Promise.all([
-        new HDRLoader().loadAsync(ENVIRONMENT_URL),
-        new GLTFLoader().loadAsync(src),
+        loadEnvironment(),
+        loadModel(url),
       ]);
-      if (disposed) {
-        hdr.dispose();
-        return;
-      }
-      hdr.mapping = THREE.EquirectangularReflectionMapping;
-      envMap = hdr;
+      if (disposed || ticket !== request) return;
       scene.environment = hdr;
-      model = gltf.scene;
+      // copie : le glb en cache reste intact pour le prochain affichage
+      const next = gltf.scene.clone(true);
       const metalMeshes: THREE.Mesh[] = [];
-      model.traverse((child) => {
+      next.traverse((child) => {
         if (!(child instanceof THREE.Mesh)) return;
         child.castShadow = true;
         if (isGem(child.material)) brightenGem(child.material);
         else if (!Array.isArray(child.material) && isMetal(child.material)) {
-          child.material.dispose();
           metalMeshes.push(child);
         }
       });
-      applyMetalRef.current = (next) => {
-        for (const mesh of metalMeshes) mesh.material = metalMaterials[next];
+      const applyMetal = (metal: Metal) => {
+        for (const mesh of metalMeshes) mesh.material = metalMaterials[metal];
       };
-      applyMetalRef.current(metalRef.current);
+      applyMetal(metalRef.current);
       // cube par défaut de Blender, tissu et fond de présentation : on a déjà
       // un fond et un sol d'ombre
       for (const name of HIDDEN) {
-        const object = model.getObjectByName(name);
+        const object = next.getObjectByName(name);
         if (object) object.visible = false;
       }
       // un collier modélisé à plat (le fermoir vers -Z) est redressé pour que
       // les gemmes pendent et que la chaîne remonte à gauche et à droite ;
       // un collier déjà vertical (fermoir vers +Y) est laissé tel quel
       const upright = new THREE.Box3();
-      model.updateMatrixWorld(true);
-      model.traverseVisible((child) => {
+      next.updateMatrixWorld(true);
+      next.traverseVisible((child) => {
         if (child instanceof THREE.Mesh) upright.expandByObject(child);
       });
       const extent = upright.getSize(new THREE.Vector3());
-      if (extent.y < extent.z) model.rotation.x = Math.PI / 2;
-      model.updateMatrixWorld(true);
+      if (extent.y < extent.z) next.rotation.x = Math.PI / 2;
+      next.updateMatrixWorld(true);
 
       // les gemmes (matériaux transmissifs) à l'origine
       const box = new THREE.Box3();
-      model.traverse((child) => {
+      next.traverse((child) => {
         if (!(child instanceof THREE.Mesh) || !isGem(child.material)) return;
         addGemVolume(child);
         box.expandByObject(child);
       });
-      if (box.isEmpty()) box.setFromObject(model);
-      model.position.sub(box.getCenter(new THREE.Vector3()));
+      if (box.isEmpty()) box.setFromObject(next);
+      next.position.sub(box.getCenter(new THREE.Vector3()));
+      next.updateMatrixWorld(true);
+      // shaders compilés avant l'échange : pas d'à-coup au changement de métal
+      await renderer.compileAsync(next, camera, scene);
+      if (disposed || ticket !== request) return;
+
+      // l'ancien collier reste affiché jusqu'ici, puis on échange d'un coup
+      if (model) scene.remove(model);
+      const first = !model;
+      model = next;
       scene.add(model);
+      applyMetalRef.current = applyMetal;
       const size = box.getSize(new THREE.Vector3());
 
       floor.position.y = -size.y * (0.5 + FLOOR_GAP);
@@ -336,11 +385,26 @@ export default function HeroModel({
       // cadrage : le collier entier (sans les objets masqués), sous tous les
       // angles de l'orbite, grâce à sa sphère englobante
       const necklace = new THREE.Box3();
-      model.updateMatrixWorld(true);
       model.traverseVisible((child) => {
         if (child instanceof THREE.Mesh) necklace.expandByObject(child);
       });
       const sphere = necklace.getBoundingSphere(new THREE.Sphere());
+      // ombre portée : caméra d'ombre autour du collier entier
+      key.position.set(size.x * 2, size.x * 8, size.x * 4);
+      glint.position.set(-size.x * 6, size.x * 1.5, size.x * 1);
+      const s = Math.max(size.x * 3, sphere.radius * 1.5);
+      Object.assign(key.shadow.camera, {
+        left: -s,
+        right: s,
+        top: s,
+        bottom: -s,
+      });
+      key.shadow.camera.near = size.x * 0.1;
+      key.shadow.camera.far = size.x * 20;
+      key.shadow.camera.updateProjectionMatrix();
+
+      // au changement de métal, la vue reste là où l'utilisateur l'a laissée
+      if (!first) return;
       const halfFov = THREE.MathUtils.degToRad(camera.fov) / 2;
       const halfFovH = Math.atan(Math.tan(halfFov) * camera.aspect);
       const dist =
@@ -363,22 +427,13 @@ export default function HeroModel({
       controls.minDistance = dist * 0.2;
       controls.maxDistance = dist * 1.5;
       controls.update();
-
-      // ombre portée : caméra d'ombre autour du collier entier
-      key.position.set(size.x * 2, size.x * 8, size.x * 4);
-      glint.position.set(-size.x * 6, size.x * 1.5, size.x * 1);
-      const s = Math.max(size.x * 3, sphere.radius * 1.5);
-      Object.assign(key.shadow.camera, {
-        left: -s,
-        right: s,
-        top: s,
-        bottom: -s,
-      });
-      key.shadow.camera.near = size.x * 0.1;
-      key.shadow.camera.far = size.x * 20;
-      key.shadow.camera.updateProjectionMatrix();
     };
-    load().catch((err) => console.error("HeroModel: failed to load", src, err));
+    showRef.current = (url) => {
+      show(url).catch((err) =>
+        console.error("HeroModel: failed to load", url, err),
+      );
+    };
+    showRef.current(srcRef.current);
 
     renderer.setAnimationLoop(() => {
       if (controls.autoRotate) {
@@ -398,31 +453,21 @@ export default function HeroModel({
       controls.removeEventListener("start", stopIdle);
       controls.removeEventListener("change", keepTargetInBounds);
       controls.dispose();
-      model?.traverse((obj) => {
-        if (!(obj instanceof THREE.Mesh)) return;
-        obj.geometry.dispose();
-        const materials = Array.isArray(obj.material)
-          ? obj.material
-          : [obj.material];
-        for (const m of materials) {
-          for (const value of Object.values(m)) {
-            if (value instanceof THREE.Texture) value.dispose();
-          }
-          m.dispose();
-        }
-      });
+      // géométries, matériaux et HDRI appartiennent au cache : on les garde
+      // pour le prochain affichage (perdre le contexte libère le GPU)
+      showRef.current = null;
       applyMetalRef.current = null;
       metalMaterials.gold.dispose();
       metalMaterials.silver.dispose();
-      envMap?.dispose();
       floor.geometry.dispose();
       floorMaterial.dispose();
       bloom.dispose();
       composer.dispose();
       renderer.dispose();
+      renderer.forceContextLoss();
       renderer.domElement.remove();
     };
-  }, [src, transparentBackground, freeOrbit]);
+  }, [transparentBackground, freeOrbit]);
 
   return <div ref={hostRef} className={className} />;
 }
