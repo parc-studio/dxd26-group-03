@@ -7,6 +7,7 @@ import {
 } from "react";
 import {
   allowsCraftOverlap,
+  CATALOG_ELEMENTS,
   createStarterInstances,
   findRecipeResult,
   getCatalogElement,
@@ -28,21 +29,20 @@ import { findDropTarget, findMatchingTarget } from "../lib/hitTest";
 import { opposingExplodeDirs, runParentExplode } from "../lib/mergeExplode";
 import {
   MERGE_CONVERGE_MS,
-  MERGE_JEWELLERY_EXPLODE_SCALE,
+  MERGE_PARENT_GAP_PX,
   MERGE_PUNCH_MS,
 } from "../lib/mergeTiming";
-import { resolveJewelleryMetal } from "../lib/jewelleryModel";
+import {
+  jewelleryHeroModelUrl,
+  resolveJewelleryMetal,
+} from "../lib/jewelleryModel";
 import {
   attachShakeListener,
   requestMotionPermissionOnTap,
 } from "../lib/shakeDetect";
 import { runShakeJostle } from "../lib/shakeJostle";
 import { attachTiltDrift } from "../lib/tiltDrift";
-import type {
-  CraftInstance,
-  MergeBurstState,
-  ParentMergePhase,
-} from "../types";
+import type { CraftInstance, ParentMergePhase } from "../types";
 import { AppointmentToast } from "./AppointmentToast";
 import { CelestialHeader } from "./CelestialHeader";
 import { CraftElement } from "./CraftElement";
@@ -50,9 +50,10 @@ import "./CraftSpace.css";
 import type { Metal } from "./HeroModel";
 import { JewelleryReveal } from "./JewelleryReveal";
 import { JewellerySheet } from "./JewellerySheet";
-import { MergeBurst } from "./MergeBurst";
 
 const APPOINTMENT_TOAST_MS = 6000;
+/** Lets the board's own images load first before warming the 3D reveal. */
+const REVEAL_WARMUP_DELAY_MS = 1200;
 /** Hold overlap this long before showing the appointment toast. */
 const APPOINTMENT_HOLD_MS = 350;
 
@@ -92,7 +93,6 @@ export function CraftSpace() {
   const [order, setOrder] = useState<string[]>(() =>
     elementsRef.current.map((el) => el.instanceId),
   );
-  const [bursts, setBursts] = useState<MergeBurstState[]>([]);
   const [sheet, setSheet] = useState<JewelleryDetail | null>(detailFromHash);
   const [cartCount, setCartCount] = useState(0);
   /** True when the open sheet pushed its own history entry (close → back). */
@@ -102,8 +102,26 @@ export function CraftSpace() {
   /** Metal for the open reveal — from the craft parents, not static catalog copy. */
   const [jewelleryRevealMetal, setJewelleryRevealMetal] =
     useState<Metal>("gold");
+  /** Reveal is mounted early (hidden) to warm its 3D; true once it should show. */
+  const [jewelleryRevealShown, setJewelleryRevealShown] = useState(false);
+  /** Board changes to run once the reveal's blur fully covers the board. */
+  const revealCoveredRef = useRef<(() => void) | null>(null);
+  const handleRevealCovered = useCallback(() => {
+    const settle = revealCoveredRef.current;
+    revealCoveredRef.current = null;
+    settle?.();
+  }, []);
+  /** Screen point where the parents were sucked in — the reveal's 3D piece grows from it. */
+  const [jewelleryRevealOrigin, setJewelleryRevealOrigin] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [parentMergePhase, setParentMergePhase] = useState<
     Record<string, ParentMergePhase>
+  >({});
+  /** Where each parent started its suck-in, in px from the merge point. */
+  const [parentMergeFrom, setParentMergeFrom] = useState<
+    Record<string, { x: number; y: number }>
   >({});
   const [underFlashId, setUnderFlashId] = useState<string | null>(null);
   const [appointmentToast, setAppointmentToast] = useState<
@@ -194,6 +212,30 @@ export function CraftSpace() {
     return {
       w: rect?.width ?? 390,
       h: rect?.height ?? 700,
+    };
+  }, []);
+
+  // Warm the reveal while the player is still crafting: three.js chunk, studio
+  // HDRI and every finished piece's glb (both metals), so the 3D is ready the
+  // moment a merge opens the reveal instead of loading behind the blur.
+  useEffect(() => {
+    let cancelled = false;
+    const id = window.setTimeout(() => {
+      import("./HeroModel").then(({ preloadHeroModel }) => {
+        if (cancelled) return;
+        const urls = new Set<string>();
+        for (const el of CATALOG_ELEMENTS) {
+          if (el.kind !== "jewellery") continue;
+          for (const metal of ["silver", "gold"] as const) {
+            urls.add(jewelleryHeroModelUrl(el.id, metal));
+          }
+        }
+        urls.forEach(preloadHeroModel);
+      });
+    }, REVEAL_WARMUP_DELAY_MS);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(id);
     };
   }, []);
 
@@ -388,13 +430,13 @@ export function CraftSpace() {
   const resetCraftToStarters = useCallback(() => {
     explodeCancelRef.current?.();
     explodeCancelRef.current = null;
+    revealCoveredRef.current = null;
     shakeJostleRef.current?.cancel();
     shakeJostleRef.current = null;
 
     jewelleryRevealOpenRef.current = false;
     setJewelleryReveal(null);
     setJewelleryRevealMetal("gold");
-    setBursts([]);
     setParentMergePhase({});
     setUnderFlashId(null);
     dragOriginRef.current = {};
@@ -435,13 +477,13 @@ export function CraftSpace() {
   const startShakeJostle = useCallback(() => {
     explodeCancelRef.current?.();
     explodeCancelRef.current = null;
+    revealCoveredRef.current = null;
     shakeJostleRef.current?.cancel();
 
     busyRef.current = true;
     jewelleryRevealOpenRef.current = false;
     setJewelleryReveal(null);
     setJewelleryRevealMetal("gold");
-    setBursts([]);
     setParentMergePhase({});
     setUnderFlashId(null);
     clearAppointmentHold();
@@ -583,21 +625,24 @@ export function CraftSpace() {
   }, []);
 
   const closeJewelleryReveal = useCallback(() => {
+    // closed before the blur finished: still put the board back
+    handleRevealCovered();
     jewelleryRevealOpenRef.current = false;
     setJewelleryReveal(null);
     setJewelleryRevealMetal("gold");
     clearBusyIfIdle();
-  }, [clearBusyIfIdle]);
+  }, [clearBusyIfIdle, handleRevealCovered]);
 
   const viewProductFromReveal = useCallback(() => {
     if (!jewelleryReveal) return;
     const detail = jewelleryReveal;
+    handleRevealCovered();
     jewelleryRevealOpenRef.current = false;
     setJewelleryReveal(null);
     setJewelleryRevealMetal("gold");
     showSheet(detail);
     clearBusyIfIdle();
-  }, [jewelleryReveal, clearBusyIfIdle, showSheet]);
+  }, [jewelleryReveal, clearBusyIfIdle, handleRevealCovered, showSheet]);
 
   const handleDrop = useCallback(
     (instanceId: string, pos: { x: number; y: number }) => {
@@ -735,11 +780,50 @@ export function CraftSpace() {
         target.catalogId,
         resultCatalogId,
       );
+      // fetch the 3D piece during the merge so it is there to grow from the merge point
+      if (detail) {
+        import("./HeroModel").then(({ preloadHeroModel }) =>
+          preloadHeroModel(jewelleryHeroModelUrl(detail.id, revealMetal)),
+        );
+      }
 
       busyRef.current = true;
       explodeDoneRef.current = false;
       // Slide the appointment CTA away before the big product focus opens.
       beginAppointmentToastLeave();
+
+      // Parents jump to the merge point at once; the suck-in animation starts
+      // them at their old spot (this px offset) and pulls them in with
+      // transform only — animating left/top relaid out every frame (choppy).
+      const { w, h } = spaceSize();
+      const from: Record<string, { x: number; y: number }> = {};
+      for (const el of elementsRef.current) {
+        if (el.instanceId !== parentA && el.instanceId !== parentB) continue;
+        from[el.instanceId] = {
+          x: ((el.x - mid.x) / 100) * w,
+          y: ((el.y - mid.y) / 100) * h,
+        };
+      }
+      setParentMergeFrom(from);
+
+      // Mount the reveal now but keep it hidden: its 3D view starts, loads
+      // and compiles its shaders during the suck-in, so the piece is ready
+      // the moment the reveal is shown.
+      if (detail) {
+        jewelleryRevealOpenRef.current = true;
+        const rect = spaceRef.current?.getBoundingClientRect();
+        setJewelleryRevealOrigin(
+          rect
+            ? {
+                x: rect.left + (mid.x / 100) * rect.width,
+                y: rect.top + (mid.y / 100) * rect.height,
+              }
+            : null,
+        );
+        setJewelleryRevealMetal(revealMetal);
+        setJewelleryRevealShown(false);
+        setJewelleryReveal(detail);
+      }
 
       setParentMergePhase({
         [parentA]: "converge",
@@ -760,12 +844,6 @@ export function CraftSpace() {
           [parentB]: "vanish",
         });
 
-        const burstId = `burst-${Date.now()}`;
-        setBursts((b) => [
-          ...b,
-          { id: burstId, x: mid.x, y: mid.y, kind: "jewellery" },
-        ]);
-
         const withResult = [...elementsRef.current, result];
         commitElements(withResult);
         setOrder((o) => [
@@ -774,29 +852,49 @@ export function CraftSpace() {
         ]);
         setUnderFlashId(result.instanceId);
 
-        window.setTimeout(() => {
+        // The board under the reveal settles once the blur fully covers it:
+        // the new piece shows and the parents come back either side of it
+        // (on the side each came from) — no explosion, never seen unblurred.
+        const settleBoard = () => {
           setUnderFlashId(null);
-          setBursts((b) => b.filter((x) => x.id !== burstId));
-
-          if (detail) {
-            jewelleryRevealOpenRef.current = true;
-            beginAppointmentToastLeave();
-            setJewelleryRevealMetal(revealMetal);
-            setJewelleryReveal(detail);
-          }
-
-          startParentExplode(
-            mid,
-            parentA,
-            parentB,
-            approach,
-            () => {
-              explodeDoneRef.current = true;
-              delete dragOriginRef.current[instanceId];
-              clearBusyIfIdle();
-            },
-            MERGE_JEWELLERY_EXPLODE_SCALE,
+          const bounds = refreshPlayfield();
+          const size = spaceSize();
+          const gap = (MERGE_PARENT_GAP_PX / size.w) * 100;
+          const leftId =
+            (from[parentA]?.x ?? 0) <= (from[parentB]?.x ?? 0)
+              ? parentA
+              : parentB;
+          commitElements(
+            separateAll(
+              elementsRef.current.map((el) => {
+                if (el.instanceId !== parentA && el.instanceId !== parentB) {
+                  return el;
+                }
+                const side = el.instanceId === leftId ? -1 : 1;
+                const spot = clampToPlayfield(mid.x + side * gap, mid.y, bounds);
+                return { ...el, x: spot.x, y: spot.y };
+              }),
+              bounds,
+              size.w,
+              size.h,
+              allowsCraftOverlap,
+            ),
           );
+          setParentMergePhase({});
+          explodeDoneRef.current = true;
+          delete dragOriginRef.current[instanceId];
+          clearBusyIfIdle();
+        };
+
+        window.setTimeout(() => {
+          if (detail) {
+            beginAppointmentToastLeave();
+            // the reveal calls this back once its blur fully covers the board
+            revealCoveredRef.current = settleBoard;
+            setJewelleryRevealShown(true);
+          } else {
+            settleBoard();
+          }
         }, MERGE_PUNCH_MS);
       }, MERGE_CONVERGE_MS);
     },
@@ -834,6 +932,7 @@ export function CraftSpace() {
           getPlayfield={getPlayfield}
           zIndex={10 + Math.max(0, order.indexOf(el.instanceId))}
           mergePhase={parentMergePhase[el.instanceId]}
+          mergeFrom={parentMergeFrom[el.instanceId]}
           revealing={underFlashId === el.instanceId}
           onMove={handleMove}
           onDrop={handleDrop}
@@ -841,10 +940,6 @@ export function CraftSpace() {
           onBringFront={bringFront}
           onOpenJewellery={openJewellery}
         />
-      ))}
-
-      {bursts.map((b) => (
-        <MergeBurst key={b.id} x={b.x} y={b.y} kind={b.kind} />
       ))}
 
       {appointmentToast !== "off" ? (
@@ -859,6 +954,9 @@ export function CraftSpace() {
         <JewelleryReveal
           detail={jewelleryReveal}
           metal={jewelleryRevealMetal}
+          shown={jewelleryRevealShown}
+          onCovered={handleRevealCovered}
+          origin={jewelleryRevealOrigin}
           onClose={closeJewelleryReveal}
           onViewProduct={viewProductFromReveal}
         />

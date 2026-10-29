@@ -55,22 +55,44 @@
   pointer-events: none;
   animation: none;
   z-index: 1100;
-  transition:
-    left var(--merge-converge-ms, 320ms) ease-out,
-    top var(--merge-converge-ms, 320ms) ease-out,
-    transform var(--merge-converge-ms, 320ms) ease-out;
-  transform: translate3d(-50%, -50%, 0) scale(1.42);
-  filter: drop-shadow(0 10px 20px rgba(71, 43, 43, 0.22));
+  /* sucked into the merge point. The element already sits on it; the
+     animation starts it back at its old spot (--merge-from-x/y) and pulls it
+     in with transform + opacity only, so it stays on the GPU (smooth). */
+  transition: none;
+  animation: craft-suck var(--merge-converge-ms, 450ms)
+    cubic-bezier(0.55, 0, 0.85, 0.35) both;
+  transform: translate3d(-50%, -50%, 0) scale(0.04);
+  opacity: 0;
+  filter: none;
+  will-change: transform, opacity;
+}
+
+@keyframes craft-suck {
+  0% {
+    transform: translate3d(
+        calc(-50% + var(--merge-from-x, 0px)),
+        calc(-50% + var(--merge-from-y, 0px)),
+        0
+      )
+      scale(1);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-50%, -50%, 0) scale(0.04);
+    opacity: 0;
+  }
 }
 
 .craft-el.is-merge-vanish {
   pointer-events: none;
   animation: none;
+  /* already gone at the end of the suck-in; just stays hidden */
   opacity: 0;
-  transform: translate3d(-50%, -50%, 0) scale(0.12);
-  transition:
-    opacity 140ms ease-in,
-    transform 180ms ease-in;
+  transform: translate3d(-50%, -50%, 0) scale(0.04);
+  transition: none;
   filter: none;
 }
 

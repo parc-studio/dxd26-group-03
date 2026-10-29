@@ -1,9 +1,15 @@
 /**
  * Merge choreography timings + parent explode (easy to tweak).
  */
-export const MERGE_CONVERGE_MS = 320
-/** Peak flash punch before the product starts to read clearly. */
-export const MERGE_PUNCH_MS = 300
+/** Parents are sucked into the merge point (speed up + shrink to nothing). */
+export const MERGE_CONVERGE_MS = 450
+/** Beat between the parents vanishing and the new piece leaving that point. */
+export const MERGE_PUNCH_MS = 60
+/**
+ * After a jewellery merge the parents come back (no explosion) this far (px)
+ * either side of the new piece, as the reveal opens over them.
+ */
+export const MERGE_PARENT_GAP_PX = 90
 /** Flash eases out while the new jewellery reveals (longer = smoother fade). */
 export const MERGE_REVEAL_MS = 960
 
@@ -12,12 +18,6 @@ export const MERGE_JEWELLERY_MS =
 
 /** Full-screen finished-product reveal (veil / 3D / UI). */
 export const JEWELLERY_REVEAL_EXIT_MS = 720
-
-/**
- * Multiplier for the jewellery merge flash disc size (CSS `--merge-flash-scale`).
- * 1 = base size in MergeBurst.css; raise for a bigger bloom.
- */
-export const MERGE_FLASH_SCALE = 1.22
 
 /**
  * Approx travel of each parent from the merge point after the explode
@@ -36,9 +36,3 @@ export const MERGE_EXPLODE_STOP_SPEED_PX = 14
 
 /** Safety cap so a soft explode cannot hang the board. */
 export const MERGE_EXPLODE_MAX_MS = 900
-
-/**
- * Impulse scale for finished-jewellery merges (reveal opens at the same time).
- * Keep parents on the board, but a smaller burst so it fights the focus view less.
- */
-export const MERGE_JEWELLERY_EXPLODE_SCALE = 0.38

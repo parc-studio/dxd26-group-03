@@ -72,6 +72,8 @@ interface CraftElementProps {
   getPlayfield?: () => PlayfieldBounds
   zIndex: number
   mergePhase?: ParentMergePhase
+  /** Suck-in start, in px from the merge point (element is already there). */
+  mergeFrom?: { x: number; y: number }
   /** Product is under the flash (invisible) during the punch. */
   revealing?: boolean
   /** Soft entrance once the flash eases. */
@@ -90,6 +92,7 @@ export function CraftElement({
   getPlayfield,
   zIndex,
   mergePhase,
+  mergeFrom,
   revealing = false,
   revealAnim = false,
   onMove,
@@ -192,6 +195,8 @@ export function CraftElement({
         ['--craft-scale' as string]: String(craftScale),
         ['--craft-rotate' as string]: `${data.rotation ?? 0}deg`,
         ['--merge-converge-ms' as string]: `${MERGE_CONVERGE_MS}ms`,
+        ['--merge-from-x' as string]: `${mergeFrom?.x ?? 0}px`,
+        ['--merge-from-y' as string]: `${mergeFrom?.y ?? 0}px`,
         ['--merge-punch-ms' as string]: `${MERGE_PUNCH_MS}ms`,
         ['--merge-reveal-ms' as string]: `${MERGE_REVEAL_MS}ms`,
       }}

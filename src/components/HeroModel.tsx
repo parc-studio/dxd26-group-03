@@ -161,6 +161,8 @@ interface HeroModelProps {
   transparentBackground?: boolean;
   /** false: only turn left/right and zoom; no tilt up/down, no pan. */
   freeOrbit?: boolean;
+  /** Called once, when the first model is in the scene and framed. */
+  onReady?: () => void;
 }
 
 export default function HeroModel({
@@ -169,6 +171,7 @@ export default function HeroModel({
   className,
   transparentBackground = false,
   freeOrbit = true,
+  onReady,
 }: HeroModelProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const metalRef = useRef(metal);
@@ -176,6 +179,10 @@ export default function HeroModel({
 
   const srcRef = useRef(src);
   const showRef = useRef<((url: string) => void) | null>(null);
+  const onReadyRef = useRef(onReady);
+  useEffect(() => {
+    onReadyRef.current = onReady;
+  }, [onReady]);
 
   // changer de métal ne recharge pas le modèle : on échange le matériau
   useEffect(() => {
@@ -427,6 +434,7 @@ export default function HeroModel({
       controls.minDistance = dist * 0.2;
       controls.maxDistance = dist * 1.5;
       controls.update();
+      onReadyRef.current?.();
     };
     showRef.current = (url) => {
       show(url).catch((err) =>

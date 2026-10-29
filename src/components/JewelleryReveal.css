@@ -1,6 +1,4 @@
 .jewellery-reveal {
-  --reveal-veil-ms: 1100ms;
-  --reveal-model-ms: 1200ms;
   --reveal-ui-delay: 720ms;
   --reveal-ui-ms: 780ms;
   --reveal-exit-ms: 700ms;
@@ -18,32 +16,38 @@
   touch-action: none;
 }
 
-/* Craft stays visible: soft dim + blur, not an opaque curtain */
+/* mounted during the merge to warm the 3D, not yet shown (the canvas still
+   renders while hidden, so its shaders are compiled by the time it opens) */
+.jewellery-reveal.is-pending {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/*
+ * Craft stays visible: soft dim + blur, not an opaque curtain. Fades in
+ * together with the 3D piece growing: same start, same duration
+ * (ARRIVE_MS in JewelleryReveal.tsx), same curve.
+ * Only opacity animates: the blur radius stays fixed (animating it glitched).
+ */
 .jewellery-reveal__veil {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: color-mix(in srgb, #fff 42%, transparent);
-  backdrop-filter: blur(0px) saturate(1);
-  -webkit-backdrop-filter: blur(0px) saturate(1);
-  opacity: 0;
-  transition:
-    opacity var(--reveal-veil-ms) ease,
-    backdrop-filter var(--reveal-veil-ms) ease,
-    -webkit-backdrop-filter var(--reveal-veil-ms) ease;
-}
-
-.jewellery-reveal.is-open .jewellery-reveal__veil {
-  opacity: 1;
+  background: color-mix(in srgb, #fff 56%, transparent);
   backdrop-filter: blur(14px) saturate(1.05);
   -webkit-backdrop-filter: blur(14px) saturate(1.05);
+  opacity: 0;
+  transition: opacity var(--reveal-arrive-ms) cubic-bezier(0.34, 1, 0.64, 1);
 }
 
+.jewellery-reveal.is-arrived .jewellery-reveal__veil {
+  opacity: 1;
+}
+
+/* closing: plain fade only (the blur itself is never animated) */
 .jewellery-reveal.is-leaving .jewellery-reveal__veil {
   opacity: 0;
-  backdrop-filter: blur(0px);
-  -webkit-backdrop-filter: blur(0px);
-  transition-duration: var(--reveal-exit-ms);
+  transition: opacity var(--reveal-exit-ms) ease 0ms;
 }
 
 .jewellery-reveal__close {
@@ -73,7 +77,7 @@
   appearance: none;
 }
 
-.jewellery-reveal.is-open .jewellery-reveal__close {
+.jewellery-reveal.is-arrived .jewellery-reveal__close {
   opacity: 1;
   transform: translate3d(0, 0, 0);
 }
@@ -117,7 +121,7 @@
     transform var(--reveal-ui-ms) ease var(--reveal-ui-delay);
 }
 
-.jewellery-reveal.is-open .jewellery-reveal__name {
+.jewellery-reveal.is-arrived .jewellery-reveal__name {
   opacity: 1;
   transform: translate3d(0, 0, 0);
 }
@@ -137,14 +141,18 @@
   min-height: 0;
   max-height: min(68dvh, 34rem);
   margin: 0 auto;
+  /* the new piece: a speck on the merge point (--grow-x/y set in
+     JewelleryReveal.tsx) that flies to the centre and grows straight to its
+     final size, slowing as it lands (no overshoot) */
   opacity: 0;
-  transform: translate3d(0, 18px, 0) scale(0.88);
+  transform: translate3d(var(--grow-x, 0px), var(--grow-y, 0px), 0) scale(0.04);
   transition:
-    opacity var(--reveal-model-ms) cubic-bezier(0.22, 1, 0.36, 1) 180ms,
-    transform var(--reveal-model-ms) cubic-bezier(0.22, 1, 0.36, 1) 180ms;
+    opacity 260ms ease-out,
+    transform var(--reveal-arrive-ms) cubic-bezier(0.34, 1, 0.64, 1);
 }
 
-.jewellery-reveal.is-open .jewellery-reveal__stage {
+/* set once the page is open and the 3D model is loaded */
+.jewellery-reveal__stage.is-arrived {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
 }
@@ -178,7 +186,7 @@
     transform var(--reveal-ui-ms) ease var(--reveal-ui-delay);
 }
 
-.jewellery-reveal.is-open .jewellery-reveal__actions {
+.jewellery-reveal.is-arrived .jewellery-reveal__actions {
   opacity: 1;
   transform: translate3d(0, 0, 0);
 }
@@ -249,6 +257,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .jewellery-reveal,
   .jewellery-reveal__veil,
   .jewellery-reveal__close,
   .jewellery-reveal__name,

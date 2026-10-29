@@ -86,14 +86,5 @@ export interface CraftInstance {
   y: number
 }
 
-export type MergeBurstKind = 'jewellery'
-
-export interface MergeBurstState {
-  id: string
-  x: number
-  y: number
-  kind: MergeBurstKind
-}
-
 /** Visual phase for parent pieces during a merge. */
 export type ParentMergePhase = 'converge' | 'vanish' | 'explode'
