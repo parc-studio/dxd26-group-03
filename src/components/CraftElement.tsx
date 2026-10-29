@@ -214,8 +214,7 @@ export function CraftElement({
       <span className="craft-el__shape" style={shapeStyle} aria-hidden="true">
         {insetStyle ? (
           <span className="craft-el__inset" style={insetStyle} />
-        ) : null}
-      </span>
+        ) : null}      </span>
     </button>
   )
 }

@@ -120,7 +120,7 @@
   filter: drop-shadow(0 6px 14px rgba(71, 43, 43, 0.16));
 }
 
-/* Photo cuts: no card frame — shadow follows alpha via drop-shadow */
+/* Photo cuts: no card frame — glow follows alpha via drop-shadow */
 .craft-el--photo .craft-el__shape {
   overflow: visible;
   box-shadow: none;
@@ -280,8 +280,8 @@
 }
 
 /*
- * Finished-product under-shine (CodePen-style soft oval shadow + light pool).
- * Tweak: --jewellery-glow-*, --jewellery-shadow-*
+ * Finished-product under-shine (soft light pool, no contact shadow).
+ * Tweak: --jewellery-glow-*
  */
 .craft-el--jewellery-piece {
   /* Keep under-plate subtle on white so only the jewellery cutout reads. */
@@ -290,9 +290,6 @@
   --jewellery-glow-soft: color-mix(in srgb, var(--color-cream) 12%, transparent);
   --jewellery-glow-blur: 22px;
   --jewellery-glow-opacity: 0.35;
-  --jewellery-shadow-width: calc(5.2rem * var(--craft-scale));
-  --jewellery-shadow-height: calc(0.7rem * var(--craft-scale));
-  --jewellery-shadow-opacity: 0.12;
 }
 
 /* Soft light pool under the piece — only after texture paint is ready */
@@ -319,30 +316,6 @@
   animation: jewellery-under-glow 5.5s ease-in-out infinite;
 }
 
-/* Contact shadow oval — soft, wide, grounded under the piece */
-.craft-el--jewellery-piece.is-paint-ready::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: calc(50% + 2.15rem);
-  width: var(--jewellery-shadow-width);
-  height: var(--jewellery-shadow-height);
-  transform: translate3d(-50%, -50%, 0);
-  border-radius: 50%;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(71, 43, 43, 0.42) 0%,
-    rgba(71, 43, 43, 0.16) 42%,
-    rgba(71, 43, 43, 0.05) 68%,
-    transparent 78%
-  );
-  opacity: var(--jewellery-shadow-opacity);
-  filter: blur(4px);
-  animation: jewellery-under-shadow 5.5s ease-in-out infinite;
-}
-
 .craft-el--jewellery-piece .craft-el__shape {
   position: relative;
   z-index: 1;
@@ -350,9 +323,14 @@
   box-shadow: none;
 }
 
+/* Tappable finished pieces: no brown shadow */
 .craft-el.is-paint-ready.craft-el--jewellery-piece .craft-el__shape,
-.craft-el.is-paint-ready.craft-el--jewellery-piece.craft-el--ring .craft-el__shape {
-  filter: drop-shadow(0 10px 18px rgba(71, 43, 43, 0.12));
+.craft-el.is-paint-ready.craft-el--jewellery-piece.craft-el--ring .craft-el__shape,
+.craft-el.craft-el--jewellery-piece.is-dragging .craft-el__shape,
+.craft-el--jewellery-piece.is-dragging,
+.craft-el--jewellery-piece.is-merge-converge,
+.craft-el--jewellery-piece.is-merge-explode {
+  filter: none;
 }
 
 .craft-el--jewellery-piece.craft-el--ring .craft-el__shape {
@@ -365,9 +343,8 @@
   z-index: 2;
 }
 
-/* Soft shadow stays grounded while dragging — don't double with lift drop-shadow */
-.craft-el--jewellery-piece.is-dragging::before,
-.craft-el--jewellery-piece.is-dragging::after {
+/* Light pool hides while dragging — don't double with the lift glow */
+.craft-el--jewellery-piece.is-dragging::before {
   opacity: 0;
   animation: none;
 }
@@ -381,20 +358,6 @@
   50% {
     opacity: calc(var(--jewellery-glow-opacity) * 0.86);
     transform: translate(-50%, -50%) scale(1.04);
-  }
-}
-
-@keyframes jewellery-under-shadow {
-  0%,
-  100% {
-    width: var(--jewellery-shadow-width);
-    height: var(--jewellery-shadow-height);
-    opacity: var(--jewellery-shadow-opacity);
-  }
-  50% {
-    width: calc(var(--jewellery-shadow-width) * 0.92);
-    height: calc(var(--jewellery-shadow-height) * 1.12);
-    opacity: calc(var(--jewellery-shadow-opacity) * 0.85);
   }
 }
 
@@ -425,8 +388,7 @@
     animation-duration: 1ms;
   }
 
-  .craft-el--jewellery-piece::before,
-  .craft-el--jewellery-piece::after {
+  .craft-el--jewellery-piece::before {
     animation: none;
   }
 }
@@ -492,6 +454,5 @@
 
   .craft-el--jewellery-piece {
     --jewellery-glow-size: calc(6.5rem * var(--craft-scale));
-    --jewellery-shadow-width: calc(5.8rem * var(--craft-scale));
   }
 }
