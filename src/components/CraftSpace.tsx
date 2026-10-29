@@ -500,7 +500,10 @@ export function CraftSpace() {
             pinned: draggingRef.current.has(el.instanceId),
           })),
         getSpace: () => ({ ...spaceSize(), playfield: playfieldRef.current }),
+        // Paused while dragging: tilt collisions would push the merge target
+        // away from the finger (they don't know about merge partners).
         isEnabled: () =>
+          draggingRef.current.size === 0 &&
           !busyRef.current &&
           !sheetOpenRef.current &&
           !jewelleryRevealOpenRef.current &&
