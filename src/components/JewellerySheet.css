@@ -396,7 +396,7 @@
   padding: 0 0 calc(5.75rem + var(--safe-bottom));
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: var(--space-4);
   font-family: var(--font-display);
   font-size: var(--text-sm);
@@ -404,12 +404,12 @@
   line-height: var(--leading-normal);
   letter-spacing: 0.01em;
   color: var(--color-brand-warm);
+  text-align: left;
 }
 
 .jewellery-sheet__detail {
   margin: 0;
-  width: max-content;
-  max-width: min(22rem, 100%);
+  width: 100%;
   text-align: left;
 }
 
