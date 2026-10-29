@@ -22,8 +22,19 @@ for (const recipe of catalog.recipes) {
   recipeMap.set(key, recipe.result)
 }
 
-/** Thin rings that book an appointment with every stone, rather than crafting. */
-const THIN_RING_IDS = ['ring_thin_silver', 'ring_thin_gold'] as const
+/**
+ * Partners that book an appointment with every stone (overlap + toast),
+ * unless a real recipe claims the pair.
+ */
+function isAppointmentPartner(el: CatalogElement): boolean {
+  if (el.kind === 'jewellery') return false
+  if (el.category === 'chains' || el.category === 'earring') return true
+  return el.shape === 'ring'
+}
+
+const APPOINTMENT_PARTNER_IDS = catalog.elements
+  .filter(isAppointmentPartner)
+  .map((el) => el.id)
 
 function pairKey(a: string, b: string): string {
   return [a, b].sort().join('::')
@@ -35,11 +46,14 @@ for (const pair of catalog.appointmentPairs ?? []) {
   appointmentPairSet.add(pairKey(pair.a, pair.b))
 }
 
-// Every gem/stone pairs with both thin rings, even if a catalog line is missing.
+// Every stone ↔ rings / chains / earrings, even if a catalog line is missing.
+// Recipes stay craft-only (never appointment).
 for (const el of catalog.elements) {
   if (el.category !== 'stones') continue
-  for (const ringId of THIN_RING_IDS) {
-    appointmentPairSet.add(pairKey(el.id, ringId))
+  for (const partnerId of APPOINTMENT_PARTNER_IDS) {
+    const key = pairKey(el.id, partnerId)
+    if (recipeMap.has(key)) continue
+    appointmentPairSet.add(key)
   }
 }
 
@@ -194,14 +208,15 @@ export function assertCatalogAligned(knownImageFiles: string[]): string[] {
     .filter((el) => el.category === 'stones')
     .map((el) => el.id)
   for (const stoneId of stoneIds) {
-    for (const ringId of THIN_RING_IDS) {
-      const key = pairKey(stoneId, ringId)
+    for (const partnerId of APPOINTMENT_PARTNER_IDS) {
+      const key = pairKey(stoneId, partnerId)
+      if (recipeMap.has(key)) continue
       const listed = (catalog.appointmentPairs ?? []).some(
         (pair) => pairKey(pair.a, pair.b) === key,
       )
       if (!listed) {
         errors.push(
-          `stone ${stoneId} missing appointment pair with ${ringId}`,
+          `stone ${stoneId} missing appointment pair with ${partnerId}`,
         )
       }
     }
