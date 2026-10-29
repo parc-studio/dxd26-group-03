@@ -61,7 +61,7 @@ const PIECES: Record<string, Piece> = {
   },
   // Crafted via silver apatite necklace + peridot — silver chain1 / final-silver.
   necklace_poseidon: {
-    name: "Necklace Mirror of the Seas",
+    name: "Necklace Poseidon",
     description:
       "A fine silver chain traced like a shoreline, set with peridot and blue apatite " +
       "that catch the light like sun on shallow and deep water.",

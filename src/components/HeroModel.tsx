@@ -24,6 +24,8 @@ const MAX_POLAR = THREE.MathUtils.degToRad(88);
 // va-et-vient avant le premier contact : amplitude et vitesse (2 = 30 s par tour)
 const IDLE_SWEEP = THREE.MathUtils.degToRad(30);
 const IDLE_SPEED = 0.5;
+// un peu plus rapide dans le reveal, pour donner de la vie à l'apparition
+const REVEAL_IDLE_SPEED = 0.8;
 // gemmes : plus la valeur est haute, plus la couleur est claire (en tailles de gemme)
 const GEM_CLARITY = 2;
 // lueur propre des gemmes (0 = aucune)
@@ -206,19 +208,16 @@ export default function HeroModel({
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 1000);
 
     // bloom discret : seuls les reflets les plus forts brillent
-    // (skipped for transparent reveal — EffectComposer flattens alpha)
-    const composer = transparentBackground
-      ? null
-      : new EffectComposer(renderer);
+    // (le bloom garde l'alpha : le fond transparent du reveal reste transparent)
+    const composer = new EffectComposer(renderer);
+    // sur le voile clair du reveal le halo se voit beaucoup plus : bloom réduit
     const bloom = transparentBackground
-      ? null
+      ? new UnrealBloomPass(new THREE.Vector2(1, 1), 0.08, 0.1, 0.98)
       : new UnrealBloomPass(new THREE.Vector2(1, 1), 0.2, 0.15, 0.95);
-    if (composer && bloom) {
-      composer.addPass(new RenderPass(scene, camera));
-      // rayon serré : les reflets des maillons deviennent de petites étincelles
-      composer.addPass(bloom);
-      composer.addPass(new OutputPass());
-    }
+    composer.addPass(new RenderPass(scene, camera));
+    // rayon serré : les reflets des maillons deviennent de petites étincelles
+    composer.addPass(bloom);
+    composer.addPass(new OutputPass());
 
     // la caméra fait le tour complet des gemmes et passe au-dessus,
     // jamais sous le sol
@@ -238,7 +237,8 @@ export default function HeroModel({
 
     // avant le premier contact : lent va-et-vient gauche / droite
     controls.autoRotate = true;
-    controls.autoRotateSpeed = IDLE_SPEED;
+    const idleSpeed = transparentBackground ? REVEAL_IDLE_SPEED : IDLE_SPEED;
+    controls.autoRotateSpeed = idleSpeed;
     // le déplacement reste autour du collier et au-dessus du sol invisible
     const panBounds = new THREE.Box3();
     const keepTargetInBounds = () => {
@@ -259,10 +259,8 @@ export default function HeroModel({
       const { clientWidth: w, clientHeight: h } = host;
       if (!w || !h) return;
       renderer.setSize(w, h, false);
-      if (composer) {
-        composer.setPixelRatio(renderer.getPixelRatio());
-        composer.setSize(w, h);
-      }
+      composer.setPixelRatio(renderer.getPixelRatio());
+      composer.setSize(w, h);
       renderer.domElement.style.width = "100%";
       renderer.domElement.style.height = "100%";
       camera.aspect = w / h;
@@ -389,12 +387,11 @@ export default function HeroModel({
       if (controls.autoRotate) {
         // repart dans l'autre sens aux bords du balayage
         const azimuth = controls.getAzimuthalAngle();
-        if (azimuth > IDLE_SWEEP) controls.autoRotateSpeed = IDLE_SPEED;
-        else if (azimuth < -IDLE_SWEEP) controls.autoRotateSpeed = -IDLE_SPEED;
+        if (azimuth > IDLE_SWEEP) controls.autoRotateSpeed = idleSpeed;
+        else if (azimuth < -IDLE_SWEEP) controls.autoRotateSpeed = -idleSpeed;
       }
       controls.update();
-      if (composer) composer.render();
-      else renderer.render(scene, camera);
+      composer.render();
     });
 
     return () => {
@@ -423,8 +420,8 @@ export default function HeroModel({
       envMap?.dispose();
       floor.geometry.dispose();
       floorMaterial.dispose();
-      bloom?.dispose();
-      composer?.dispose();
+      bloom.dispose();
+      composer.dispose();
       renderer.dispose();
       renderer.domElement.remove();
     };

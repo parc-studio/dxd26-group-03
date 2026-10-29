@@ -159,7 +159,7 @@
     },
     {
       "id": "necklace_poseidon",
-      "label": "Necklace Peridot Apatite",
+      "label": "Necklace Poseidon",
       "category": "jewellery",
       "shape": "ring",
       "kind": "jewellery",
@@ -170,7 +170,7 @@
         "apatite"
       ],
       "price": 89,
-      "displayName": "Collier 'Peridot Apatite'",
+      "displayName": "Collier 'Poseidon'",
       "materialsLine": "Argent, peridot & apatite",
       "image": "/textures/necklase_peridot.png",
       "imageSize": "contain"

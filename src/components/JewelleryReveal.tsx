@@ -64,8 +64,18 @@ export function JewelleryReveal({
         aria-label="Close"
         onClick={requestClose}
       >
-        <span aria-hidden="true">×</span>
+        {/* same 24px stroke icon as the product page's back arrow */}
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
+          <path
+            d="M6 6l12 12M18 6L6 18"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </svg>
       </button>
+
+      <h2 className="jewellery-reveal__name">{detail.label}</h2>
 
       <div className="jewellery-reveal__stage">
         <Suspense fallback={null}>
@@ -85,6 +95,13 @@ export function JewelleryReveal({
           onClick={onViewProduct}
         >
           View product
+        </button>
+        <button
+          type="button"
+          className="jewellery-reveal__link"
+          onClick={requestClose}
+        >
+          Continue to discover
         </button>
       </div>
     </div>

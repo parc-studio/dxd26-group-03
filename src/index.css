@@ -4,6 +4,13 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  /* no blue flash on tap (mobile browsers) */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* no focus ring after a tap or click; keyboard focus keeps its outline */
+:focus:not(:focus-visible) {
+  outline: none;
 }
 
 html {
