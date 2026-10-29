@@ -3,16 +3,6 @@
  */
 /** Parents are sucked into the merge point (speed up + shrink to nothing). */
 export const MERGE_CONVERGE_MS = 450
-/** Beat between the parents vanishing and the new piece leaving that point. */
-export const MERGE_PUNCH_MS = 60
-/**
- * The new jewellery piece slowly grows in on the board, under the reveal's
- * blur, once that blur fully covers the board.
- */
-export const MERGE_REVEAL_MS = 1800
-
-export const MERGE_JEWELLERY_MS =
-  MERGE_CONVERGE_MS + MERGE_PUNCH_MS + MERGE_REVEAL_MS
 
 /** Full-screen finished-product reveal (veil / 3D / UI). */
 export const JEWELLERY_REVEAL_EXIT_MS = 720
@@ -38,13 +28,22 @@ export function jewelleryRevealReturnMs(distancePx: number): number {
 export const JEWELLERY_REVEAL_LAND_FADE_MS = 200
 
 /**
- * Travel of each parent from the merge point in the burst (px); pieces in
- * the way, or a bigger new piece, can push them a bit farther.
+ * How far each parent ends up from the merge point after a merge (px);
+ * pieces in the way, or a bigger new piece, can push it a bit farther.
  */
 export const MERGE_PARENT_SPLIT_PX = 80
 
 /**
- * The burst: parents grow out of the merge point and glide to their side
- * while the board makes room, all in one ease-in-out move.
+ * The burst: the new piece and its parents grow out of the merge point (the
+ * parents gliding to their side) while the board makes room, all in one
+ * ease-in-out move.
  */
 export const MERGE_BURST_MS = 1400
+
+/**
+ * The jewellery merge's version, under the reveal's blur: nothing comes out
+ * of the merge point, the new piece and its parents just grow in place
+ * (fading in, nothing popping) and slowly push the board aside. It follows
+ * the suck-in without a pause.
+ */
+export const MERGE_EMERGE_MS = 3800

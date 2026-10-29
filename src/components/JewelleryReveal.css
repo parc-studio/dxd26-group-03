@@ -47,8 +47,9 @@
  * Covers the whole page, under the CelestialHeader (45) so the logo and close
  * stay sharp, above the craft pieces, so nothing on the board shows through,
  * even right under the header.
- * Fades in together with the 3D piece growing: same start, same duration
- * (ARRIVE_MS in JewelleryReveal.tsx), same curve.
+ * Fades in as soon as the reveal opens (right at the merge's drop), without
+ * waiting for the 3D piece; same duration (ARRIVE_MS in JewelleryReveal.tsx)
+ * and curve as the piece growing.
  * Only opacity animates: the blur radius stays fixed (animating it glitched).
  */
 .jewellery-reveal__veil {
@@ -73,6 +74,7 @@
   visibility: hidden;
 }
 
+.jewellery-reveal__veil.is-open,
 .jewellery-reveal__veil.is-arrived {
   opacity: 1;
 }

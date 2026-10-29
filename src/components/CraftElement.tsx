@@ -13,9 +13,8 @@ import type { PlayfieldBounds } from '../lib/craftPhysics'
 import {
   JEWELLERY_REVEAL_LAND_FADE_MS,
   MERGE_BURST_MS,
+  MERGE_EMERGE_MS,
   MERGE_CONVERGE_MS,
-  MERGE_PUNCH_MS,
-  MERGE_REVEAL_MS,
 } from '../lib/mergeTiming'
 import './CraftElement.css'
 
@@ -80,8 +79,6 @@ interface CraftElementProps {
   mergeFrom?: { x: number; y: number }
   /** Product is under the flash (invisible) during the punch. */
   revealing?: boolean
-  /** Soft entrance once the flash eases. */
-  revealAnim?: boolean
   /** Fades in as the closing reveal's 3D piece lands on it. */
   returnLand?: boolean
   /**
@@ -108,7 +105,6 @@ export function CraftElement({
   mergePhase,
   mergeFrom,
   revealing = false,
-  revealAnim = false,
   returnLand = false,
   underOverlay = false,
   onMove,
@@ -198,16 +194,16 @@ export function CraftElement({
   const phaseClass =
     mergePhase === 'converge'
       ? ' is-merge-converge'
-      : mergePhase === 'vanish'
-        ? ' is-merge-vanish'
-        : mergePhase === 'explode'
-          ? ' is-merge-explode'
+      : mergePhase === 'explode'
+        ? ' is-merge-explode'
+        : mergePhase === 'emerge'
+          ? ' is-merge-emerge'
           : ''
 
   return (
     <button
       type="button"
-      className={`craft-el craft-el--${data.category} craft-el--${data.shape}${kindClass}${hasPhoto ? ' craft-el--photo' : ''}${paintReady ? ' is-paint-ready' : ''}${dragging ? ' is-dragging' : ''}${phaseClass}${revealing ? ' is-under-flash' : ''}${revealAnim ? ' is-merge-reveal' : ''}${returnLand ? ' is-return-land' : ''}`}
+      className={`craft-el craft-el--${data.category} craft-el--${data.shape}${kindClass}${hasPhoto ? ' craft-el--photo' : ''}${paintReady ? ' is-paint-ready' : ''}${dragging ? ' is-dragging' : ''}${phaseClass}${revealing ? ' is-under-flash' : ''}${returnLand ? ' is-return-land' : ''}`}
       style={{
         left: `${data.x}%`,
         top: `${data.y}%`,
@@ -220,7 +216,7 @@ export function CraftElement({
             ? Math.min(zIndex, UNDER_OVERLAY_MAX_Z)
             : mergePhase
               ? 1000 + zIndex
-              : revealing || revealAnim || returnLand
+              : revealing || returnLand
                 ? 1150
                 : zIndex,
         backgroundColor: 'transparent',
@@ -228,10 +224,9 @@ export function CraftElement({
         ['--craft-rotate' as string]: `${data.rotation ?? 0}deg`,
         ['--merge-converge-ms' as string]: `${MERGE_CONVERGE_MS}ms`,
         ['--merge-burst-ms' as string]: `${MERGE_BURST_MS}ms`,
+        ['--merge-emerge-ms' as string]: `${MERGE_EMERGE_MS}ms`,
         ['--merge-from-x' as string]: `${mergeFrom?.x ?? 0}px`,
         ['--merge-from-y' as string]: `${mergeFrom?.y ?? 0}px`,
-        ['--merge-punch-ms' as string]: `${MERGE_PUNCH_MS}ms`,
-        ['--merge-reveal-ms' as string]: `${MERGE_REVEAL_MS}ms`,
         ['--return-land-ms' as string]: `${JEWELLERY_REVEAL_LAND_FADE_MS}ms`,
       }}
       data-instance-id={data.instanceId}

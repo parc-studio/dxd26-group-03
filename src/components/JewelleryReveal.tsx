@@ -23,20 +23,16 @@ const HeroModel = lazy(() => import('./HeroModel'))
 /**
  * Longest wait for the 3D model before the piece flies in regardless (it is
  * preloaded from the craft board, so this only bites on a slow first load).
+ * The reveal opens right at the merge's drop, so this also covers the
+ * suck-in; the blur never waits for it.
  */
-const MODEL_WAIT_MAX_MS = 700
+const MODEL_WAIT_MAX_MS = 1200
 
 /**
- * The 3D piece flies in and grows over this time, and the blur fades in over
- * the same time from the same frame, so the two stay in sync.
+ * The 3D piece flies in and grows over this time. The blur fades in over the
+ * same time too, but starts as soon as the reveal opens (no model wait).
  */
 const ARRIVE_MS = 1100
-
-/**
- * The blur's fade-in front-loads its opacity (JewelleryReveal.css curve):
- * by this point it is ~85% in, enough to hide the board starting to move.
- */
-const BLUR_MOSTLY_IN_MS = 450
 
 interface JewelleryRevealProps {
   detail: JewelleryDetail
@@ -48,8 +44,6 @@ interface JewelleryRevealProps {
    * (during the merge); the reveal opens when this turns true.
    */
   shown?: boolean
-  /** Mid-opening: the blur is mostly in, the board behind it may move. */
-  onBlurIn?: () => void
   /** The blur has fully faded in over the board (safe to change the board). */
   onCovered?: () => void
   /**
@@ -70,7 +64,6 @@ export function JewelleryReveal({
   metal = 'gold',
   origin,
   shown = true,
-  onBlurIn,
   onCovered,
   onReturn,
   onReturnFlight,
@@ -172,20 +165,16 @@ export function JewelleryReveal({
 
   const open = phase === 'open'
   const leaving = phase === 'leaving'
-  // the 3D piece flies in once its model is ready, the blur with it
+  // the 3D piece flies in once its model is ready (the blur starts on open)
   const arrived = open && modelReady
 
   const coveredOnce = useRef(false)
   useEffect(() => {
     if (!arrived || coveredOnce.current) return
     coveredOnce.current = true
-    const blurId = window.setTimeout(() => onBlurIn?.(), BLUR_MOSTLY_IN_MS)
     const id = window.setTimeout(() => onCovered?.(), ARRIVE_MS)
-    return () => {
-      window.clearTimeout(blurId)
-      window.clearTimeout(id)
-    }
-  }, [arrived, onBlurIn, onCovered])
+    return () => window.clearTimeout(id)
+  }, [arrived, onCovered])
 
   const stateClass = `${shown ? '' : ' is-pending'}${open ? ' is-open' : ''}${arrived || leaving ? ' is-arrived' : ''}${leaving ? ' is-leaving' : ''}${handoff ? ' is-handoff' : ''}`
   const arriveVar = {

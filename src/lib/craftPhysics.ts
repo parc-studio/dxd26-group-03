@@ -10,6 +10,11 @@ export function setHitRadiusLookup(lookup: ((id: string) => number) | null) {
   hitRadiusOf = lookup ?? (() => ELEMENT_HIT_RADIUS_PX)
 }
 
+/** Collision radius (px) of a piece at full size. */
+export function hitRadius(id: string): number {
+  return hitRadiusOf(id)
+}
+
 /**
  * Extra top inset (% of craft space) per body id, for pieces drawn taller
  * than the hit radius (finished jewellery): bounds only limit the centre, so

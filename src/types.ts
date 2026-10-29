@@ -86,5 +86,8 @@ export interface CraftInstance {
   y: number
 }
 
-/** Visual phase for parent pieces during a merge. */
-export type ParentMergePhase = 'converge' | 'vanish' | 'explode'
+/**
+ * Visual phase for parent pieces during a merge. `emerge`: under the
+ * reveal's blur, the new piece and its parents grow in place (no burst).
+ */
+export type ParentMergePhase = 'converge' | 'explode' | 'emerge'
