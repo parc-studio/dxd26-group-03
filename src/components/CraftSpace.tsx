@@ -13,6 +13,7 @@ import {
   getJewelleryDetail,
   isAppointmentPair,
   spawnInstance,
+  spinStones,
   type JewelleryDetail,
 } from "../data/catalog";
 import {
@@ -453,6 +454,7 @@ export function CraftSpace() {
 
     const bounds = refreshPlayfield();
     const { w, h } = spaceSize();
+    commitElements(spinStones(elementsRef.current));
     const live = elementsRef.current;
     // nothing to jostle: re-seat the starters rather than leave it empty
     if (live.length === 0) {
@@ -480,6 +482,7 @@ export function CraftSpace() {
     applyExplodePositions,
     beginAppointmentToastLeave,
     clearAppointmentHold,
+    commitElements,
     refreshPlayfield,
     resetCraftToStarters,
     spaceSize,

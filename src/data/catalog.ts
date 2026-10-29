@@ -76,6 +76,19 @@ export function allowsCraftOverlap(a: string, b: string): boolean {
   return Boolean(findRecipeResult(a, b)) || isAppointmentPair(a, b)
 }
 
+export function randomStoneRotation(): number {
+  return Math.random() * 360
+}
+
+/** Shaking spins each stone to a new random angle (always at least half a turn). */
+export function spinStones(instances: CraftInstance[]): CraftInstance[] {
+  return instances.map((el) => {
+    if (el.rotation === undefined) return el
+    const turn = (180 + Math.random() * 360) * (Math.random() < 0.5 ? -1 : 1)
+    return { ...el, rotation: el.rotation + turn }
+  })
+}
+
 export function spawnInstance(
   catalogId: string,
   x: number,
@@ -99,7 +112,7 @@ export function spawnInstance(
     insetSize: def.insetSize,
     insetImagePosition: def.insetImagePosition,
     insetImageSize: def.insetImageSize,
-    rotation: def.category === 'stones' ? Math.random() * 360 : undefined,
+    rotation: def.category === 'stones' ? randomStoneRotation() : undefined,
     x,
     y,
   }
