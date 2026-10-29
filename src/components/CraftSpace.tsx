@@ -30,6 +30,10 @@ import {
   type PlayfieldBounds,
 } from "../lib/craftPhysics";
 import { findDropTarget, findMatchingTarget } from "../lib/hitTest";
+import {
+  jewelleryHeroModelUrl,
+  resolveJewelleryMetal,
+} from "../lib/jewelleryModel";
 import { opposingExplodeDirs, runParentExplode } from "../lib/mergeExplode";
 import {
   JEWELLERY_REVEAL_LAND_FADE_MS,
@@ -37,10 +41,6 @@ import {
   MERGE_PARENT_GAP_PX,
   MERGE_PUNCH_MS,
 } from "../lib/mergeTiming";
-import {
-  jewelleryHeroModelUrl,
-  resolveJewelleryMetal,
-} from "../lib/jewelleryModel";
 import {
   attachShakeListener,
   requestMotionPermissionOnTap,
@@ -61,8 +61,6 @@ const APPOINTMENT_TOAST_MS = 6000;
 const NECKLACE_HIT_RADIUS_RATIO = 0.9;
 /** Lets the board's own images load first before warming the 3D reveal. */
 const REVEAL_WARMUP_DELAY_MS = 1200;
-/** Hold overlap this long before showing the appointment toast. */
-const APPOINTMENT_HOLD_MS = 350;
 
 const CRAFT_HASH = "/craft";
 
@@ -140,7 +138,6 @@ export function CraftSpace() {
   >("off");
   const appointmentToastVisibleRef = useRef(false);
   const appointmentToastTimerRef = useRef<number | null>(null);
-  const appointmentHoldTimerRef = useRef<number | null>(null);
   const jewelleryRevealOpenRef = useRef(false);
   const explodeDoneRef = useRef(true);
 
@@ -149,21 +146,13 @@ export function CraftSpace() {
     setElements(next);
   }, []);
 
-  const clearAppointmentHold = useCallback(() => {
-    if (appointmentHoldTimerRef.current !== null) {
-      window.clearTimeout(appointmentHoldTimerRef.current);
-      appointmentHoldTimerRef.current = null;
-    }
-  }, []);
-
   const beginAppointmentToastLeave = useCallback(() => {
-    clearAppointmentHold();
     if (appointmentToastTimerRef.current !== null) {
       window.clearTimeout(appointmentToastTimerRef.current);
       appointmentToastTimerRef.current = null;
     }
     setAppointmentToast((phase) => (phase === "on" ? "leaving" : phase));
-  }, [clearAppointmentHold]);
+  }, []);
 
   const finishAppointmentToastLeave = useCallback(() => {
     appointmentToastVisibleRef.current = false;
@@ -184,16 +173,6 @@ export function CraftSpace() {
       setAppointmentToast((phase) => (phase === "on" ? "leaving" : phase));
     }, APPOINTMENT_TOAST_MS);
   }, []);
-
-  const armAppointmentHold = useCallback(() => {
-    if (jewelleryRevealOpenRef.current) return;
-    if (appointmentToastVisibleRef.current) return;
-    if (appointmentHoldTimerRef.current !== null) return;
-    appointmentHoldTimerRef.current = window.setTimeout(() => {
-      appointmentHoldTimerRef.current = null;
-      showAppointmentToast();
-    }, APPOINTMENT_HOLD_MS);
-  }, [showAppointmentToast]);
 
   /** Extra top inset (px) per catalog piece; cleared when the board resizes. */
   const topInsetPxRef = useRef(new Map<string, number>());
@@ -260,9 +239,6 @@ export function CraftSpace() {
     return () => {
       if (appointmentToastTimerRef.current !== null) {
         window.clearTimeout(appointmentToastTimerRef.current);
-      }
-      if (appointmentHoldTimerRef.current !== null) {
-        window.clearTimeout(appointmentHoldTimerRef.current);
       }
     };
   }, []);
@@ -456,30 +432,8 @@ export function CraftSpace() {
           allowsCraftOverlap(dragged.catalogId, otherCatalogId),
       );
       commitElements(pushed);
-
-      const draggedNow = pushed.find((el) => el.instanceId === instanceId);
-      if (!draggedNow) return;
-      const appointmentTarget = findMatchingTarget(
-        pushed,
-        instanceId,
-        draggedNow.x,
-        draggedNow.y,
-        (otherCatalogId) =>
-          isAppointmentPair(draggedNow.catalogId, otherCatalogId),
-      );
-      if (appointmentTarget) {
-        armAppointmentHold();
-      } else {
-        clearAppointmentHold();
-      }
     },
-    [
-      armAppointmentHold,
-      clearAppointmentHold,
-      commitElements,
-      refreshPlayfield,
-      spaceSize,
-    ],
+    [commitElements, refreshPlayfield, spaceSize],
   );
 
   const bringFront = useCallback((instanceId: string) => {
@@ -515,7 +469,6 @@ export function CraftSpace() {
     setUnderFlashId(null);
     dragOriginRef.current = {};
     explodeDoneRef.current = true;
-    clearAppointmentHold();
     beginAppointmentToastLeave();
 
     sheetPushedRef.current = false;
@@ -540,13 +493,7 @@ export function CraftSpace() {
     commitElements(seated);
     setOrder(seated.map((el) => el.instanceId));
     busyRef.current = false;
-  }, [
-    beginAppointmentToastLeave,
-    clearAppointmentHold,
-    commitElements,
-    refreshPlayfield,
-    spaceSize,
-  ]);
+  }, [beginAppointmentToastLeave, commitElements, refreshPlayfield, spaceSize]);
 
   const startShakeJostle = useCallback(() => {
     explodeCancelRef.current?.();
@@ -560,7 +507,6 @@ export function CraftSpace() {
     setJewelleryRevealMetal("gold");
     setParentMergePhase({});
     setUnderFlashId(null);
-    clearAppointmentHold();
     beginAppointmentToastLeave();
     sheetPushedRef.current = false;
     if (readProductFromHash()) {
@@ -597,7 +543,6 @@ export function CraftSpace() {
   }, [
     applyExplodePositions,
     beginAppointmentToastLeave,
-    clearAppointmentHold,
     commitElements,
     refreshPlayfield,
     resetCraftToStarters,
@@ -717,10 +662,13 @@ export function CraftSpace() {
   const handleRevealReturnFlight = useCallback((ms: number) => {
     const id = revealResultIdRef.current;
     if (!id) return;
-    window.setTimeout(() => {
-      setUnderFlashId(null);
-      setReturnLandId(id);
-    }, Math.max(0, ms - JEWELLERY_REVEAL_LAND_FADE_MS));
+    window.setTimeout(
+      () => {
+        setUnderFlashId(null);
+        setReturnLandId(id);
+      },
+      Math.max(0, ms - JEWELLERY_REVEAL_LAND_FADE_MS),
+    );
   }, []);
 
   const closeJewelleryReveal = useCallback(() => {
@@ -751,7 +699,6 @@ export function CraftSpace() {
     (instanceId: string, pos: { x: number; y: number }) => {
       draggingRef.current.delete(instanceId);
       if (busyRef.current) return;
-      clearAppointmentHold();
 
       const bounds = refreshPlayfield();
       const clamped = clampToPlayfield(
@@ -782,20 +729,14 @@ export function CraftSpace() {
         ? findRecipeResult(dragged.catalogId, target.catalogId)
         : null;
 
-      // A real recipe on the nearest piece still crafts. Otherwise a thin
-      // ring + any stone books an appointment instead of bouncing silently.
+      // Recipe still crafts. Else show appointment toast only on pointer release
+      // while overlapping a ring / chain / earring partner (not while dragging).
       if (!recipeCatalogId && appointmentTarget) {
         showAppointmentToast();
         const { w, h } = spaceSize();
         // Keep appointment pairs stacked; only separate unrelated overlaps.
         commitElements(
-          separateAll(
-            elementsRef.current,
-            bounds,
-            w,
-            h,
-            allowsCraftOverlap,
-          ),
+          separateAll(elementsRef.current, bounds, w, h, allowsCraftOverlap),
         );
         delete dragOriginRef.current[instanceId];
         return;
@@ -805,13 +746,7 @@ export function CraftSpace() {
         // Soft settle so a non-merge drop doesn't leave overlaps.
         const { w, h } = spaceSize();
         commitElements(
-          separateAll(
-            elementsRef.current,
-            bounds,
-            w,
-            h,
-            allowsCraftOverlap,
-          ),
+          separateAll(elementsRef.current, bounds, w, h, allowsCraftOverlap),
         );
         delete dragOriginRef.current[instanceId];
         return;
@@ -821,13 +756,7 @@ export function CraftSpace() {
       if (!resultCatalogId) {
         const { w, h } = spaceSize();
         commitElements(
-          separateAll(
-            elementsRef.current,
-            bounds,
-            w,
-            h,
-            allowsCraftOverlap,
-          ),
+          separateAll(elementsRef.current, bounds, w, h, allowsCraftOverlap),
         );
         delete dragOriginRef.current[instanceId];
         return;
@@ -979,7 +908,11 @@ export function CraftSpace() {
                   return el;
                 }
                 const side = el.instanceId === leftId ? -1 : 1;
-                const spot = clampToPlayfield(mid.x + side * gap, mid.y, bounds);
+                const spot = clampToPlayfield(
+                  mid.x + side * gap,
+                  mid.y,
+                  bounds,
+                );
                 return { ...el, x: spot.x, y: spot.y };
               }),
               bounds,
@@ -1008,7 +941,6 @@ export function CraftSpace() {
     },
     [
       beginAppointmentToastLeave,
-      clearAppointmentHold,
       clearBusyIfIdle,
       commitElements,
       refreshPlayfield,
