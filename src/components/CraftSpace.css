@@ -102,6 +102,13 @@
   z-index: 30 !important;
 }
 
+/* Product page open (40): every board piece stays under it — a burst or
+   grow-in still running (1000+ lift) or a long stacking order would draw
+   over the page */
+.craft-space.is-sheet-open .craft-el {
+  z-index: 30 !important;
+}
+
 .craft-space .celestial-header {
   /* Full-bleed header; craft body keeps 16px side pad */
   left: 50%;
